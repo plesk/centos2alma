@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
+=======
+#!/usr/bin/python3
+# Copyright 1999-2022. Plesk International GmbH. All rights reserved.
+>>>>>>> 44565f1... fixup! Initial commit with all actions to prepare convertation
 
 import os
 import shutil
 import subprocess
 
+import action
 
 def install_leapp():
     pkgs_to_install = [
@@ -12,7 +18,7 @@ def install_leapp():
         "leapp-data-almalinux",
     ]
 
-    subprocess.check_call(["yum", "install", "-y"] + pkgs_to_install])
+    subprocess.check_call(["yum", "install", "-y"] + pkgs_to_install)
 
 
 def patch_leapp():
@@ -121,7 +127,7 @@ def remove_conflict_packages():
     ]
 
     for pkg in pkgs:
-        subprocess.check_call(["rpm", "-e", "--nodeps"] + pkg])
+        subprocess.check_call(["rpm", "-e", "--nodeps"] + pkg)
 
 
 def prepare_system():
@@ -144,8 +150,8 @@ def prepare_system():
         "sw-cp-server.service",
         "sw-engine.service",
     ]
-    subprocess.check_call(["systemctl", "stop"] + plesk_systemcd_services])
-    subprocess.check_call(["systemctl", "disable"] + plesk_systemcd_services])
+    subprocess.check_call(["systemctl", "stop"] + plesk_systemcd_services)
+    subprocess.check_call(["systemctl", "disable"] + plesk_systemcd_services)
 
 
 def preconfig_kernel():
@@ -190,9 +196,12 @@ def do_convert():
 def post_convert():
     pass
 
+if __name__ == "__main__":
+    print ("Hello!!")
+    a = action.Action()
+    print(a)
 
-if __name__ == "main":
-    pre_convert()
+    # pre_convert()
 
     do_convert()
 
