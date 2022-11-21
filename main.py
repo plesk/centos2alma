@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-#!/usr/bin/env python3
-=======
 #!/usr/bin/python3
 # Copyright 1999-2022. Plesk International GmbH. All rights reserved.
->>>>>>> 44565f1... fixup! Initial commit with all actions to prepare convertation
 
 import os
 import shutil
@@ -203,6 +199,6 @@ if __name__ == "__main__":
 
     # pre_convert()
 
-    do_convert()
+    # do_convert()
 
-    post_convert()
+    # post_convert()
