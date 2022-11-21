@@ -5,7 +5,7 @@ import os
 import shutil
 import subprocess
 
-import action
+import actions
 
 def install_leapp():
     pkgs_to_install = [
@@ -194,7 +194,10 @@ def post_convert():
 
 if __name__ == "__main__":
     print ("Hello!!")
-    a = action.Action()
+    print(dir(actions))
+    print(actions.__file__)
+    a = actions.action.Action()
+    # a = action.Action()
     print(a)
 
     # pre_convert()

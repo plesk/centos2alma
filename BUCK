@@ -5,15 +5,15 @@ include_defs('//buck-rules/third-party/py/pathlib/pathlib.py')
 
 python_library(
     name = 'actions.lib',
-    srcs = glob(['./src/*.py'])
+    srcs = glob(['./actions/*.py'])
 )
 
 python_library(
     name = 'distupgrader.lib',
     srcs = glob(['main.py']),
     deps = [
-        ':actions.lib'
-    ]
+        ':actions.lib',
+    ],
 )
 
 python_binary(
