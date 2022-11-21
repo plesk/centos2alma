@@ -1,0 +1,3 @@
+[submodule "buck-rules"]
+	path = buck-rules
+	url = ssh://git@git.plesk.ru:7999/plesk/buck-rules.git
