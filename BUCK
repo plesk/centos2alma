@@ -10,7 +10,7 @@ python_library(
 
 python_library(
     name = 'distupgrader.lib',
-    srcs = glob(['main.py'])
+    srcs = glob(['main.py']),
     deps = [
         ':actions.lib'
     ]
