@@ -6,6 +6,16 @@ import actions
 import sys
 from optparse import OptionParser
 
+
+def merge_dicts_of_lists(dict1, dict2):
+    for key, value in dict2.items():
+        if key in dict1:
+            dict1[key].append(value)
+        else:
+            dict1[key] = value
+    return dict1
+
+
 if __name__ == "__main__":
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type='choice',
@@ -17,10 +27,10 @@ if __name__ == "__main__":
     options, args = opts.parse_args(args=sys.argv[1:])
 
     actions_map = {}
-    if options.stage != 'start':
-        actions_map += {
+    if not options.stage or options.stage == 'prepare' or options.stage == 'finish':
+        actions_map = merge_dicts_of_lists(actions_map, {
             1: [
-                actions.LeapInstallation()
+                actions.LeapInstallation(),
             ],
             2: [
                 actions.LeapReposConfiguration(),
@@ -29,10 +39,10 @@ if __name__ == "__main__":
                 actions.FixNamedConfig(),
                 actions.DisableSuspiciousKernelModules(),
             ],
-        }
+        })
 
     if opts.stage != 'prepare':
-        actions_map += {
+        actions_map = merge_dicts_of_lists(actions_map, {
             2: [
                 actions.RulePleskRelatedServices(),
                 actions.RuleSelinux(),
@@ -40,9 +50,9 @@ if __name__ == "__main__":
             3: [
                 actions.DoConvert(),
             ],
-        }
+        })
 
-    if opts.stage != 'stop':
+    if options.stage != 'stop':
         flow = actions.action.PrepareActionsFlow(actions_map)
     else:
         flow = actions.action.FinishActionsFlow(actions_map)

@@ -49,9 +49,9 @@ class ActionsFlow():
         for stage_id, actions in stages.items():
             self._pre_stage(stage_id, actions)
             for action in actions:
-                print("Making {description!s}{feel}".format(description=action, feel="." * 40 - len(str(action))))
+                print("Making {description!s}".format(description=action))
                 self._invoke_action(action)
-                print("OK")
+                print("{feel}OK".format(feel="." * (40 - len(str(action)))))
             self._post_stage(stage_id, actions)
 
     def _get_flow(self):
