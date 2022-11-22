@@ -41,7 +41,7 @@ if __name__ == "__main__":
             ],
         })
 
-    if opts.stage != 'prepare':
+    if not options.stage or options.stage == 'start' or options.stage == 'finish':
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
                 actions.RulePleskRelatedServices(),
