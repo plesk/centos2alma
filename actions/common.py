@@ -23,12 +23,22 @@ class DisableSuspiciousKernelModules(Action):
         self.suspicious_modules = ["pata_acpi", "btrfs"]
         self.modules_konfig_path = "/etc/modprobe.d/pataacpibl.conf"
 
+    def _get_enabled_modules(self, lookup_modules):
+        modules = []
+        process = subprocess.run(["lsmod"], stdout=subprocess.PIPE, universal_newlines=True)
+        for line in process.stdout.splitlines():
+            module_name = line[:line.find(' ')]
+            if module_name in lookup_modules:
+                modules.append(module_name)
+        return modules
+
     def _prepare_action(self):
         with open(self.modules_konfig_path, "a") as kern_mods_config:
-            for module in self.suspicious_modules:
-                kern_mods_config.write("blacklist {module}\n".format(module))
+            for suspicious_module in self.suspicious_modules:
+                kern_mods_config.write("blacklist {module}\n".format(module=suspicious_module))
 
-            subprocess.check_call(["rmmod", module])
+        for enabled_modules in self._get_enabled_modules(self.suspicious_modules):
+            subprocess.check_call(["rmmod", enabled_modules])
 
     def _post_action(self):
         for module in self.suspicious_modules:
