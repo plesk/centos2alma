@@ -28,7 +28,7 @@ class Action():
     def _post_action(self):
         raise NotImplementedError("Not implemented post action is called")
 
-    def _replace_string(filename, original_substring, new_substring):
+    def _replace_string(self, filename, original_substring, new_substring):
         with open(filename, "r") as original, open(filename + ".next", "w") as dst:
             for line in original.readlines():
                 line = line.replace(original_substring, new_substring)
