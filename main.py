@@ -10,7 +10,8 @@ from optparse import OptionParser
 def merge_dicts_of_lists(dict1, dict2):
     for key, value in dict2.items():
         if key in dict1:
-            dict1[key].append(value)
+            for item in value:
+                dict1[key].append(item)
         else:
             dict1[key] = value
     return dict1
