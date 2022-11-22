@@ -53,7 +53,7 @@ if __name__ == "__main__":
             ],
         })
 
-    if options.stage != 'stop':
+    if options.stage != 'finish':
         flow = actions.action.PrepareActionsFlow(actions_map)
     else:
         flow = actions.action.FinishActionsFlow(actions_map)
