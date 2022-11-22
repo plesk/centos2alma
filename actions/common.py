@@ -7,12 +7,14 @@ import subprocess
 class FixNamedConfig(Action):
     def __init__(self):
         self.name = "fix named configuration"
+        self.user_options_path = "/etc/named-user-options.conf"
 
     def _prepare_action(self):
-        os.symlink("/var/named/chroot/etc/named-user-options.conf", "/etc/named-user-options.conf")
+        if not os.path.exists(self.user_options_path):
+            os.symlink("/var/named/chroot/etc/named-user-options.conf", self.user_options_path)
 
     def _post_action(self):
-        os.unlink("/etc/named-user-options.conf")
+        os.unlink(self.user_options_path)
 
 
 class DisableSuspiciousKernelModules(Action):
