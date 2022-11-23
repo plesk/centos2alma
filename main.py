@@ -4,6 +4,7 @@
 import actions
 
 import sys
+import os
 from optparse import OptionParser
 
 
@@ -36,6 +37,7 @@ if __name__ == "__main__":
             2: [
                 actions.LeapReposConfiguration(),
                 actions.LeapChoisesConfiguration(),
+                actions.LeapAddPostUpgradeActor(os.path.abspath(sys.argv[0])),
                 actions.RemovingPackages(),
                 actions.FixNamedConfig(),
                 actions.DisableSuspiciousKernelModules(),
