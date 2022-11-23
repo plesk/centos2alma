@@ -26,13 +26,3 @@ class LeapInstallation(Action):
     def _post_action(self):
         # Todo. We could actually remove installed leap packages at the end
         pass
-
-class CheckInstall(Action):
-    def __init__(self):
-        self.name = "check Install"
-
-    def _prepare_action(self):
-        print("Install")
-
-    def _post_action(self):
-        print("back Install")

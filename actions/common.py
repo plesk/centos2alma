@@ -55,14 +55,3 @@ class RuleSelinux(Action):
 
     def _post_action(self):
         self._replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
-
-
-class CheckCommon(Action):
-    def __init__(self):
-        self.name = "check 1"
-
-    def _prepare_action(self):
-        print("common")
-
-    def _post_action(self):
-        print("back common")

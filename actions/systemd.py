@@ -32,13 +32,3 @@ class RulePleskRelatedServices(Action):
     def _post_action(self):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemcd_services)
         subprocess.check_call(["systemctl", "start"] + self.plesk_systemcd_services)
-
-class CheckSystemd(Action):
-    def __init__(self):
-        self.name = "check Systemd"
-
-    def _prepare_action(self):
-        print("Systemd")
-
-    def _post_action(self):
-        print("back Systemd")

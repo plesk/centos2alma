@@ -51,13 +51,3 @@ class RemovingPackages(Action):
         # that not needed at all, because the httpd package in new distros brings appropriate apache modules by itself.
         # Packages from the reinstall list will be installed by leapp.
         pass
-
-class CheckRemove(Action):
-    def __init__(self):
-        self.name = "check Remove"
-
-    def _prepare_action(self):
-        print("Remove")
-
-    def _post_action(self):
-        print("back Remove")

@@ -96,6 +96,7 @@ class LeapReposConfiguration(Action):
         # Since only leap related files should be changed, there is no to do after a convertation
         pass
 
+
 class LeapChoisesConfiguration(Action):
 
     def __init__(self):
@@ -108,13 +109,3 @@ class LeapChoisesConfiguration(Action):
     def _post_action(self):
         # Since only leap related files should be changed, there is no to do after a convertation
         pass
-
-class CheckConf(Action):
-    def __init__(self):
-        self.name = "check 2"
-
-    def _prepare_action(self):
-        print("config")
-
-    def _post_action(self):
-        print("back config")
