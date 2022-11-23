@@ -8,8 +8,13 @@ class LeapInstallation(Action):
     def __init__(self):
         self.name = "install leapp"
 
+    def _is_pkg_installed(self, pkg_name):
+        res = subprocess.run(["rpm", "--quiet", "--query", pkg_name])
+        return res.returncode == 0
+
     def _prepare_action(self):
-        subprocess.check_call(["yum", "install", "-y", "http://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
+        if not self._is_pkg_installed("elevate-release"):
+            subprocess.check_call(["yum", "install", "-y", "http://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
 
         pkgs_to_install = [
             "leapp-upgrade",
