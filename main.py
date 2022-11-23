@@ -6,6 +6,7 @@ import actions
 import sys
 import os
 from optparse import OptionParser
+from enum import Enum
 
 
 def merge_dicts_of_lists(dict1, dict2):
@@ -18,10 +19,16 @@ def merge_dicts_of_lists(dict1, dict2):
     return dict1
 
 
+class Stages(str, Enum):
+    prepare = 'prepare'
+    convert = 'start'
+    finish = 'finish'
+
+
 if __name__ == "__main__":
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type='choice',
-                    choices=('prepare', 'start', 'finish'),
+                    choices=(Stages.prepare, Stages.convert, Stages.finish),
                     help="Choose a stage of a convertation process. Prepare should be used before any other actions."
                          "Start - when you ready for a convertation process. The process will take about 20 minutes."
                          "Finish should be called at the end of convertation, right after the first reboot.")
@@ -29,7 +36,7 @@ if __name__ == "__main__":
     options, args = opts.parse_args(args=sys.argv[1:])
 
     actions_map = {}
-    if not options.stage or options.stage == 'prepare' or options.stage == 'finish':
+    if not options.stage or options.stage == Stages.prepare or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
                 actions.LeapInstallation(),
@@ -38,15 +45,15 @@ if __name__ == "__main__":
                 actions.LeapReposConfiguration(),
                 actions.LeapChoisesConfiguration(),
                 actions.LeapAddPostUpgradeActor(os.path.abspath(sys.argv[0])),
-                actions.RemovingPackages(),
                 actions.FixNamedConfig(),
-                actions.DisableSuspiciousKernelModules(),
             ],
         })
 
-    if not options.stage or options.stage == 'start' or options.stage == 'finish':
+    if not options.stage or options.stage == Stages.convert or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
+                actions.RemovingPackages(),
+                actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
                 actions.RuleSelinux(),
             ],
@@ -55,7 +62,7 @@ if __name__ == "__main__":
             ],
         })
 
-    if options.stage != 'finish':
+    if options.stage != Stages.finish:
         flow = actions.action.PrepareActionsFlow(actions_map)
     else:
         flow = actions.action.FinishActionsFlow(actions_map)
