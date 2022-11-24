@@ -1,6 +1,7 @@
 from .action import Action
 
 import subprocess
+import os
 
 
 class RemovingPackages(Action):
