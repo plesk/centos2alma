@@ -53,13 +53,19 @@ if __name__ == "__main__":
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
                 actions.RemovingPackages(),
-                actions.AdoptPleskRepositories(),
+                actions.FixupWebmail(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
                 actions.RuleSelinux(),
             ],
             3: [
                 actions.DoConvert(),
+            ],
+        })
+    if options.stage == Stages.finish:
+        actions_map = merge_dicts_of_lists(actions_map, {
+            3: [
+                actions.AdoptPleskRepositories(),
             ],
         })
 

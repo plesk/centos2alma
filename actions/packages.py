@@ -8,8 +8,17 @@ class RemovingPackages(Action):
 
     def __init__(self):
         self.name = "remove conflict packages"
+        self.conflict_pkgs = [
+            "openssl11-libs",
+            "python36-PyYAML",
+            "GeoIP",
+            "psa-mod_proxy",
+        ]
+        self.reinstall_pkgs = [
+            "psa-phpmyadmin",
+        ]
 
-    def _get_installed_packages(self, lookup_pkgs):
+    def _filter_installed_packages(self, lookup_pkgs):
         pkgs = []
         process = subprocess.run(["rpm", "-q", "-a"], stdout=subprocess.PIPE, universal_newlines=True)
         for line in process.stdout.splitlines():
@@ -28,23 +37,8 @@ class RemovingPackages(Action):
         return pkgs
 
     def _prepare_action(self):
-        conflict_pkgs = [
-            "openssl11-libs",
-            "python36-PyYAML",
-            "GeoIP",
-            "psa-mod_proxy",
-        ]
-        reinstall_pkgs = [
-            "plesk-roundcube",
-            "psa-phpmyadmin",
-        ]
-
-        for pkg in self._get_installed_packages(conflict_pkgs + reinstall_pkgs):
+        for pkg in self._filter_installed_packages(self.conflict_pkgs + self.reinstall_pkgs):
             subprocess.check_call(["rpm", "-e", "--nodeps", pkg])
-
-        with open("/etc/leapp/transaction/to_install", "a") as leapp_installation_list:
-            for pkg in reinstall_pkgs:
-                leapp_installation_list.write("{}\n".format(pkg))
 
     def _post_action(self):
         # Conflict packages shouldn't be reinstalled after a convertation because new once from
@@ -52,6 +46,21 @@ class RemovingPackages(Action):
         # that not needed at all, because the httpd package in new distros brings appropriate apache modules by itself.
         # Packages from the reinstall list will be installed by leapp.
         pass
+
+
+class FixupWebmail(Action):
+    def __init__(self):
+        self.name = "fixing webmail"
+        self.webmail = "roundcube"
+
+    def _prepare_action(self):
+        find_pkg = subprocess.run(["rpm", "-q", "-a", "plesk-" + self.webmail], stdout=subprocess.PIPE, universal_newlines=True)
+        if len(find_pkg.stdout):
+            subprocess.check_call(["rpm", "-e", "--nodeps", "plesk-" + self.webmail])
+
+    def _post_action(self):
+        # We have to install roundcuve by plesk installer to make sure the panel will recognize roundcube is installed
+        subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
 
 
 class AdoptPleskRepositories(Action):
