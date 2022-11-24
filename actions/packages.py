@@ -44,7 +44,7 @@ class RemovingPackages(Action):
 
         with open("/etc/leapp/transaction/to_install", "a") as leapp_installation_list:
             for pkg in reinstall_pkgs:
-                leapp_installation_list.write(pkg)
+                leapp_installation_list.write("{}\n".format(pkg))
 
     def _post_action(self):
         # Conflict packages shouldn't be reinstalled after a convertation because new once from
