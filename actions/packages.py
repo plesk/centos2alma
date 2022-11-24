@@ -52,3 +52,20 @@ class RemovingPackages(Action):
         # that not needed at all, because the httpd package in new distros brings appropriate apache modules by itself.
         # Packages from the reinstall list will be installed by leapp.
         pass
+
+
+class AdoptPleskRepositories(Action):
+    def __init__(self):
+        self.name = "adopt plesk repositories"
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        for file in os.scandir("/etc/yum.repos.d"):
+            if not file.name.startswith("plesk") or file.name[-5:] != ".repo":
+                continue
+
+            self._replace_string(file.path, "rpm-CentOS-7", "rpm-RedHat-el8")
+            
+        subprocess.check_call(["dnf", "update"])
