@@ -83,6 +83,7 @@ class LeapReposConfiguration(Action):
                             line = line.replace("name=", "name=Alma ")
 
                         dst.write(line)
+                    dst.write("\n")
 
             dst.write(main_repo_format.format(name=main_repo_name, url=main_repo_url))
             dst.write(epel_repos)
