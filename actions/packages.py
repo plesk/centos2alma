@@ -63,6 +63,26 @@ class FixupWebmail(Action):
         subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
 
 
+
+class FixupPhpMyAdmin
+    def __init__(self):
+        self.name = "fixing phpmyadmin"
+
+    def _prepare_action(self):
+        find_pkg = subprocess.run(["rpm", "-q", "-a", "psa-phpmyadmin"], stdout=subprocess.PIPE, universal_newlines=True)
+        if len(find_pkg.stdout):
+            subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
+
+    def _post_action(self):
+        # Find the way to do it
+        # mysql_upgrade -uadmin -p`< /etc/psa/.psa.shadow `
+        # subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
+        # Also find a way to drop cookies, because it will ruin your day
+        # Redelete it, because leapp going to install it in scoupe of convertation process, but it will no generate right configs
+        subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
+        subprocess.check_call(["plesk", "installer", "update"])
+
+
 class AdoptPleskRepositories(Action):
     def __init__(self):
         self.name = "adopt plesk repositories"
