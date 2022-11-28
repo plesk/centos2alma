@@ -80,6 +80,7 @@ class ReinstallPleskComponents(Action):
         # expect plesk on board. Hence when we install the package in scoupe of temprorary OS
         # the file can't be created.
         subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
+        subprocess.check_call(["plesk", "installer", "update"])
 
         components = [
             "roundcube"

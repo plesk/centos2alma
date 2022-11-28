@@ -1,13 +1,14 @@
 from .action import Action
 
 import subprocess
+import os
 
 
 class RulePleskRelatedServices(Action):
 
     def __init__(self):
         self.name = "rule plesk services"
-        self.plesk_systemcd_services = [
+        plesk_known_systemcd_services = [
             "dovecot.service",
             "fail2ban.service",
             "httpd.service",
@@ -24,6 +25,10 @@ class RulePleskRelatedServices(Action):
             "sw-cp-server.service",
             "sw-engine.service",
         ]
+        self.plesk_systemcd_services = [service for service in plesk_known_systemcd_services if self._is_service_exsists(service)]
+
+    def _is_service_exsists(self, service):
+        return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
 
     def _prepare_action(self):
         subprocess.check_call(["systemctl", "stop"] + self.plesk_systemcd_services)
