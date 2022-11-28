@@ -12,6 +12,7 @@ class RulePleskRelatedServices(Action):
             "dovecot.service",
             "fail2ban.service",
             "httpd.service",
+            "mailman.service",
             "mariadb.service",
             "named-chroot.service",
             "plesk-ext-monitoring-hcd.service",
