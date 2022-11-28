@@ -14,9 +14,6 @@ class RemovingPackages(Action):
             "GeoIP",
             "psa-mod_proxy",
         ]
-        self.reinstall_pkgs = [
-            "psa-phpmyadmin",
-        ]
 
     def _filter_installed_packages(self, lookup_pkgs):
         pkgs = []
@@ -37,50 +34,57 @@ class RemovingPackages(Action):
         return pkgs
 
     def _prepare_action(self):
-        for pkg in self._filter_installed_packages(self.conflict_pkgs + self.reinstall_pkgs):
+        for pkg in self._filter_installed_packages(self.conflict_pkgs):
             subprocess.check_call(["rpm", "-e", "--nodeps", pkg])
 
     def _post_action(self):
-        # Conflict packages shouldn't be reinstalled after a convertation because new once from
-        # Alma repositories will be installed instead of them. The exception of it is a psa-mod_proxy,
-        # that not needed at all, because the httpd package in new distros brings appropriate apache modules by itself.
-        # Packages from the reinstall list will be installed by leapp.
         pass
 
 
-class FixupWebmail(Action):
+class FixMariadbDatabase(Action):
     def __init__(self):
-        self.name = "fixing webmail"
-        self.webmail = "roundcube"
+        self.name = "fixing mysql databases"
 
     def _prepare_action(self):
-        find_pkg = subprocess.run(["rpm", "-q", "-a", "plesk-" + self.webmail], stdout=subprocess.PIPE, universal_newlines=True)
-        if len(find_pkg.stdout):
-            subprocess.check_call(["rpm", "-e", "--nodeps", "plesk-" + self.webmail])
+        pass
 
     def _post_action(self):
-        # We have to install roundcuve by plesk installer to make sure the panel will recognize roundcube is installed
-        subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
+        # We should be sure mariadb is started, otherwise restore woulden't work
+        subprocess.check_call(["systemctl", "start", "mariadb"])
 
-
-
-class FixupPhpMyAdmin
-    def __init__(self):
-        self.name = "fixing phpmyadmin"
-
-    def _prepare_action(self):
-        find_pkg = subprocess.run(["rpm", "-q", "-a", "psa-phpmyadmin"], stdout=subprocess.PIPE, universal_newlines=True)
-        if len(find_pkg.stdout):
-            subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
-
-    def _post_action(self):
-        # Find the way to do it
-        # mysql_upgrade -uadmin -p`< /etc/psa/.psa.shadow `
-        # subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
+        with open('/etc/psa/.psa.shadow', 'r') as shadowfile:
+            shadowdata = shadowfile.readline().rstrip()
+            subprocess.check_call(["mysql_upgrade", "-uadmin", "-p" + shadowdata])
         # Also find a way to drop cookies, because it will ruin your day
         # Redelete it, because leapp going to install it in scoupe of convertation process, but it will no generate right configs
+
+
+class ReinstallPleskComponents(Action):
+    def __init__(self):
+        self.name = "reintall components"
+
+    def _prepare_action(self):
+        components_pkgs = [
+            "plesk-roundcube",
+            "psa-phpmyadmin",
+        ]
+
+        for pkg in components_pkgs:
+            find_pkg = subprocess.run(["rpm", "-q", "-a", pkg], stdout=subprocess.PIPE, universal_newlines=True)
+            if len(find_pkg.stdout):
+                subprocess.check_call(["rpm", "-e", "--nodeps", pkg])
+
+    def _post_action(self):
+        # We should reinstall psa-phpmyadmin over plesk installer to make sure every trigger
+        # will be called. It's because triggers that creates phpmyadmin configuration files
+        # expect plesk on board. Hence when we install the package in scoupe of temprorary OS
+        # the file can't be created.
         subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
-        subprocess.check_call(["plesk", "installer", "update"])
+
+        components = [
+            "roundcube"
+        ]
+        subprocess.check_call(["plesk", "installer", "add", "--components"] + components)
 
 
 class AdoptPleskRepositories(Action):

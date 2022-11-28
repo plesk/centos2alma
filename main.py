@@ -53,7 +53,8 @@ if __name__ == "__main__":
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
                 actions.RemovingPackages(),
-                actions.FixupWebmail(),
+                actions.ReinstallPleskComponents(),
+                actions.FixMariadbDatabase(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
                 actions.RuleSelinux(),
