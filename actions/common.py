@@ -14,7 +14,8 @@ class FixNamedConfig(Action):
             os.symlink("/var/named/chroot/etc/named-user-options.conf", self.user_options_path)
 
     def _post_action(self):
-        os.unlink(self.user_options_path)
+        if os.path.exists(self.user_options_path):
+            os.unlink(self.user_options_path)
 
 
 class DisableSuspiciousKernelModules(Action):
