@@ -8,7 +8,7 @@ class RulePleskRelatedServices(Action):
 
     def __init__(self):
         self.name = "rule plesk services"
-        plesk_known_systemcd_services = [
+        plesk_known_systemd_services = [
             "dovecot.service",
             "fail2ban.service",
             "httpd.service",
@@ -26,15 +26,15 @@ class RulePleskRelatedServices(Action):
             "sw-cp-server.service",
             "sw-engine.service",
         ]
-        self.plesk_systemcd_services = [service for service in plesk_known_systemcd_services if self._is_service_exsists(service)]
+        self.plesk_systemd_services = [service for service in plesk_known_systemd_services if self._is_service_exsists(service)]
 
     def _is_service_exsists(self, service):
         return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
 
     def _prepare_action(self):
-        subprocess.check_call(["systemctl", "stop"] + self.plesk_systemcd_services)
-        subprocess.check_call(["systemctl", "disable"] + self.plesk_systemcd_services)
+        subprocess.check_call(["systemctl", "stop"] + self.plesk_systemd_services)
+        subprocess.check_call(["systemctl", "disable"] + self.plesk_systemd_services)
 
     def _post_action(self):
-        subprocess.check_call(["systemctl", "enable"] + self.plesk_systemcd_services)
+        subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
         # Don't do startup becuase the services will be started up after reboot at the end of the script anyway.
