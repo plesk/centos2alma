@@ -102,4 +102,4 @@ class AdoptPleskRepositories(Action):
 
             self._replace_string(file.path, "rpm-CentOS-7", "rpm-RedHat-el8")
             
-        subprocess.check_call(["dnf", "update"])
+        subprocess.check_call(["dnf", "-y", "update"])
