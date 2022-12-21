@@ -38,4 +38,4 @@ class RulePleskRelatedServices(Action):
 
     def _post_action(self):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
-        # Don't do startup becuase the services will be started up after reboot at the end of the script anyway.
+        subprocess.check_call(["systemctl", "start"] + self.plesk_systemd_services)
