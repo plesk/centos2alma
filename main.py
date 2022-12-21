@@ -54,6 +54,7 @@ if __name__ == "__main__":
             2: [
                 actions.RemovingPackages(),
                 actions.ReinstallPleskComponents(),
+                actions.PostgresDatabasesUpdate(),
                 actions.FixMariadbDatabase(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
