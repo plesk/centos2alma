@@ -10,6 +10,10 @@ class Action():
     def __repr__(self):
         return "{classname}".format(classname=self.__class__.__name__)
 
+    def log(self, msg):
+        with open("/var/log/plesk/distupgrader.log", "a") as logfile:
+            logfile.write(msg + '\n')
+
     def invoke_prepare(self):
         try:
             self._prepare_action()
@@ -50,6 +54,10 @@ class ActionsFlow():
     def __init__(self, stages):
         self.stages = stages
 
+    def log(self, msg):
+        with open("/var/log/plesk/distupgrader.log", "a") as logfile:
+            logfile.write(msg + '\n')
+
     def pass_actions(self):
         stages = self._get_flow()
 
@@ -57,11 +65,17 @@ class ActionsFlow():
             self._pre_stage(stage_id, actions)
             for action in actions:
                 print("Making {description!s}".format(description=action))
+                self.log("Making {description!s}".format(description=action))
 
                 if not self._is_action_required(action):
                     continue
-                self._invoke_action(action)
+                try:
+                    self._invoke_action(action)
+                except Exception as ex:
+                    self.log("{description!s} has failed: {error}".format(description=action, error=ex))
+                    raise ex
 
+                self.log("{description!s} is done!".format(description=action))
                 print("{feel}OK".format(feel="." * (40 - len(str(action)))))
             self._post_stage(stage_id, actions)
 
@@ -70,6 +84,7 @@ class ActionsFlow():
 
     def _pre_stage(self, stage_id, actions):
         print("Stage {stage}:".format(stage=stage_id))
+        self.log("Stage {stage}:".format(stage=stage_id))
         pass
 
     def _post_stage(self, stage_id, actions):
