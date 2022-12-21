@@ -9,6 +9,7 @@ class RulePleskRelatedServices(Action):
     def __init__(self):
         self.name = "rule plesk services"
         plesk_known_systemd_services = [
+            "crond.service",
             "dovecot.service",
             "fail2ban.service",
             "httpd.service",
