@@ -2,6 +2,8 @@
 # Copyright 1999-2022. Plesk International GmbH. All rights reserved.
 
 import actions
+import common
+# import logging
 
 import sys
 import os
@@ -26,6 +28,8 @@ class Stages(str, Enum):
 
 
 if __name__ == "__main__":
+    common.log.init_logger("/var/log/plesk/distupgrader.log")
+
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type='choice',
                     choices=(Stages.prepare, Stages.convert, Stages.finish),

@@ -9,10 +9,16 @@ python_library(
 )
 
 python_library(
+    name = 'common.lib',
+    srcs = glob(['./common/*.py'])
+)
+
+python_library(
     name = 'distupgrader.lib',
     srcs = glob(['main.py']),
     deps = [
         ':actions.lib',
+        ':common.lib',
     ],
 )
 

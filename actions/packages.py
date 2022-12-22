@@ -3,6 +3,8 @@ from .action import Action
 import subprocess
 import os
 
+import common
+
 
 class RemovingPackages(Action):
 
@@ -79,19 +81,19 @@ class ReinstallPleskComponents(Action):
         # will be called. It's because triggers that creates phpmyadmin configuration files
         # expect plesk on board. Hence when we install the package in scoupe of temprorary OS
         # the file can't be created.
-        self.log("Remove psa-phpmyadmin")
+        common.log.info("Remove psa-phpmyadmin")
         subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
-        self.log("do plesk installer update")
+        common.log.info("do plesk installer update")
         subprocess.check_call(["plesk", "installer", "update"])
-        self.log("installer update finished")
+        common.log.info("installer update finished")
 
         components = [
             "roundcube"
         ]
 
-        self.log("do plesk installer add roundcube")
+        common.log.info("do plesk installer add roundcube")
         subprocess.check_call(["plesk", "installer", "add", "--components"] + components)
-        self.log("plesk installer add roundcube finished")
+        common.log.info("plesk installer add roundcube finished")
 
 
 class AdoptPleskRepositories(Action):
