@@ -118,6 +118,7 @@ class LeapAddPostUpgradeActor(Action):
     path = "/usr/share/leapp-repository/repositories/system_upgrade/common/actors/plesk/actor.py"
     actor_code = """
 import subprocess
+import sys
 
 from leapp.actors import Actor
 from leapp.reporting import Report, create_report
@@ -136,10 +137,10 @@ class RemoveSystemdResumeService(Actor):
     tags = (FirstBootPhaseTag.After, IPUWorkflowTag)
 
     def process(self):
-        subprocess.check_call(["{script_path}", "-s", "finish"])
+        subprocess.Popen(["{script_path}", "-s", "finish"], stdout=sys.stdout, stderr=sys.stderr, start_new_session=True)
 
         create_report([
-            reporting.Title('Call plesk distupgrader finished'),
+            reporting.Title('Plesk distupgrader has been spawned'),
             reporting.Summary('The script was taking care of all plesk related things'),
             reporting.Tags([reporting.Tags.UPGRADE_PROCESS]),
         ])
