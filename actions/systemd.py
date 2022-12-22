@@ -38,4 +38,24 @@ class RulePleskRelatedServices(Action):
 
     def _post_action(self):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
-        subprocess.check_call(["systemctl", "start"] + self.plesk_systemd_services)
+        # Don't do startup becuase the services will be started up after reboot at the end of the script anyway.
+
+
+class StartPleskBasicServices(Action):
+
+    def __init__(self):
+        self.name = "start plesk services"
+        self.plesk_basic_services = [
+            "mariadb.service",
+            "plesk-task-manager.service",
+            "plesk-web-socket.service",
+            "sw-cp-server.service",
+            "sw-engine.service",
+        ]
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        subprocess.check_call(["systemctl", "enable"] + self.plesk_basic_services)
+        subprocess.check_call(["systemctl", "start"] + self.plesk_basic_services)

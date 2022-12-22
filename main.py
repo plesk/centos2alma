@@ -51,23 +51,24 @@ if __name__ == "__main__":
 
     if not options.stage or options.stage == Stages.convert or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
-            2: [
+            3: [
                 actions.RemovingPackages(),
                 actions.PostgresDatabasesUpdate(),
-                actions.FixMariadbDatabase(),
+                actions.ReinstallPleskComponents(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
-                actions.ReinstallPleskComponents(),
                 actions.RuleSelinux(),
             ],
-            3: [
+            4: [
                 actions.DoConvert(),
             ],
         })
     if options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
-            3: [
+            4: [
                 actions.AdoptPleskRepositories(),
+                actions.FixMariadbDatabase(),
+                actions.StartPleskBasicServices(),
             ],
         })
 
