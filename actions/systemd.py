@@ -41,6 +41,41 @@ class RulePleskRelatedServices(Action):
         # Don't do startup becuase the services will be started up after reboot at the end of the script anyway.
 
 
+class AddUpgraderSystemdService(Action):
+
+    def __init__(self, script_path):
+        self.name = "add our own service to restart upgrader on first boot"
+        self.script_path = script_path
+        self.service_name = 'plesk-distugrader.service'
+        self.service_file_path = os.path.join('/etc/systemd/system', self.service_name)
+        self.service_content = '''
+[Unit]
+Description=First boot service for upgrade process from CentOS 7 to AlmaLinux8.
+After=network.target network-online.target
+
+[Service]
+Type=simple
+# want to run it once per boot time
+RemainAfterExit=yes
+ExecStart={script_path} -s finish
+
+[Install]
+WantedBy=multi-user.target
+'''
+
+    def _prepare_action(self):
+        with open(self.service_file_path, "w") as dst:
+            dst.write(self.service_content.format(script_path=self.script_path))
+
+        subprocess.check_call(["systemctl", "enable", self.service_name])
+
+    def _post_action(self):
+        subprocess.check_call(["systemctl", "disable", self.service_name])
+
+        if os.path.exists(self.service_file_path):
+            os.remove(self.service_file_path)
+
+
 class StartPleskBasicServices(Action):
 
     def __init__(self):

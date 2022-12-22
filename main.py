@@ -46,9 +46,9 @@ if __name__ == "__main__":
                 actions.LeapInstallation(),
             ],
             2: [
+                actions.AddUpgraderSystemdService(os.path.abspath(sys.argv[0])),
                 actions.LeapReposConfiguration(),
                 actions.LeapChoisesConfiguration(),
-                actions.LeapAddPostUpgradeActor(os.path.abspath(sys.argv[0])),
                 actions.FixNamedConfig(),
             ],
         })
