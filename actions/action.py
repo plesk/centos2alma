@@ -7,6 +7,7 @@ class Action():
 
     def __init__(self):
         self.name = ""
+        self.description = ""
 
     def __str__(self):
         return "I'm an action {name}!".format(name=self.name)
@@ -14,6 +15,8 @@ class Action():
     def __repr__(self):
         return "{classname}".format(classname=self.__class__.__name__)
 
+
+class ActivaAction(Action):
     def invoke_prepare(self):
         try:
             self._prepare_action()
@@ -54,6 +57,13 @@ class ActionsFlow():
     def __init__(self, stages):
         self.stages = stages
 
+    def validate_actions(self):
+        # Note. This one is for development porpuses only
+        for _, actions in self.stages.items():
+            for action in actions:
+                if not isinstance(action, ActivaAction):
+                    raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(action.name))
+
     def pass_actions(self):
         stages = self._get_flow()
 
@@ -67,8 +77,7 @@ class ActionsFlow():
                 try:
                     self._invoke_action(action)
                 except Exception as ex:
-                    common.log.err("{description!s} has failed: {error}".format(description=action, error=ex))
-                    raise ex
+                    raise Exception("{description!s} has failed: {error}".format(description=action, error=ex))
 
                 common.log.info("{description!s} is done!".format(description=action))
             self._post_stage(stage_id, actions)
@@ -104,3 +113,34 @@ class FinishActionsFlow(ActionsFlow):
 
     def _invoke_action(self, action):
         action.invoke_post()
+
+
+class CheckAction(Action):
+    def do_check(self):
+        return self._do_check()
+
+    def _do_check(self):
+        raise NotImplementedError("Not implemented check call")
+
+
+class CheckFlow():
+    def __init__(self, checks):
+        self.checks = checks
+
+    def validate_actions(self):
+        # Note. This one is for development porpuses only
+        for check in self.checks:
+
+            if not isinstance(check, CheckAction):
+                raise TypeError("Non an CheckAction passed into check flow. Name of the action is {name!s}".format(check.name))
+
+    def make_checks(self):
+        is_all_passed = True
+        common.log.debug("Start checks")
+        for check in self.checks:
+            common.log.debug("Make check {name}".format(name=check.name))
+            if not check.do_check():
+                common.log.err("Required preconversion condition {name!s} not met:\n{description!s}".format(name=check.name, description=check.description))
+                is_all_passed = False
+
+        return is_all_passed

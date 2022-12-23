@@ -1,4 +1,4 @@
-from .action import Action
+from .action import ActivaAction
 
 import subprocess
 import os
@@ -6,7 +6,7 @@ import os
 import common
 
 
-class RemovingPackages(Action):
+class RemovingPackages(ActivaAction):
 
     def __init__(self):
         self.name = "remove conflict packages"
@@ -43,7 +43,7 @@ class RemovingPackages(Action):
         pass
 
 
-class FixMariadbDatabase(Action):
+class FixMariadbDatabase(ActivaAction):
     def __init__(self):
         self.name = "fixing mysql databases"
 
@@ -61,7 +61,7 @@ class FixMariadbDatabase(Action):
         # Redelete it, because leapp going to install it in scoupe of convertation process, but it will no generate right configs
 
 
-class ReinstallPleskComponents(Action):
+class ReinstallPleskComponents(ActivaAction):
     def __init__(self):
         self.name = "reintall components"
 
@@ -96,7 +96,7 @@ class ReinstallPleskComponents(Action):
         common.log.info("plesk installer add roundcube finished")
 
 
-class AdoptPleskRepositories(Action):
+class AdoptPleskRepositories(ActivaAction):
     def __init__(self):
         self.name = "adopt plesk repositories"
 

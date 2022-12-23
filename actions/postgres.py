@@ -1,4 +1,4 @@
-from .action import Action
+from .action import ActivaAction, CheckAction
 
 import os
 import subprocess
@@ -28,18 +28,18 @@ def _is_modern_postgres():
     return False
 
 
-class CheckOutdatedPostgresInstalled(Action):
+class CheckOutdatedPostgresInstalled(CheckAction):
     def __init__(self):
-        self.name = "check postgres under version 9 is installed"
+        self.name = "check postgres version 10 or later is installed"
+        self.description = '''Postgres version less then 10. This means the database should be upgraded.
+\tIt might leads to data lose. Please make backup of your database and call the script with --upgrade-postgres.
+\tOr update postgres to version 10 and upgrade your databases.'''
 
-    def _prepare_action(self):
-        if _is_postgres_installed() and not _is_modern_postgres():
-            raise Exception('Postgres version less then 10. This means the database should be upgraded.\n'
-                            'It might leads to data lose. Please make backup of your database and call the script with --upgrade-postgres.\n'
-                            'Or update postgres to version 10 and upgrade your databases.')
+    def _do_check(self):
+        return not _is_postgres_installed() or _is_modern_postgres()
 
 
-class PostgresDatabasesUpdate(Action):
+class PostgresDatabasesUpdate(ActivaAction):
 
     def __init__(self):
         self.name = "update postgres databases"

@@ -1,9 +1,9 @@
-from .action import Action
+from .action import ActivaAction
 
 import subprocess
 
 
-class LeapInstallation(Action):
+class LeapInstallation(ActivaAction):
 
     def __init__(self):
         self.name = "install leapp"

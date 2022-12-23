@@ -1,4 +1,4 @@
-from .action import Action
+from .action import ActivaAction
 
 import os
 import subprocess
@@ -6,7 +6,7 @@ import subprocess
 import common
 
 
-class FixNamedConfig(Action):
+class FixNamedConfig(ActivaAction):
     def __init__(self):
         self.name = "fix named configuration"
         self.user_options_path = "/etc/named-user-options.conf"
@@ -20,7 +20,7 @@ class FixNamedConfig(Action):
             os.unlink(self.user_options_path)
 
 
-class DisableSuspiciousKernelModules(Action):
+class DisableSuspiciousKernelModules(ActivaAction):
     def __init__(self):
         self.name = "rule suspicious kernel modules"
         self.suspicious_modules = ["pata_acpi", "btrfs"]
@@ -48,7 +48,7 @@ class DisableSuspiciousKernelModules(Action):
             self._replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
 
-class RuleSelinux(Action):
+class RuleSelinux(ActivaAction):
     def __init__(self):
         self.name = "rule selinux status"
         self.selinux_config = "/etc/selinux/config"
@@ -60,7 +60,7 @@ class RuleSelinux(Action):
         self._replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
 
 
-class FinishMessage(Action):
+class FinishMessage(ActivaAction):
     def __init__(self):
         self.name = "rule selinux status"
 

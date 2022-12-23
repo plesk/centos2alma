@@ -1,4 +1,4 @@
-from .action import Action
+from .action import ActivaAction
 
 import os
 import shutil
@@ -46,7 +46,7 @@ epel-source,alma-epel-source,alma-epel-source,all,all,x86_64,ga,ga
 """
 
 
-class LeapReposConfiguration(Action):
+class LeapReposConfiguration(ActivaAction):
 
     def __init__(self):
         self.name = "add plesk to leapp repos mapping"
@@ -99,7 +99,7 @@ class LeapReposConfiguration(Action):
         pass
 
 
-class LeapChoisesConfiguration(Action):
+class LeapChoisesConfiguration(ActivaAction):
 
     def __init__(self):
         self.name = "configure leapp user choises"
@@ -113,7 +113,7 @@ class LeapChoisesConfiguration(Action):
         pass
 
 
-class LeapAddPostUpgradeActor(Action):
+class LeapAddPostUpgradeActor(ActivaAction):
 
     path = "/usr/share/leapp-repository/repositories/system_upgrade/common/actors/plesk/actor.py"
     actor_code = """

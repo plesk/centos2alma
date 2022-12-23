@@ -27,35 +27,27 @@ class Stages(str, Enum):
     finish = 'finish'
 
 
-if __name__ == "__main__":
-    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
+def is_required_conditions_satisfied(options):
+    if options.stage == Stages.finish:
+        return True
 
-    opts = OptionParser(usage="distupgrader [options] [stage]")
-    opts.add_option('-s', '--stage', type='choice',
-                    choices=(Stages.prepare, Stages.convert, Stages.finish),
-                    help='Choose a stage of a convertation process. Prepare should be used before any other actions.'
-                         'Start - when you ready for a convertation process. The process will take about 20 minutes.'
-                         'Finish should be called at the end of convertation, right after the first reboot.')
-    opts.add_option('--upgrade-postgres', action='store_true', dest='upgrade_postgres_allowed', default=False,
-                    help='Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database.'
-                         'So make sure you backup your database before the upgrade.')
-
-    options, args = opts.parse_args(args=sys.argv[1:])
-
-    actions_map = {}
-
+    checks = []
     if not options.upgrade_postgres_allowed:
-        actions_map = merge_dicts_of_lists(actions_map, {
-            1: [
-                actions.CheckOutdatedPostgresInstalled(),
-            ]
-        })
-    else:
-        actions_map = merge_dicts_of_lists(actions_map, {
-            3: [
-                actions.PostgresDatabasesUpdate(),
-            ]
-        })
+        checks.append(actions.CheckOutdatedPostgresInstalled())
+
+    check_flow = actions.CheckFlow(checks)
+
+    try:
+        check_flow.validate_actions()
+    except Exception as ex:
+        common.log.err("{}".format(ex))
+        return False
+
+    return check_flow.make_checks()
+
+
+def construct_actions(options):
+    actions_map = {}
 
     if not options.stage or options.stage == Stages.prepare or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
@@ -96,9 +88,51 @@ if __name__ == "__main__":
             ],
         })
 
-    if options.stage != Stages.finish:
-        flow = actions.action.PrepareActionsFlow(actions_map)
-    else:
-        flow = actions.action.FinishActionsFlow(actions_map)
+    if options.upgrade_postgres_allowed:
+        actions_map = merge_dicts_of_lists(actions_map, {
+            3: [
+                actions.PostgresDatabasesUpdate(),
+            ]
+        })
 
-    flow.pass_actions()
+    return actions_map
+
+
+def main():
+    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
+
+    opts = OptionParser(usage="distupgrader [options] [stage]")
+    opts.add_option("-s", "--stage", type="choice",
+                    choices=(Stages.prepare, Stages.convert, Stages.finish),
+                    help="Choose a stage of a convertation process. Prepare should be used before any other actions."
+                         "Start - when you ready for a convertation process. The process will take about 20 minutes."
+                         "Finish should be called at the end of convertation, right after the first reboot.")
+    opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
+                    help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
+                         "So make sure you backup your database before the upgrade.")
+
+    options, args = opts.parse_args(args=sys.argv[1:])
+
+    if not is_required_conditions_satisfied(options):
+        common.log.err("Please fix noted problems before proceed the conversation")
+        return 1
+
+    actions_map = construct_actions(options)
+
+    if options.stage != Stages.finish:
+        flow = actions.PrepareActionsFlow(actions_map)
+    else:
+        flow = actions.FinishActionsFlow(actions_map)
+
+    try:
+        flow.validate_actions()
+        flow.pass_actions()
+    except Exception as ex:
+        common.log.err("{}".format(ex))
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

@@ -1,9 +1,9 @@
-from .action import Action
+from .action import ActivaAction
 
 import subprocess
 
 
-class DoConvert(Action):
+class DoConvert(ActivaAction):
     def __init__(self):
         self.name = "do converation with leapp"
 
