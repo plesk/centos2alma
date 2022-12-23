@@ -28,7 +28,7 @@ class Stages(str, Enum):
 
 
 if __name__ == "__main__":
-    common.log.init_logger("/var/log/plesk/distupgrader.log")
+    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type='choice',
@@ -69,6 +69,9 @@ if __name__ == "__main__":
         })
     if options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
+            1: [
+                actions.FinishMessage(),
+            ],
             4: [
                 actions.AdoptPleskRepositories(),
                 actions.FixMariadbDatabase(),

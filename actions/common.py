@@ -3,6 +3,8 @@ from .action import Action
 import os
 import subprocess
 
+import common
+
 
 class FixNamedConfig(Action):
     def __init__(self):
@@ -56,3 +58,14 @@ class RuleSelinux(Action):
 
     def _post_action(self):
         self._replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
+
+
+class FinishMessage(Action):
+    def __init__(self):
+        self.name = "rule selinux status"
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        common.log.info("Hooray! Your instance has been converted into AlmaLinux8.\nPlease reboot the instance to startup plesk services")
