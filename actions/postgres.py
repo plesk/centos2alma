@@ -34,8 +34,8 @@ class CheckOutdatedPostgresInstalled(Action):
 
     def _prepare_action(self):
         if _is_postgres_installed() and not _is_modern_postgres():
-            raise Exception('Postgres major version less then 10. This means the database should be upgraded.'
-                            'It might leads to data lose. Please make backup of your database and call the script with --upgrade-postgres.'
+            raise Exception('Postgres version less then 10. This means the database should be upgraded.\n'
+                            'It might leads to data lose. Please make backup of your database and call the script with --upgrade-postgres.\n'
                             'Or update postgres to version 10 and upgrade your databases.')
 
 
