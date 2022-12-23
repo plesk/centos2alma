@@ -5,50 +5,64 @@ import subprocess
 import shutil
 
 
+_PATH_TO_PGSQL = '/var/lib/pgsql'
+_PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
+_PATH_TO_OLD_DATA = os.path.join(_PATH_TO_PGSQL, 'data-old')
+
+
+def _is_postgres_installed():
+    return os.path.exists(_PATH_TO_DATA)
+
+
+def _is_modern_postgres():
+    version_file_path = os.path.join(_PATH_TO_DATA, "PG_VERSION")
+
+    if not os.path.exists(version_file_path):
+        raise Exception('There is no "' + version_file_path + '" file')
+
+    with open(version_file_path, 'r') as version_file:
+        version = int(version_file.readline().split('.')[0])
+        if version >= 10:
+            return True
+
+    return False
+
+
+class CheckOutdatedPostgresInstalled(Action):
+    def __init__(self):
+        self.name = "check postgres under version 9 is installed"
+
+    def _prepare_action(self):
+        if _is_postgres_installed() and not _is_modern_postgres():
+            raise Exception('Postgres major version less then 10. This means the database should be upgraded.'
+                            'It might leads to data lose. Please make backup of your database and call the script with --upgrade-postgres.'
+                            'Or update postgres to version 10 and upgrade your databases.')
+
+
 class PostgresDatabasesUpdate(Action):
 
-    PATH_TO_PGSQL = '/var/lib/pgsql'
-    PATH_TO_DATA = os.path.join(PATH_TO_PGSQL, 'data')
-    PATH_TO_OLD_DATA = os.path.join(PATH_TO_PGSQL, 'data-old')
-
     def __init__(self):
-        self.name = "update postgre databases"
+        self.name = "update postgres databases"
         self.service_name = 'postgresql'
 
-    def _is_postgres_installed(self):
-        return os.path.exists(self.PATH_TO_DATA)
-
     def _is_required(self):
-        return self._is_postgres_installed()
+        return _is_postgres_installed()
 
     def _prepare_action(self):
         subprocess.check_call(['systemctl', 'stop', self.service_name])
         subprocess.check_call(['systemctl', 'disable', self.service_name])
 
-    def _is_database_modern_version(self):
-        version_file_path = os.path.join(self.PATH_TO_DATA, "PG_VERSION")
-
-        if not os.path.exists(version_file_path):
-            raise Exception('There is no "' + version_file_path + '" file')
-
-        with open(version_file_path, 'r') as version_file:
-            version = int(version_file.readline().split('.')[0])
-            if version >= 10:
-                return True
-
-        return False
-
     def _upgrade_database(self):
-        if self._is_database_modern_version():
+        if _is_modern_postgres():
             return
 
         subprocess.check_call(['dnf', 'install', '-y', 'postgresql-upgrade'])
 
         subprocess.check_call(['postgresql-setup', '--upgrade'])
 
-        old_config_path = os.path.join(self.PATH_TO_OLD_DATA, 'pg_hba.conf')
-        new_config_path = os.path.join(self.PATH_TO_DATA, 'pg_hba.conf')
-        next_config_path = os.path.join(self.PATH_TO_DATA, 'pg_hba.conf.next')
+        old_config_path = os.path.join(_PATH_TO_OLD_DATA, 'pg_hba.conf')
+        new_config_path = os.path.join(_PATH_TO_DATA, 'pg_hba.conf')
+        next_config_path = os.path.join(_PATH_TO_DATA, 'pg_hba.conf.next')
 
         plesk_customizations = []
         with open(old_config_path, 'r') as old_config:

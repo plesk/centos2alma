@@ -31,15 +31,32 @@ if __name__ == "__main__":
     common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
-    opts.add_option("-s", "--stage", type='choice',
+    opts.add_option('-s', '--stage', type='choice',
                     choices=(Stages.prepare, Stages.convert, Stages.finish),
-                    help="Choose a stage of a convertation process. Prepare should be used before any other actions."
-                         "Start - when you ready for a convertation process. The process will take about 20 minutes."
-                         "Finish should be called at the end of convertation, right after the first reboot.")
+                    help='Choose a stage of a convertation process. Prepare should be used before any other actions.'
+                         'Start - when you ready for a convertation process. The process will take about 20 minutes.'
+                         'Finish should be called at the end of convertation, right after the first reboot.')
+    opts.add_option('--upgrade-postgres', action='store_true', dest='upgrade_postgres_allowed', default=False,
+                    help='Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database.'
+                         'So make sure you backup your database before the upgrade.')
 
     options, args = opts.parse_args(args=sys.argv[1:])
 
     actions_map = {}
+
+    if not options.upgrade_postgres_allowed:
+        actions_map = merge_dicts_of_lists(actions_map, {
+            1: [
+                actions.CheckOutdatedPostgresInstalled(),
+            ]
+        })
+    else:
+        actions_map = merge_dicts_of_lists(actions_map, {
+            3: [
+                actions.PostgresDatabasesUpdate(),
+            ]
+        })
+
     if not options.stage or options.stage == Stages.prepare or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
