@@ -43,24 +43,6 @@ class RemovingPackages(ActivaAction):
         pass
 
 
-class FixMariadbDatabase(ActivaAction):
-    def __init__(self):
-        self.name = "fixing mysql databases"
-
-    def _prepare_action(self):
-        pass
-
-    def _post_action(self):
-        # We should be sure mariadb is started, otherwise restore woulden't work
-        subprocess.check_call(["systemctl", "start", "mariadb"])
-
-        with open('/etc/psa/.psa.shadow', 'r') as shadowfile:
-            shadowdata = shadowfile.readline().rstrip()
-            subprocess.check_call(["mysql_upgrade", "-uadmin", "-p" + shadowdata])
-        # Also find a way to drop cookies, because it will ruin your day
-        # Redelete it, because leapp going to install it in scoupe of convertation process, but it will no generate right configs
-
-
 class ReinstallPleskComponents(ActivaAction):
     def __init__(self):
         self.name = "reintall components"
