@@ -54,7 +54,7 @@ def construct_actions(options):
     if options.stage == Stages.test:
         return {
             1: [
-                actions.LeapReposConfiguration(),
+                # actions.LeapReposConfiguration(),
                 actions.AvoidMariadbDowngrade(),
             ]
         }
