@@ -67,6 +67,7 @@ def construct_actions(options):
             2: [
                 actions.AddUpgraderSystemdService(os.path.abspath(sys.argv[0])),
                 actions.LeapReposConfiguration(),
+                actions.AvoidMariadbDowngrade(),
                 actions.LeapChoisesConfiguration(),
                 actions.FixNamedConfig(),
             ],
@@ -77,7 +78,6 @@ def construct_actions(options):
             3: [
                 actions.RemovingPackages(),
                 actions.PostgresDatabasesUpdate(),
-                actions.AvoidMariadbDowngrade(),
                 actions.ReinstallPleskComponents(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
