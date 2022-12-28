@@ -45,12 +45,8 @@ class AvoidMariadbDowngrade(ActivaAction):
         if not os.path.exists(self.mariadb_repofile):
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format(self.mariadb_repofile))
 
-        log.debug("Going to add mariadb repository '{repofile}'".format(repofile=self.mariadb_repofile))
         leapp_configs.add_repositories_mapping([self.mariadb_repofile])
-
-        # with open("/etc/leapp/files/pes-events.json", "r") as pkg_mapping_file:
-        #     pkg_mapping = json.load(pkg_mapping_file)
-        #     for info in pkg_mapping["packageinfo"]:
+        leapp_configs.set_package_repository("mariadb", "alma-maridb")
 
     def _post_action(self):
         pass

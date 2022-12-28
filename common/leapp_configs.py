@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 
 import common
 
@@ -8,6 +9,7 @@ import common
 PATH_TO_CONFIGFILES = "/etc/leapp/files"
 LEAPP_REPOS_FILE_PATH = os.path.join(PATH_TO_CONFIGFILES, "leapp_upgrade_repositories.repo")
 LEAPP_MAP_FILE_PATH = os.path.join(PATH_TO_CONFIGFILES, "repomap.csv")
+LEAPP_PKGS_CONF_PATH = os.path.join(PATH_TO_CONFIGFILES, "pes-events.json")
 
 REPO_HEAD_WITH_URL = """
 [{id}]
@@ -149,3 +151,16 @@ def add_repositories_mapping(repofiles):
 
         map_file.write("\n")
 
+
+def set_package_repository(package, repository):
+    with open(LEAPP_PKGS_CONF_PATH, "r") as pkg_mapping_file:
+        pkg_mapping = json.load(pkg_mapping_file)
+        for info in pkg_mapping["packageinfo"]:
+            for outpkg in info["out_packageset"]["package"]:
+                if outpkg["name"] == package:
+                    outpkg["repository"] = repository
+
+        with open(LEAPP_PKGS_CONF_PATH + ".next", "w") as dst:
+            dst.write(json.dumps(pkg_mapping, indent=4))
+
+    shutil.move(LEAPP_PKGS_CONF_PATH + ".next", LEAPP_PKGS_CONF_PATH)
