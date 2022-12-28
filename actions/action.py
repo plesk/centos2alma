@@ -128,6 +128,16 @@ class FinishActionsFlow(ActionsFlow):
     def _get_flow(self):
         return dict(reversed(list(self.stages.items())))
 
+    def _is_action_required(self, action):
+        # I belive the finish stage could have an action that was not performed on preparation and convertation stages
+        # So we ignore the case when there is no actions is persistance store
+        for stored_action in self.actions_data["actions"]:
+            if stored_action["name"] == action.name:
+                if stored_action["state"] == ActionState.failed or stored_action["state"] == ActionState.skiped:
+                    return False
+
+        return action.is_required()
+
     def _invoke_action(self, action):
         action.invoke_post()
 
