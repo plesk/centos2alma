@@ -89,7 +89,7 @@ def construct_actions(options):
             ],
             4: [
                 actions.AdoptPleskRepositories(),
-                actions.FixMariadbDatabase(),
+                actions.UpdateMariadbDatabase(),
                 actions.StartPleskBasicServices(),
             ],
         })
