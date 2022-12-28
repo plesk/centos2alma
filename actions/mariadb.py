@@ -8,38 +8,44 @@ from common import leapp_configs
 from common import log
 
 
+MARIADB_VERSION_ON_ALMA = "10.3.35"
+
+
+def _is_version_larger(left, right):
+    for pleft, pright in zip(left.split("."), right.split(".")):
+        if int(pleft) > int(pright):
+            return True
+        elif int(pright) > int(pleft):
+            return False
+
+    return False
+
+
+def _is_mariadb_installed():
+    return subprocess.run(["which", "mariadb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+
+
+def _get_mariadb_version():
+    process = subprocess.Popen(["mariadb", "--version"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True)
+    out, err = process.communicate()
+    if process.returncode != 0:
+        raise RuntimeError("Unable to get mariadb version: {}".format(err))
+
+    log.debug("Detected mariadb version is: {version}".format(version=out.split("Distrib ")[1].split(",")[0].split("-")[0]))
+
+    return out.split("Distrib ")[1].split(",")[0].split("-")[0]
+
+
 class AvoidMariadbDowngrade(ActivaAction):
     def __init__(self):
         self.name = "avoid instalation old mariadb"
         self.mariadb_version_on_alma = "10.3.35"
         self.mariadb_repofile = "/etc/yum.repos.d/mariadb.repo"
 
-    def _is_version_larger(self, left, right):
-        for pleft, pright in zip(left.split("."), right.split(".")):
-            if int(pleft) > int(pright):
-                return True
-            elif int(pright) > int(pleft):
-                return False
-
-        return False
-
-    def _is_mariadb_installed(self):
-        return subprocess.run(["which", "mariadb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
-
-    def _get_mariadb_version(self):
-        process = subprocess.Popen(["mariadb", "--version"],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                   universal_newlines=True)
-        out, err = process.communicate()
-        if process.returncode != 0:
-            raise RuntimeError("Unable to get mariadb version: {}".format(err))
-
-        log.debug("Detected mariadb version is: {version}".format(version=out.split("Distrib ")[1].split(",")[0].split("-")[0]))
-
-        return out.split("Distrib ")[1].split(",")[0].split("-")[0]
-
     def _is_required(self):
-        return self._is_mariadb_installed() and not self._is_version_larger(self.mariadb_version_on_alma, self._get_mariadb_version())
+        return _is_mariadb_installed() and not _is_version_larger(MARIADB_VERSION_ON_ALMA, _get_mariadb_version())
 
     def _prepare_action(self):
         if not os.path.exists(self.mariadb_repofile):
@@ -55,6 +61,9 @@ class AvoidMariadbDowngrade(ActivaAction):
 class UpdateMariadbDatabase(ActivaAction):
     def __init__(self):
         self.name = "fixing mariadb databases"
+
+    def _is_required(self):
+        return _is_mariadb_installed() and _is_version_larger(MARIADB_VERSION_ON_ALMA, _get_mariadb_version())
 
     def _prepare_action(self):
         pass

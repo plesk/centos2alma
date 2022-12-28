@@ -1,4 +1,4 @@
-import shutil
+import os
 import json
 from enum import Enum
 
@@ -51,8 +51,10 @@ class ActionsFlow():
 
     def __init__(self, stages):
         self.stages = stages
-        with open(self.PATH_TO_ACTIONS_DATA, "r") as actions_data_file:
-            self.actions_data = json.load(actions_data_file)
+        self.actions_data = {}
+        if os.path.exists(self.PATH_TO_ACTIONS_DATA):
+            with open(self.PATH_TO_ACTIONS_DATA, "r") as actions_data_file:
+                self.actions_data = json.load(actions_data_file)
 
         if "actions" not in self.actions_data:
             self.actions_data["actions"] = []

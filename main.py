@@ -73,6 +73,7 @@ def construct_actions(options):
             3: [
                 actions.RemovingPackages(),
                 actions.PostgresDatabasesUpdate(),
+                actions.UpdateMariadbDatabase(),
                 actions.ReinstallPleskComponents(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.RulePleskRelatedServices(),
@@ -89,7 +90,6 @@ def construct_actions(options):
             ],
             4: [
                 actions.AdoptPleskRepositories(),
-                actions.UpdateMariadbDatabase(),
                 actions.StartPleskBasicServices(),
             ],
         })
