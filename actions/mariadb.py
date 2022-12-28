@@ -2,6 +2,9 @@ from .action import ActivaAction
 
 import subprocess
 import os
+# import json
+
+from common import leapp_configs
 
 
 class AvoidMariadbDowngrade(ActivaAction):
@@ -37,22 +40,11 @@ class AvoidMariadbDowngrade(ActivaAction):
         if os.path.exists(self.mariadb_repofile):
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format(self.mariadb_repofile))
 
-        with open(self.mariadb_repofile, "r") as mariadb_repo, open("/etc/leapp/files/leapp_upgrade_repositories.repo", "a")  as dst:
-            for line in mariadb_repo.readlines():
-                if "centos7" in line:
-                    line = line.replace("centos7", "centos8")
+        leapp_configs.add_repositories_mapping(self.mariadb_repofile)
 
-                if line.startswith("["):
-                    line = line.replace("[", "[alma-")
-                elif line.startswith("name="):
-                    line = line.replace("name=", "name=Alma ")
-
-                dst.write(line)
-            dst.write("\n")
-
-        with (open("/etc/leapp/files/repomap.csv", "a")) as dst:
-            dst.write("{oldrepo},{newrepo},{newrepo},all,all,x86_64,rpm,ga,ga\n".format(oldrepo="mariadb", newrepo="alma-mariadb"))
-
+        # with open("/etc/leapp/files/pes-events.json", "r") as pkg_mapping_file:
+        #     pkg_mapping = json.load(pkg_mapping_file)
+        #     for info in pkg_mapping["packageinfo"]:
 
     def _post_action(self):
         pass
