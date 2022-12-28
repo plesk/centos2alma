@@ -1,4 +1,6 @@
 import shutil
+import json
+from enum import Enum
 
 import common
 
@@ -36,20 +38,27 @@ class ActivaAction(Action):
     def _post_action(self):
         raise NotImplementedError("Not implemented post action is called")
 
-    def _replace_string(self, filename, original_substring, new_substring):
-        with open(filename, "r") as original, open(filename + ".next", "w") as dst:
-            for line in original.readlines():
-                line = line.replace(original_substring, new_substring)
-                if line:
-                    dst.write(line)
 
-        shutil.move(filename + ".next", filename)
+class ActionState(str, Enum):
+    success = 'success'
+    skiped = 'skip'
+    failed = 'failed'
 
 
 class ActionsFlow():
 
+    PATH_TO_ACTIONS_DATA = "/usr/local/psa/tmp/distupgrader_actions.json"
+
     def __init__(self, stages):
         self.stages = stages
+        with open(self.PATH_TO_ACTIONS_DATA, "r") as actions_data_file:
+            self.actions_data = json.load(actions_data_file)
+
+        if "actions" not in self.actions_data:
+            self.actions_data["actions"] = []
+
+    def __del__(self):
+        common.rewrite_json_file(self.PATH_TO_ACTIONS_DATA, self.actions_data)
 
     def validate_actions(self):
         # Note. This one is for development porpuses only
@@ -57,6 +66,14 @@ class ActionsFlow():
             for action in actions:
                 if not isinstance(action, ActivaAction):
                     raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(action.name))
+
+    def _save_action_state(self, name, state):
+        for action in self.actions_data["actions"]:
+            if action["name"] == name:
+                action["state"] = state
+                return
+
+        self.actions_data["actions"].append({"name": name, "state": state})
 
     def pass_actions(self):
         stages = self._get_flow()
@@ -66,6 +83,7 @@ class ActionsFlow():
             for action in actions:
                 if not self._is_action_required(action):
                     common.log.info("The action '{description!s}' is skipped since it is not required".format(description=action))
+                    self._save_action_state(action.name, ActionState.skiped)
                     continue
 
                 common.log.info("Making {description!s}".format(description=action))
@@ -73,9 +91,12 @@ class ActionsFlow():
                 try:
                     self._invoke_action(action)
                 except Exception as ex:
+                    self._save_action_state(action.name, ActionState.failed)
                     raise Exception("{description!s} has failed: {error}".format(description=action, error=ex))
 
+                self._save_action_state(action.name, ActionState.success)
                 common.log.info("{description!s} is done!".format(description=action))
+
             self._post_stage(stage_id, actions)
 
     def _get_flow(self):
