@@ -1,6 +1,8 @@
 import shutil
 import json
 
+import common
+
 
 def replace_string(filename, original_substring, new_substring):
     with open(filename, "r") as original, open(filename + ".next", "w") as dst:
@@ -15,6 +17,8 @@ def replace_string(filename, original_substring, new_substring):
 def rewrite_json_file(filename, jobj):
     if filename is None or jobj is None:
         return
+
+    common.log.debug("Going to write json '{file}' with new data".format(file=filename))
 
     with open(filename + ".next", "w") as dst:
         dst.write(json.dumps(jobj, indent=4))

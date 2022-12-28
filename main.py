@@ -37,15 +37,14 @@ def is_required_conditions_satisfied(options):
     if not options.upgrade_postgres_allowed:
         checks.append(actions.CheckOutdatedPostgresInstalled())
 
-    check_flow = actions.CheckFlow(checks)
-
     try:
-        check_flow.validate_actions()
+        with actions.CheckFlow(checks) as check_flow:
+            check_flow.validate_actions()
+            return check_flow.make_checks()
     except Exception as ex:
         common.log.err("{}".format(ex))
         return False
 
-    return check_flow.make_checks()
 
 
 def construct_actions(options):
@@ -126,14 +125,10 @@ def main():
 
     actions_map = construct_actions(options)
 
-    if options.stage != Stages.finish:
-        flow = actions.PrepareActionsFlow(actions_map)
-    else:
-        flow = actions.FinishActionsFlow(actions_map)
-
     try:
-        flow.validate_actions()
-        flow.pass_actions()
+        with actions.PrepareActionsFlow(actions_map) if options.stage != Stages.finish else actions.FinishActionsFlow(actions_map) as flow:
+            flow.validate_actions()
+            flow.pass_actions()
     except Exception as ex:
         common.log.err("{}".format(ex))
         return 1

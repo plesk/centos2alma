@@ -47,20 +47,22 @@ class ActionState(str, Enum):
 
 class ActionsFlow():
 
+    def __init__(self, stages):
+        self.stages = stages
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *kwargs):
+        pass
+
+
+class ActiveFlow(ActionsFlow):
+
     PATH_TO_ACTIONS_DATA = "/usr/local/psa/tmp/distupgrader_actions.json"
 
     def __init__(self, stages):
-        self.stages = stages
-        self.actions_data = {}
-        if os.path.exists(self.PATH_TO_ACTIONS_DATA):
-            with open(self.PATH_TO_ACTIONS_DATA, "r") as actions_data_file:
-                self.actions_data = json.load(actions_data_file)
-
-        if "actions" not in self.actions_data:
-            self.actions_data["actions"] = []
-
-    def __del__(self):
-        common.rewrite_json_file(self.PATH_TO_ACTIONS_DATA, self.actions_data)
+        super().__init__(stages)
 
     def validate_actions(self):
         # Note. This one is for development porpuses only
@@ -68,14 +70,6 @@ class ActionsFlow():
             for action in actions:
                 if not isinstance(action, ActivaAction):
                     raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(action.name))
-
-    def _save_action_state(self, name, state):
-        for action in self.actions_data["actions"]:
-            if action["name"] == name:
-                action["state"] = state
-                return
-
-        self.actions_data["actions"].append({"name": name, "state": state})
 
     def pass_actions(self):
         stages = self._get_flow()
@@ -117,8 +111,38 @@ class ActionsFlow():
     def _invoke_action(self, action):
         pass
 
+    def _save_action_state(self, name, state):
+        pass
 
-class PrepareActionsFlow(ActionsFlow):
+    def _load_actions_state(self):
+        if os.path.exists(self.PATH_TO_ACTIONS_DATA):
+            with open(self.PATH_TO_ACTIONS_DATA, "r") as actions_data_file:
+                return json.load(actions_data_file)
+
+        return {"actions": []}
+
+
+class PrepareActionsFlow(ActiveFlow):
+
+    def __init__(self, stages):
+        super().__init__(stages)
+        self.actions_data = {}
+
+    def __enter__(self):
+        self.actions_data = self._load_actions_state()
+        return self
+
+    def __exit__(self, *kwargs):
+        common.rewrite_json_file(self.PATH_TO_ACTIONS_DATA, self.actions_data)
+
+    def _save_action_state(self, name, state):
+        for action in self.actions_data["actions"]:
+            if action["name"] == name:
+                action["state"] = state
+                return
+
+        self.actions_data["actions"].append({"name": name, "state": state})
+
     def _get_flow(self):
         return self.stages
 
@@ -126,7 +150,15 @@ class PrepareActionsFlow(ActionsFlow):
         action.invoke_prepare()
 
 
-class FinishActionsFlow(ActionsFlow):
+class FinishActionsFlow(ActiveFlow):
+
+    def __enter__(self):
+        self.actions_data = self._load_actions_state()
+        return self
+
+    def __exit__(self, *kwargs):
+        os.remove(self.PATH_TO_ACTIONS_DATA)
+
     def _get_flow(self):
         return dict(reversed(list(self.stages.items())))
 
@@ -152,13 +184,11 @@ class CheckAction(Action):
         raise NotImplementedError("Not implemented check call")
 
 
-class CheckFlow():
-    def __init__(self, checks):
-        self.checks = checks
+class CheckFlow(ActionsFlow):
 
     def validate_actions(self):
         # Note. This one is for development porpuses only
-        for check in self.checks:
+        for check in self.stages:
 
             if not isinstance(check, CheckAction):
                 raise TypeError("Non an CheckAction passed into check flow. Name of the action is {name!s}".format(check.name))
@@ -166,7 +196,7 @@ class CheckFlow():
     def make_checks(self):
         is_all_passed = True
         common.log.debug("Start checks")
-        for check in self.checks:
+        for check in self.stages:
             common.log.debug("Make check {name}".format(name=check.name))
             if not check.do_check():
                 common.log.err("Required preconversion condition {name!s} not met:\n{description!s}".format(name=check.name, description=check.description))
