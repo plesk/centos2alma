@@ -25,6 +25,8 @@ class Stages(str, Enum):
     prepare = 'prepare'
     convert = 'start'
     finish = 'finish'
+    # Todo. The tst stage for debugging porpuse only, don't forget to remove it
+    test = 'test'
 
 
 def is_required_conditions_satisfied(options):
@@ -48,6 +50,14 @@ def is_required_conditions_satisfied(options):
 
 def construct_actions(options):
     actions_map = {}
+
+    if options.stage == Stages.test:
+        return {
+            1: [
+                actions.LeapReposConfiguration(),
+                actions.AvoidMariadbDowngrade(),
+            ]
+        }
 
     if not options.stage or options.stage == Stages.prepare or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
@@ -104,7 +114,7 @@ def main():
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",
-                    choices=(Stages.prepare, Stages.convert, Stages.finish),
+                    choices=(Stages.prepare, Stages.convert, Stages.finish, Stages.test),
                     help="Choose a stage of a convertation process. Prepare should be used before any other actions."
                          "Start - when you ready for a convertation process. The process will take about 20 minutes."
                          "Finish should be called at the end of convertation, right after the first reboot.")
