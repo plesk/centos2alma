@@ -153,6 +153,7 @@ def add_repositories_mapping(repofiles):
 
 
 def set_package_repository(package, repository):
+    pkg_mapping = None
     with open(LEAPP_PKGS_CONF_PATH, "r") as pkg_mapping_file:
         pkg_mapping = json.load(pkg_mapping_file)
         for info in pkg_mapping["packageinfo"]:
@@ -160,7 +161,4 @@ def set_package_repository(package, repository):
                 if outpkg["name"] == package:
                     outpkg["repository"] = repository
 
-        with open(LEAPP_PKGS_CONF_PATH + ".next", "w") as dst:
-            dst.write(json.dumps(pkg_mapping, indent=4))
-
-    shutil.move(LEAPP_PKGS_CONF_PATH + ".next", LEAPP_PKGS_CONF_PATH)
+    common.rewrite_json_file(LEAPP_PKGS_CONF_PATH, pkg_mapping)

@@ -45,7 +45,7 @@ class DisableSuspiciousKernelModules(ActivaAction):
 
     def _post_action(self):
         for module in self.suspicious_modules:
-            self._replace_string(self.modules_konfig_path, "blacklist " + module, "")
+            common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
 
 class RuleSelinux(ActivaAction):
@@ -54,10 +54,10 @@ class RuleSelinux(ActivaAction):
         self.selinux_config = "/etc/selinux/config"
 
     def _prepare_action(self):
-        self._replace_string(self.selinux_config, "SELINUX=enforcing", "SELINUX=permissive")
+        common.replace_string(self.selinux_config, "SELINUX=enforcing", "SELINUX=permissive")
 
     def _post_action(self):
-        self._replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
+        common.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
 
 
 class FinishMessage(ActivaAction):

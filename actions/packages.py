@@ -90,6 +90,6 @@ class AdoptPleskRepositories(ActivaAction):
             if not file.name.startswith("plesk") or file.name[-5:] != ".repo":
                 continue
 
-            self._replace_string(file.path, "rpm-CentOS-7", "rpm-RedHat-el8")
+            common.replace_string(file.path, "rpm-CentOS-7", "rpm-RedHat-el8")
             
         subprocess.check_call(["dnf", "-y", "update"])
