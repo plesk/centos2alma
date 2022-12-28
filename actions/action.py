@@ -70,10 +70,12 @@ class ActionsFlow():
         for stage_id, actions in stages.items():
             self._pre_stage(stage_id, actions)
             for action in actions:
+                if not self._is_action_required(action):
+                    common.log.info("The action '{description!s}' is skipped since it is not required".format(description=action))
+                    continue
+
                 common.log.info("Making {description!s}".format(description=action))
 
-                if not self._is_action_required(action):
-                    continue
                 try:
                     self._invoke_action(action)
                 except Exception as ex:
