@@ -18,16 +18,10 @@ class Action():
 
 class ActivaAction(Action):
     def invoke_prepare(self):
-        try:
-            self._prepare_action()
-        except Exception as ex:
-            raise Exception("Prepare action '{name}' has been failed".format(name=self.name)) from ex
+        self._prepare_action()
 
     def invoke_post(self):
-        try:
-            self._post_action()
-        except Exception as ex:
-            raise Exception("Finishing action '{name}' has been failed".format(name=self.name)) from ex
+        self._post_action()
 
     def is_required(self):
         return self._is_required()
