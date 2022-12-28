@@ -59,7 +59,7 @@ class LeapReposConfiguration(ActivaAction):
             if file.name == "epel.repo":
                 repofiles.append(file.path)
 
-            if file.name.startswith("plesk") and file.name[-5:] != ".repo":
+            if file.name.startswith("plesk") and file.name[-5:] == ".repo":
                 repofiles.append(file.path)
 
         leapp_configs.add_repositories_mapping(repofiles)

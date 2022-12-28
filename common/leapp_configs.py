@@ -9,14 +9,23 @@ PATH_TO_CONFIGFILES = "/etc/leapp/files"
 LEAPP_REPOS_FILE_PATH = os.path.join(PATH_TO_CONFIGFILES, "leapp_upgrade_repositories.repo")
 LEAPP_MAP_FILE_PATH = os.path.join(PATH_TO_CONFIGFILES, "repomap.csv")
 
-REPO_HEAD_FORMAT = """
+REPO_HEAD_WITH_URL = """
 [{id}]
 name={name}
 baseurl={url}
 """
 
+REPO_HEAD_WITH_METALINK = """
+[{id}]
+name={name}
+metalink={link}
+"""
+
 
 def _do_replacement(to_change, replacement_list):
+    if to_change is None:
+        return None
+
     for replace in replacement_list:
         to_change = replace(to_change)
     return to_change
@@ -55,56 +64,79 @@ def _extract_repodata(repofile):
     id = None
     name = None
     url = None
+    metalink = None
     additional = []
 
     with open(repofile, "r") as repo:
         for line in repo.readlines():
             if line.startswith("["):
                 if id is not None:
-                    yield (id, name, url, additional)
+                    yield (id, name, url, metalink, additional)
 
                 id = None
                 name = None
                 url = None
+                metalink = None
                 additional = []
 
+            common.log.debug("Repository file line: {line}".format(line=line.rstrip()))
             if line.startswith("["):
                 id = line[1:-2]
-            elif line.startwith("name="):
+            elif line.startswith("name="):
                 name = line[5:].rstrip()
-            elif line.startwith("baseurl="):
+            elif line.startswith("baseurl="):
                 url = line[8:].rstrip()
+            elif line.startswith("metalink="):
+                metalink = line[9:].rstrip()
             else:
                 additional.append(line)
 
-    yield (id, name, url, additional)
+    yield (id, name, url, metalink, additional)
 
 
 def add_repositories_mapping(repofiles):
     with open(LEAPP_REPOS_FILE_PATH, "a") as leapp_repos_file, open(LEAPP_MAP_FILE_PATH, "a") as map_file:
         for file in repofiles:
+            common.log.debug("Processing repofile '{filename}' into leapp configuration".format(filename=file))
+
             if not os.path.exists(file):
                 common.log.warn("The repository mapper has tried to open an unexsisted file: {filename}".format(filename=file))
                 continue
 
-            for id, name, url, additional_lines in _extract_repodata(file):
-                if name is None or url is None:
-                    common.log.warn("Repository info with id '{}' from the repofile '{}' don't have a name or baseurl".format(id, file))
+            for id, name, url, metalink, additional_lines in _extract_repodata(file):
+                if name is None:
+                    common.log.warn("Repository info for '[{id}]' from '{repofile}' has not a name".format(id=id, repofile=file))
+                    continue
+
+                if url is None and metalink is None:
+                    common.log.warn("Repository info for '{id}' from '{repofile}' has not baseurl and metalink".format(id=id, repofile=file))
+                    continue
+
+                common.log.debug("Repository entry with id '{id}' is extracted.".format(id=id))
 
                 new_id = _do_id_replacement(id)
                 name = _do_name_replacement(name)
                 url = _do_url_replacement(url)
+                metalink = _do_url_replacement(metalink)
 
-                leapp_repos_file.write(REPO_HEAD_FORMAT.format(id=new_id, name=name, url=url))
+                if url is not None:
+                    leapp_repos_file.write(REPO_HEAD_WITH_URL.format(id=new_id, name=name, url=url))
+                else:
+                    leapp_repos_file.write(REPO_HEAD_WITH_METALINK.format(id=new_id, name=name, link=metalink))
+
                 for line in [_do_common_replacment(add_line) for add_line in additional_lines]:
                     leapp_repos_file.write(line)
 
                 # Special case for plesk repository. We need to add dist repository to install some of plesk packages
-                if id.startswith("PLESK_18_0") and "extras" in line:
-                    leapp_repos_file.write(REPO_HEAD_FORMAT.format(id=new_id.replace("-extras", ""),
-                                                                   name=name.replace("-extras", ""),
-                                                                   url=url.replace("extras", "dist")))
+                if id.startswith("PLESK_18_0") and "extras" in line and url is not None:
+                    leapp_repos_file.write(REPO_HEAD_WITH_URL.format(id=new_id.replace("-extras", ""),
+                                                                     name=name.replace("-extras", ""),
+                                                                     url=url.replace("extras", "dist")))
                     leapp_repos_file.write("enabled=1\ngpgcheck=1\n")
 
+                leapp_repos_file.write("\n")
+
                 map_file.write("{oldrepo},{newrepo},{newrepo},all,all,x86_64,rpm,ga,ga\n".format(oldrepo=id, newrepo=new_id))
+
+        map_file.write("\n")
 

@@ -110,7 +110,8 @@ def construct_actions(options):
 
 
 def main():
-    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
+    import logging
+    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True, loglevel=logging.DEBUG)
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",
