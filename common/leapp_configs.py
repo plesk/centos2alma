@@ -82,12 +82,21 @@ def _extract_repodata(repofile):
             common.log.debug("Repository file line: {line}".format(line=line.rstrip()))
             if line.startswith("["):
                 id = line[1:-2]
-            elif line.startswith("name="):
-                name = line[5:].rstrip()
-            elif line.startswith("baseurl="):
-                url = line[8:].rstrip()
-            elif line.startswith("metalink="):
-                metalink = line[9:].rstrip()
+                continue
+
+            if "=" not in line:
+                additional.append(line)
+                continue
+
+            field, val = line.split("=", 1)
+            field = field.strip().rstrip()
+            val = val.strip().rstrip()
+            if field == "name":
+                name = val
+            elif field == "baseurl":
+                url = val
+            elif field == "metalink":
+                metalink = val
             else:
                 additional.append(line)
 
