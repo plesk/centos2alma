@@ -5,6 +5,7 @@ import os
 # import json
 
 from common import leapp_configs
+from common import log
 
 
 class AvoidMariadbDowngrade(ActivaAction):
@@ -21,7 +22,7 @@ class AvoidMariadbDowngrade(ActivaAction):
         return False
 
     def _is_mariadb_installed(self):
-        return subprocess.run(["which", "mariadb"]).returncode == 0
+        return subprocess.run(["which", "mariadb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
 
     def _get_mariadb_version(self):
         process = subprocess.Popen(["mariadb", "--version"],
@@ -30,6 +31,8 @@ class AvoidMariadbDowngrade(ActivaAction):
         out, err = process.communicate()
         if process.returncode != 0:
             raise RuntimeError("Unable to get mariadb version: {}".format(err))
+
+        log.debug("Detected mariadb version is: {version}".format(version=out.split("Distrib ")[1].split(",")[0].split("-")[0]))
 
         return out.split("Distrib ")[1].split(",")[0].split("-")[0]
 
