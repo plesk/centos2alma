@@ -18,6 +18,8 @@ class AvoidMariadbDowngrade(ActivaAction):
         for pleft, pright in zip(left.split("."), right.split(".")):
             if int(pleft) > int(pright):
                 return True
+            elif int(pright) > int(pleft):
+                return False
 
         return False
 
@@ -40,10 +42,11 @@ class AvoidMariadbDowngrade(ActivaAction):
         return self._is_mariadb_installed() and not self._is_version_larger(self.mariadb_version_on_alma, self._get_mariadb_version())
 
     def _prepare_action(self):
-        if os.path.exists(self.mariadb_repofile):
+        if not os.path.exists(self.mariadb_repofile):
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format(self.mariadb_repofile))
 
-        leapp_configs.add_repositories_mapping(self.mariadb_repofile)
+        log.debug("Going to add mariadb repository '{repofile}'".format(repofile=self.mariadb_repofile))
+        leapp_configs.add_repositories_mapping([self.mariadb_repofile])
 
         # with open("/etc/leapp/files/pes-events.json", "r") as pkg_mapping_file:
         #     pkg_mapping = json.load(pkg_mapping_file)
