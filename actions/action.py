@@ -169,6 +169,8 @@ class FinishActionsFlow(ActiveFlow):
             if stored_action["name"] == action.name:
                 if stored_action["state"] == ActionState.failed or stored_action["state"] == ActionState.skiped:
                     return False
+                elif stored_action["state"] == ActionState.success:
+                    return True
 
         return action.is_required()
 
