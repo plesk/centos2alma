@@ -139,11 +139,13 @@ def add_repositories_mapping(repofiles):
                     leapp_repos_file.write(line)
 
                 # Special case for plesk repository. We need to add dist repository to install some of plesk packages
-                if id.startswith("PLESK_18_0") and "extras" in line and url is not None:
+                if id.startswith("PLESK_18_0") and "extras" in id and url is not None:
                     leapp_repos_file.write(REPO_HEAD_WITH_URL.format(id=new_id.replace("-extras", ""),
-                                                                     name=name.replace("-extras", ""),
+                                                                     name=name.replace("extras", ""),
                                                                      url=url.replace("extras", "dist")))
                     leapp_repos_file.write("enabled=1\ngpgcheck=1\n")
+
+                    map_file.write("{oldrepo},{newrepo},{newrepo},all,all,x86_64,rpm,ga,ga\n".format(oldrepo=id, newrepo=new_id.replace("-extras", "")))
 
                 leapp_repos_file.write("\n")
 
