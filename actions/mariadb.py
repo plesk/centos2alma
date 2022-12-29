@@ -21,12 +21,34 @@ def _is_version_larger(left, right):
     return False
 
 
+def _get_mariadb_utilname():
+    for util in ["mariadb", "mysql"]:
+        if subprocess.run(["which", util], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            return util
+
+    return None
+
+
 def _is_mariadb_installed():
-    return subprocess.run(["which", "mariadb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    util = _get_mariadb_utilname()
+    if util is None:
+        return False
+    elif util == "mariadb":
+        return True
+
+    process = subprocess.Popen([util, "--version"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True)
+    out, _ = process.communicate()
+    if process.returncode != 0:
+        return False
+
+    return "MariaDB" in out
 
 
 def _get_mariadb_version():
-    process = subprocess.Popen(["mariadb", "--version"],
+    util = _get_mariadb_utilname()
+    process = subprocess.Popen([util, "--version"],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 universal_newlines=True)
     out, err = process.communicate()
