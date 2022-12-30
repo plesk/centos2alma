@@ -105,7 +105,10 @@ def _extract_repodata(repofile):
     yield (id, name, url, metalink, additional)
 
 
-def add_repositories_mapping(repofiles):
+def add_repositories_mapping(repofiles, ignore=None):
+    if ignore is None:
+        ignore = []
+
     with open(LEAPP_REPOS_FILE_PATH, "a") as leapp_repos_file, open(LEAPP_MAP_FILE_PATH, "a") as map_file:
         for file in repofiles:
             common.log.debug("Processing repofile '{filename}' into leapp configuration".format(filename=file))
@@ -121,6 +124,10 @@ def add_repositories_mapping(repofiles):
 
                 if url is None and metalink is None:
                     common.log.warn("Repository info for '{id}' from '{repofile}' has not baseurl and metalink".format(id=id, repofile=file))
+                    continue
+
+                if id in ignore:
+                    common.log.debug("Skip repository '{id}' since it is in ignore list.".format(id=id))
                     continue
 
                 common.log.debug("Repository entry with id '{id}' is extracted.".format(id=id))

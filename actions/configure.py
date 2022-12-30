@@ -62,7 +62,10 @@ class LeapReposConfiguration(ActivaAction):
             if file.name.startswith("plesk") and file.name[-5:] == ".repo":
                 repofiles.append(file.path)
 
-        leapp_configs.add_repositories_mapping(repofiles)
+        leapp_configs.add_repositories_mapping(repofiles, ignore=[
+            "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",
+            "PLESK_17_PHP55", "PLESK_17_PHP56", "PLESK_17_PHP70",
+        ])
 
         # mappings = []
         # with open("/etc/leapp/files/leapp_upgrade_repositories.repo", "a") as dst:

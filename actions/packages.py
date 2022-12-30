@@ -90,6 +90,10 @@ class AdoptPleskRepositories(ActivaAction):
             if not file.name.startswith("plesk") or file.name[-5:] != ".repo":
                 continue
 
+            common.remove_repositories(file.path, [
+                "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",
+                "PLESK_17_PHP55", "PLESK_17_PHP56", "PLESK_17_PHP70",
+            ])
             common.replace_string(file.path, "rpm-CentOS-7", "rpm-RedHat-el8")
-            
+
         subprocess.check_call(["dnf", "-y", "update"])
