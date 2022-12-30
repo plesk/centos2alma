@@ -46,8 +46,18 @@ def _do_name_replacement(name):
     ])
 
 
+def _fixup_old_php_urls(to_change):
+    supported_old_versions = ["7.1", "7.2", "7.3"]
+    for version in supported_old_versions:
+        if "PHP_" + version in to_change:
+            return to_change.replace("rpm-CentOS-7", "rpm-CentOS-8")
+
+    return to_change
+
+
 def _do_url_replacement(url):
     return _do_replacement(url, [
+        _fixup_old_php_urls,
         lambda to_change: to_change.replace("rpm-CentOS-7", "rpm-RedHat-el8"),
         lambda to_change: to_change.replace("epel-7", "epel-8"),
         lambda to_change: to_change.replace("epel-debug-7", "epel-debug-8"),
