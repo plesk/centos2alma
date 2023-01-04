@@ -20,6 +20,14 @@ python_library(
     ],
 )
 
+python_test(
+    name = 'common.lib.tests',
+    srcs = glob(['./tests/*.py']),
+    deps = [
+        ':common.lib',
+    ],
+)
+
 python_binary(
     name = 'distupgrader',
     platform = 'py3',
