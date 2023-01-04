@@ -57,7 +57,7 @@ This problem may occur in rare situations, such as when a custom python installa
 ### Distupgrader finish failed on a first boot
 The problem can be identified in the distupgrader log '/var/log/plesk/distupgrader.log'. If the distupgrader finish stage fails for any reason, you can rerun it with 'distupgrader -s finish' after addressing the cause of the failure.
 ## Restrictions
-ere is a list of known restrictions that we are actively working to resolve:
+There is a list of known restrictions that we are actively working to resolve:
 - SpamAssassin - The SpamAssassin service will not be started by default after the conversion
 - Qmail - Authentication is broken after the conversion
 - Monitoring extension - The monitoring service cannot be enabled after the conversion
