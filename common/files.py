@@ -10,13 +10,13 @@ def remove_repositories(repofile, repositories):
         for line in original.readlines():
             line = line.strip()
             if line.startswith("[") and line.endswith("]"):
-                if line[1:-2] in repositories:
+                if line[1:-1] in repositories:
                     inRepo = True
                 else:
                     inRepo = False
 
             if not inRepo:
-                dst.write(line)
+                dst.write(line + "\n")
 
     shutil.move(repofile + ".next", repofile)
 
