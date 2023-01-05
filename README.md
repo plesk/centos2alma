@@ -60,7 +60,7 @@ The problem can be identified in the distupgrader log '/var/log/plesk/distupgrad
 There is a list of known restrictions that we are actively working to resolve:
 - SpamAssassin - The SpamAssassin service will not be started by default after the conversion
 - Qmail - Authentication is broken after the conversion
+- Plesk premium Antivirus - prevent MariaDB startup on the first boot of AlmaLinux
 - Monitoring extension - The monitoring service cannot be enabled after the conversion
 - Docker extension - Leapp is unable to perform the preupgrade, so the conversion cannot be completed
-- Node.js extension - The finish stage of distupgrader fails on the first boot
-- Site-import extension - The finish stage of distupgrader fails on the first boot
+- Ruby - Ruby applications not working after a conversion
