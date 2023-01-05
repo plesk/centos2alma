@@ -115,11 +115,11 @@ def _extract_repodata(repofile):
     yield (id, name, url, metalink, additional)
 
 
-def add_repositories_mapping(repofiles, ignore=None):
+def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP_REPOS_FILE_PATH, mapfile_path=LEAPP_MAP_FILE_PATH):
     if ignore is None:
         ignore = []
 
-    with open(LEAPP_REPOS_FILE_PATH, "a") as leapp_repos_file, open(LEAPP_MAP_FILE_PATH, "a") as map_file:
+    with open(leapp_repos_file_path, "a") as leapp_repos_file, open(mapfile_path, "a") as map_file:
         for file in repofiles:
             common.log.debug("Processing repofile '{filename}' into leapp configuration".format(filename=file))
 
@@ -171,13 +171,13 @@ def add_repositories_mapping(repofiles, ignore=None):
         map_file.write("\n")
 
 
-def set_package_repository(package, repository):
+def set_package_repository(package, repository, leapp_pkgs_conf_path=LEAPP_PKGS_CONF_PATH):
     pkg_mapping = None
-    with open(LEAPP_PKGS_CONF_PATH, "r") as pkg_mapping_file:
+    with open(leapp_pkgs_conf_path, "r") as pkg_mapping_file:
         pkg_mapping = json.load(pkg_mapping_file)
         for info in pkg_mapping["packageinfo"]:
             for outpkg in info["out_packageset"]["package"]:
                 if outpkg["name"] == package:
                     outpkg["repository"] = repository
 
-    common.rewrite_json_file(LEAPP_PKGS_CONF_PATH, pkg_mapping)
+    common.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
