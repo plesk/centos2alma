@@ -1,4 +1,6 @@
 # Documentation: https://buckbuild.com/concept/buckconfig.html
 
 [python]
+    interpreter = /usr/bin/python
+[python#py3]
     interpreter = /usr/bin/python3
