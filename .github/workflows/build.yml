@@ -12,7 +12,7 @@ jobs:
         java-version: 8
     - uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: 3.6
     - name: Install buck from official github (release 2022.05.05.01)
       run: >
           wget https://github.com/facebook/buck/releases/download/v2022.05.05.01/buck.2022.05.05.01_all.deb -O buck.deb
