@@ -1,4 +1,4 @@
-from .action import ActivaAction
+from .action import ActiveAction
 
 import subprocess
 import os
@@ -6,7 +6,7 @@ import os
 import common
 
 
-class RemovingPackages(ActivaAction):
+class RemovingPackages(ActiveAction):
 
     def __init__(self):
         self.name = "remove conflict packages"
@@ -43,7 +43,7 @@ class RemovingPackages(ActivaAction):
         pass
 
 
-class ReinstallPleskComponents(ActivaAction):
+class ReinstallPleskComponents(ActiveAction):
     def __init__(self):
         self.name = "reintall components"
 
@@ -61,7 +61,7 @@ class ReinstallPleskComponents(ActivaAction):
     def _post_action(self):
         # We should reinstall psa-phpmyadmin over plesk installer to make sure every trigger
         # will be called. It's because triggers that creates phpmyadmin configuration files
-        # expect plesk on board. Hence when we install the package in scoupe of temprorary OS
+        # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
         common.log.info("Remove psa-phpmyadmin")
         subprocess.check_call(["rpm", "-e", "--nodeps", "psa-phpmyadmin"])
@@ -78,7 +78,7 @@ class ReinstallPleskComponents(ActivaAction):
         common.log.info("plesk installer add roundcube finished")
 
 
-class AdoptPleskRepositories(ActivaAction):
+class AdoptPleskRepositories(ActiveAction):
     def __init__(self):
         self.name = "adopt plesk repositories"
 

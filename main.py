@@ -1,9 +1,7 @@
 #!/usr/bin/python3
-# Copyright 1999-2022. Plesk International GmbH. All rights reserved.
 
 import actions
 import common
-# import logging
 
 import sys
 import os
@@ -25,7 +23,7 @@ class Stages(str, Enum):
     prepare = 'prepare'
     convert = 'start'
     finish = 'finish'
-    # Todo. The tst stage for debugging porpuse only, don't forget to remove it
+    # Todo. The tst stage for debugging purpose only, don't forget to remove it
     test = 'test'
 
 
@@ -59,10 +57,10 @@ def construct_actions(options):
                 actions.LeapInstallation(),
             ],
             2: [
-                actions.AddUpgraderSystemdService(os.path.abspath(sys.argv[0])),
+                actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
                 actions.LeapReposConfiguration(),
                 actions.AvoidMariadbDowngrade(),
-                actions.LeapChoisesConfiguration(),
+                actions.LeapChoicesConfiguration(),
                 actions.FixNamedConfig(),
             ],
         })
@@ -109,14 +107,14 @@ def main():
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",
                     choices=(Stages.prepare, Stages.convert, Stages.finish),
-                    help="Choose a stage of a convertation process. Prepare should be used before any other actions."
-                         "Start - when you ready for a convertation process. The process will take about 20 minutes."
-                         "Finish should be called at the end of convertation, right after the first reboot.")
+                    help="Choose a stage of a conversation process. Prepare should be used before any other actions."
+                         "Start - when you ready for a conversation process. The process will take about 20 minutes."
+                         "Finish should be called at the end of conversation, right after the first reboot.")
     opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
                     help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
                          "So make sure you backup your database before the upgrade.")
 
-    options, args = opts.parse_args(args=sys.argv[1:])
+    options, _ = opts.parse_args(args=sys.argv[1:])
 
     if not is_required_conditions_satisfied(options):
         common.log.err("Please fix noted problems before proceed the conversation")

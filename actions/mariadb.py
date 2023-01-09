@@ -1,4 +1,4 @@
-from .action import ActivaAction
+from .action import ActiveAction
 
 import subprocess
 import os
@@ -60,9 +60,9 @@ def _get_mariadb_version():
     return out.split("Distrib ")[1].split(",")[0].split("-")[0]
 
 
-class AvoidMariadbDowngrade(ActivaAction):
+class AvoidMariadbDowngrade(ActiveAction):
     def __init__(self):
-        self.name = "avoid instalation old mariadb"
+        self.name = "avoid installation old mariadb"
         self.mariadb_version_on_alma = "10.3.35"
         self.mariadb_repofile = "/etc/yum.repos.d/mariadb.repo"
 
@@ -80,7 +80,7 @@ class AvoidMariadbDowngrade(ActivaAction):
         pass
 
 
-class UpdateMariadbDatabase(ActivaAction):
+class UpdateMariadbDatabase(ActiveAction):
     def __init__(self):
         self.name = "fixing mariadb databases"
 
@@ -98,4 +98,5 @@ class UpdateMariadbDatabase(ActivaAction):
             shadowdata = shadowfile.readline().rstrip()
             subprocess.check_call(["mysql_upgrade", "-uadmin", "-p" + shadowdata])
         # Also find a way to drop cookies, because it will ruin your day
-        # Redelete it, because leapp going to install it in scoupe of convertation process, but it will no generate right configs
+        # We have to delete it once again, because leapp going to install it in scope of conversation process,
+        # but without right configs

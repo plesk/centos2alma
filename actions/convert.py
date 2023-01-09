@@ -1,11 +1,11 @@
-from .action import ActivaAction
+from .action import ActiveAction
 
 import subprocess
 
 
-class DoConvert(ActivaAction):
+class DoConvert(ActiveAction):
     def __init__(self):
-        self.name = "do converation with leapp"
+        self.name = "do conversation with leapp"
 
     def _prepare_action(self):
         subprocess.check_call(["leapp", "preupgrade"])
