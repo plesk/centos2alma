@@ -7,7 +7,7 @@ import subprocess
 import sys
 import os
 from optparse import OptionParser
-from enum import Enum
+from enum import Enum, Flag, auto
 
 
 def merge_dicts_of_lists(dict1, dict2):
@@ -20,16 +20,24 @@ def merge_dicts_of_lists(dict1, dict2):
     return dict1
 
 
-class Stages(str, Enum):
-    prepare = 'prepare'
-    convert = 'start'
-    finish = 'finish'
+class Stages(Flag):
+    prepare = auto()
+    convert = auto()
+    finish = auto()
     # Todo. The tst stage for debugging purpose only, don't forget to remove it
-    test = 'test'
+    test = auto()
 
 
-def is_required_conditions_satisfied(options):
-    if options.stage == Stages.finish:
+class StagesStrings(str, Enum):
+    prepare = "prepare"
+    convert = "start"
+    finish = "finish"
+    # Todo. The tst stage for debugging purpose only, don't forget to remove it
+    test = "test"
+
+
+def is_required_conditions_satisfied(options, stage_flag):
+    if Stages.finish in stage_flag:
         return True
 
     checks = []
@@ -45,14 +53,13 @@ def is_required_conditions_satisfied(options):
         return False
 
 
-
-def construct_actions(options):
+def construct_actions(options, stage_flag):
     actions_map = {}
 
-    if options.stage == Stages.test:
+    if Stages.test in stage_flag:
         raise Exception("There are no steps in the test stage. You could use this stage to call some actions in development purposes.")
 
-    if not options.stage or options.stage == Stages.prepare or options.stage == Stages.finish:
+    if Stages.prepare in stage_flag or Stages.finish in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
                 actions.LeapInstallation(),
@@ -66,7 +73,7 @@ def construct_actions(options):
             ],
         })
 
-    if not options.stage or options.stage == Stages.convert or options.stage == Stages.finish:
+    if Stages.convert in stage_flag or Stages.finish in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             3: [
                 actions.RemovingPackages(),
@@ -81,7 +88,14 @@ def construct_actions(options):
                 actions.DoConvert(),
             ],
         })
-    if options.stage == Stages.finish:
+        if options.upgrade_postgres_allowed:
+            actions_map = merge_dicts_of_lists(actions_map, {
+                3: [
+                    actions.PostgresDatabasesUpdate(),
+                ]
+            })
+
+    if Stages.finish in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
                 actions.FinishMessage(),
@@ -94,14 +108,22 @@ def construct_actions(options):
 
     # Autoreboot as an action?
 
-    if options.upgrade_postgres_allowed:
-        actions_map = merge_dicts_of_lists(actions_map, {
-            3: [
-                actions.PostgresDatabasesUpdate(),
-            ]
-        })
-
     return actions_map
+
+
+def extract_stage_flag(options):
+    if options.stage is None:
+        return Stages.prepare | Stages.convert
+    elif options.stage == StagesStrings.prepare:
+        return Stages.prepare
+    elif options.stage == StagesStrings.convert:
+        return Stages.convert
+    elif options.stage == StagesStrings.finish:
+        return Stages.finish
+    elif options.stage == StagesStrings.test:
+        return Stages.test
+
+    raise Exception("Unknown stage: {}".format(options.stage))
 
 
 def main():
@@ -109,7 +131,7 @@ def main():
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",
-                    choices=(Stages.prepare, Stages.convert, Stages.finish),
+                    choices=(StagesStrings.prepare, StagesStrings.convert, StagesStrings.finish),
                     help="Choose a stage of a conversation process. Prepare should be used before any other actions."
                          "Start - when you ready for a conversation process. The process will take about 20 minutes."
                          "Finish should be called at the end of conversation, right after the first reboot.")
@@ -119,25 +141,23 @@ def main():
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 
-    reboot_required = False
-    if options.stage == Stages.finish or options.stage == Stages.convert:
-        reboot_required = True
+    stage_flag = extract_stage_flag(options)
 
-    if not is_required_conditions_satisfied(options):
+    if not is_required_conditions_satisfied(options, stage_flag):
         common.log.err("Please fix noted problems before proceed the conversation")
         return 1
 
-    actions_map = construct_actions(options)
+    actions_map = construct_actions(options, stage_flag)
 
     try:
-        with actions.PrepareActionsFlow(actions_map) if options.stage != Stages.finish else actions.FinishActionsFlow(actions_map) as flow:
+        with actions.PrepareActionsFlow(actions_map) if Stages.finish not in stage_flag else actions.FinishActionsFlow(actions_map) as flow:
             flow.validate_actions()
             flow.pass_actions()
     except Exception as ex:
         common.log.err("{}".format(ex))
         return 1
 
-    if reboot_required:
+    if Stages.convert in stage_flag or Stages.finish in stage_flag:
         common.log.info("Going to reboot the system")
         subprocess.call(["systemctl", "reboot"])
 
