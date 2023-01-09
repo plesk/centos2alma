@@ -30,6 +30,7 @@ python_test(
 
 python_binary(
     name = 'distupgrader',
+    platform = 'py3',
     main_module = 'main',
     deps = [
         ':distupgrader.lib',
