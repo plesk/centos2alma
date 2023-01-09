@@ -91,6 +91,8 @@ def construct_actions(options):
             ],
         })
 
+    # Autoreboot as an action?
+
     if options.upgrade_postgres_allowed:
         actions_map = merge_dicts_of_lists(actions_map, {
             3: [
