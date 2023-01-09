@@ -4,15 +4,16 @@ on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # Not latest, because python3.6 is not available on latest
+                          # https://github.com/actions/setup-python/issues/544
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v1
       with:
         java-version: 8
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.6
     - name: Install buck from official github (release 2022.05.05.01)
       run: >
           wget https://github.com/facebook/buck/releases/download/v2022.05.05.01/buck.2022.05.05.01_all.deb -O buck.deb
