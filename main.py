@@ -50,7 +50,7 @@ def construct_actions(options):
     actions_map = {}
 
     if options.stage == Stages.test:
-        raise Exception("There are no steps in the test stage. You could use this stage to call some actions in development porpuses.")
+        raise Exception("There are no steps in the test stage. You could use this stage to call some actions in development purposes.")
 
     if not options.stage or options.stage == Stages.prepare or options.stage == Stages.finish:
         actions_map = merge_dicts_of_lists(actions_map, {
