@@ -62,10 +62,10 @@ class RuleSelinux(ActiveAction):
 
 class FinishMessage(ActiveAction):
     def __init__(self):
-        self.name = "rule selinux status"
+        self.name = "printing congratulations"
 
     def _prepare_action(self):
         pass
 
     def _post_action(self):
-        common.log.info("Hooray! Your instance has been converted into AlmaLinux8.\nPlease reboot the instance to startup plesk services")
+        common.log.info("Done! Your instance has been converted into AlmaLinux8.")

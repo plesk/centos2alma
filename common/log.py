@@ -8,7 +8,7 @@ class log():
     @staticmethod
     def init_logger(logfiles, streams, console=False, loglevel=logging.INFO):
         log.logger.setLevel(loglevel)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
         handlers = [logging.FileHandler('/dev/console', mode='w')] if console else []
         for logfile in logfiles:

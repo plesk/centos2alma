@@ -5,7 +5,7 @@ import subprocess
 
 class DoConvert(ActiveAction):
     def __init__(self):
-        self.name = "do conversation with leapp"
+        self.name = "making the conversation"
 
     def _prepare_action(self):
         subprocess.check_call(["leapp", "preupgrade"])

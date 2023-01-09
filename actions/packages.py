@@ -45,7 +45,7 @@ class RemovingPackages(ActiveAction):
 
 class ReinstallPleskComponents(ActiveAction):
     def __init__(self):
-        self.name = "reintall components"
+        self.name = "re-installing plesk components"
 
     def _prepare_action(self):
         components_pkgs = [
@@ -80,7 +80,7 @@ class ReinstallPleskComponents(ActiveAction):
 
 class AdoptPleskRepositories(ActiveAction):
     def __init__(self):
-        self.name = "adopt plesk repositories"
+        self.name = "adopting plesk repositories"
 
     def _prepare_action(self):
         pass

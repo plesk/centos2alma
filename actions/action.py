@@ -12,7 +12,7 @@ class Action():
         self.description = ""
 
     def __str__(self):
-        return "I'm an action {name}!".format(name=self.name)
+        return "{name}!".format(name=self.name)
 
     def __repr__(self):
         return "{classname}".format(classname=self.__class__.__name__)
@@ -78,20 +78,20 @@ class ActiveFlow(ActionsFlow):
             self._pre_stage(stage_id, actions)
             for action in actions:
                 if not self._is_action_required(action):
-                    common.log.info("The action '{description!s}' is skipped since it is not required".format(description=action))
+                    common.log.info("Skipped: {description!s}".format(description=action))
                     self._save_action_state(action.name, ActionState.skiped)
                     continue
 
-                common.log.info("Making {description!s}".format(description=action))
+                common.log.info("Do: {description!s}".format(description=action))
 
                 try:
                     self._invoke_action(action)
                 except Exception as ex:
                     self._save_action_state(action.name, ActionState.failed)
-                    raise Exception("{description!s} has failed: {error}".format(description=action, error=ex))
+                    raise Exception("Failed: {description!s}. The reason: {error}".format(description=action, error=ex))
 
                 self._save_action_state(action.name, ActionState.success)
-                common.log.info("{description!s} is done!".format(description=action))
+                common.log.info("Success: {description!s}".format(description=action))
 
             self._post_stage(stage_id, actions)
 
@@ -99,7 +99,7 @@ class ActiveFlow(ActionsFlow):
         pass
 
     def _pre_stage(self, stage_id, actions):
-        common.log.info("Stage {stage}:".format(stage=stage_id))
+        common.log.info("Start stage {stage}.".format(stage=stage_id))
         pass
 
     def _post_stage(self, stage_id, actions):
