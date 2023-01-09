@@ -3,6 +3,7 @@
 import actions
 import common
 
+import subprocess
 import sys
 import os
 from optparse import OptionParser
@@ -118,6 +119,10 @@ def main():
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 
+    reboot_required = False
+    if options.stage == Stages.finish or options.stage == Stages.convert:
+        reboot_required = True
+
     if not is_required_conditions_satisfied(options):
         common.log.err("Please fix noted problems before proceed the conversation")
         return 1
@@ -131,6 +136,10 @@ def main():
     except Exception as ex:
         common.log.err("{}".format(ex))
         return 1
+
+    if reboot_required:
+        common.log.info("Going to reboot the system")
+        subprocess.call(["systemctl", "reboot"])
 
     return 0
 
