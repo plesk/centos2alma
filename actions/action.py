@@ -18,7 +18,7 @@ class Action():
         return "{classname}".format(classname=self.__class__.__name__)
 
 
-class ActivaAction(Action):
+class ActiveAction(Action):
     def invoke_prepare(self):
         self._prepare_action()
 
@@ -68,7 +68,7 @@ class ActiveFlow(ActionsFlow):
         # Note. This one is for development porpuses only
         for _, actions in self.stages.items():
             for action in actions:
-                if not isinstance(action, ActivaAction):
+                if not isinstance(action, ActiveAction):
                     raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(action.name))
 
     def pass_actions(self):
@@ -163,7 +163,7 @@ class FinishActionsFlow(ActiveFlow):
         return dict(reversed(list(self.stages.items())))
 
     def _is_action_required(self, action):
-        # I belive the finish stage could have an action that was not performed on preparation and convertation stages
+        # I believe the finish stage could have an action that was not performed on preparation and conversation stages
         # So we ignore the case when there is no actions is persistance store
         for stored_action in self.actions_data["actions"]:
             if stored_action["name"] == action.name:
@@ -201,7 +201,7 @@ class CheckFlow(ActionsFlow):
         for check in self.stages:
             common.log.debug("Make check {name}".format(name=check.name))
             if not check.do_check():
-                common.log.err("Required preconversion condition {name!s} not met:\n{description!s}".format(name=check.name, description=check.description))
+                common.log.err("Required pre-conversion condition {name!s} not met:\n{description!s}".format(name=check.name, description=check.description))
                 is_all_passed = False
 
         return is_all_passed

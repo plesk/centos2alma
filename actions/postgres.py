@@ -1,4 +1,4 @@
-from .action import ActivaAction, CheckAction
+from .action import ActiveAction, CheckAction
 
 import os
 import subprocess
@@ -39,7 +39,7 @@ class CheckOutdatedPostgresInstalled(CheckAction):
         return not _is_postgres_installed() or _is_modern_postgres()
 
 
-class PostgresDatabasesUpdate(ActivaAction):
+class PostgresDatabasesUpdate(ActiveAction):
 
     def __init__(self):
         self.name = "update postgres databases"

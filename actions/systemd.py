@@ -1,10 +1,10 @@
-from .action import ActivaAction
+from .action import ActiveAction
 
 import subprocess
 import os
 
 
-class RulePleskRelatedServices(ActivaAction):
+class RulePleskRelatedServices(ActiveAction):
 
     def __init__(self):
         self.name = "rule plesk services"
@@ -38,10 +38,10 @@ class RulePleskRelatedServices(ActivaAction):
 
     def _post_action(self):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
-        # Don't do startup becuase the services will be started up after reboot at the end of the script anyway.
+        # Don't do startup because the services will be started up after reboot at the end of the script anyway.
 
 
-class AddUpgraderSystemdService(ActivaAction):
+class AddUpgradeSystemdService(ActiveAction):
 
     def __init__(self, script_path):
         self.name = "add our own service to restart upgrader on first boot"
@@ -76,7 +76,7 @@ WantedBy=multi-user.target
             os.remove(self.service_file_path)
 
 
-class StartPleskBasicServices(ActivaAction):
+class StartPleskBasicServices(ActiveAction):
 
     def __init__(self):
         self.name = "start plesk services"

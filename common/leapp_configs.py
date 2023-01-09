@@ -1,10 +1,8 @@
 import os
 import json
-import shutil
 
 import common
 
-# class LeappConfig():
 
 PATH_TO_CONFIGFILES = "/etc/leapp/files"
 LEAPP_REPOS_FILE_PATH = os.path.join(PATH_TO_CONFIGFILES, "leapp_upgrade_repositories.repo")
@@ -66,7 +64,7 @@ def _do_url_replacement(url):
     ])
 
 
-def _do_common_replacment(line):
+def _do_common_replacement(line):
     return _do_replacement(line, [
         lambda to_change: to_change.replace("EPEL-7", "EPEL-8"),
     ])
@@ -124,7 +122,7 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
             common.log.debug("Processing repofile '{filename}' into leapp configuration".format(filename=file))
 
             if not os.path.exists(file):
-                common.log.warn("The repository mapper has tried to open an unexsisted file: {filename}".format(filename=file))
+                common.log.warn("The repository mapper has tried to open an unexistent file: {filename}".format(filename=file))
                 continue
 
             for id, name, url, metalink, additional_lines in _extract_repodata(file):
@@ -152,7 +150,7 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
                 else:
                     leapp_repos_file.write(REPO_HEAD_WITH_METALINK.format(id=new_id, name=name, link=metalink))
 
-                for line in [_do_common_replacment(add_line) for add_line in additional_lines]:
+                for line in [_do_common_replacement(add_line) for add_line in additional_lines]:
                     leapp_repos_file.write(line)
 
                 # Special case for plesk repository. We need to add dist repository to install some of plesk packages
