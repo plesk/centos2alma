@@ -23,6 +23,7 @@ class RulePleskRelatedServices(ActiveAction):
             "plesk-web-socket.service",
             "postfix.service",
             "psa.service",
+            "spamassassin.service",
             "sw-collectd.service",
             "sw-cp-server.service",
             "sw-engine.service",
