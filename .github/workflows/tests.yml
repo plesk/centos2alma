@@ -11,7 +11,7 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: 8
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       with:
         python-version: 3.6
     - name: Install buck from official github (release 2022.05.05.01)
