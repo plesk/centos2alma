@@ -78,6 +78,17 @@ class ReinstallPleskComponents(ActiveAction):
         common.log.info("plesk installer add roundcube finished")
 
 
+class UpdatePlesk(ActiveAction):
+    def __init__(self):
+        self.name = "updating plesk"
+
+    def _prepare_action(self):
+        subprocess.check_call(["plesk", "installer", "update"])
+
+    def _post_action(self):
+        pass
+
+
 class AdoptPleskRepositories(ActiveAction):
     def __init__(self):
         self.name = "adopting plesk repositories"

@@ -75,6 +75,9 @@ def construct_actions(options, stage_flag):
 
     if Stages.convert in stage_flag or Stages.finish in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
+            2: [
+                actions.UpdatePlesk(),
+            ],
             3: [
                 actions.RemovingPackages(),
                 actions.PostgresDatabasesUpdate(),
@@ -106,8 +109,6 @@ def construct_actions(options, stage_flag):
                 actions.FixSpamassassinConfig(),
             ],
         })
-
-    # Autoreboot as an action?
 
     return actions_map
 
