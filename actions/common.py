@@ -20,6 +20,21 @@ class FixNamedConfig(ActiveAction):
             os.unlink(self.user_options_path)
 
 
+class FixSpamassassinConfig(ActiveAction):
+    # Make sure the trick is preformed before any call of 'systemctl daemon-reload'
+    # because we change spamassassin.service configuration in scope of this action.
+    def __init__(self):
+        self.name = "fix spamassassin configuration"
+        self.spamassassin_config_path = "/etc/mail/spamassassin/local.cf"
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        subprocess.check_call(["plesk", "sbin", "spammng", "--enable"])
+        subprocess.check_call(["plesk", "sbin", "spammng", "--update", "--enable-server-configs", "--enable-user-configs"])
+
+
 class DisableSuspiciousKernelModules(ActiveAction):
     def __init__(self):
         self.name = "rule suspicious kernel modules"
