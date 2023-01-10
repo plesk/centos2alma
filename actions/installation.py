@@ -6,7 +6,7 @@ import subprocess
 class LeapInstallation(ActiveAction):
 
     def __init__(self):
-        self.name = "install leapp"
+        self.name = "installing leapp"
 
     def _is_pkg_installed(self, pkg_name):
         res = subprocess.run(["rpm", "--quiet", "--query", pkg_name])

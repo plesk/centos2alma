@@ -23,6 +23,7 @@ class RulePleskRelatedServices(ActiveAction):
             "plesk-web-socket.service",
             "postfix.service",
             "psa.service",
+            "spamassassin.service",
             "sw-collectd.service",
             "sw-cp-server.service",
             "sw-engine.service",
@@ -37,6 +38,7 @@ class RulePleskRelatedServices(ActiveAction):
         subprocess.check_call(["systemctl", "disable"] + self.plesk_systemd_services)
 
     def _post_action(self):
+        subprocess.check_call(["systemctl", "daemon-reload"])
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
         # Don't do startup because the services will be started up after reboot at the end of the script anyway.
 
@@ -44,7 +46,7 @@ class RulePleskRelatedServices(ActiveAction):
 class AddUpgradeSystemdService(ActiveAction):
 
     def __init__(self, script_path):
-        self.name = "add our own service to restart upgrader on first boot"
+        self.name = "adding distupgrader resume service"
         self.script_path = script_path
         self.service_name = 'plesk-distugrader.service'
         self.service_file_path = os.path.join('/etc/systemd/system', self.service_name)
@@ -79,7 +81,7 @@ WantedBy=multi-user.target
 class StartPleskBasicServices(ActiveAction):
 
     def __init__(self):
-        self.name = "start plesk services"
+        self.name = "starting plesk services"
         self.plesk_basic_services = [
             "mariadb.service",
             "plesk-task-manager.service",

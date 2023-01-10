@@ -9,7 +9,7 @@ from common import leapp_configs
 class LeapReposConfiguration(ActiveAction):
 
     def __init__(self):
-        self.name = "add plesk to leapp repos mapping"
+        self.name = "adding leapp mapping for plesk repositories"
 
     def _prepare_action(self):
         repofiles = []
@@ -33,7 +33,7 @@ class LeapReposConfiguration(ActiveAction):
 class LeapChoicesConfiguration(ActiveAction):
 
     def __init__(self):
-        self.name = "configure leapp user choises"
+        self.name = "configure leapp user choices"
 
     def _prepare_action(self):
         with open('/var/log/leapp/answerfile.userchoices', 'w') as usercoise:
@@ -79,7 +79,7 @@ class RemoveSystemdResumeService(Actor):
 """
 
     def __init__(self, script_path):
-        self.name = "add leapp actor for the script auto startup"
+        self.name = "adding leapp post-upgrade actor"
         self.script_path = script_path
 
     def _prepare_action(self):

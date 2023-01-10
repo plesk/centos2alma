@@ -62,7 +62,7 @@ def _get_mariadb_version():
 
 class AvoidMariadbDowngrade(ActiveAction):
     def __init__(self):
-        self.name = "avoid installation old mariadb"
+        self.name = "avoid mariadb downgrade"
         self.mariadb_version_on_alma = "10.3.35"
         self.mariadb_repofile = "/etc/yum.repos.d/mariadb.repo"
 
@@ -82,7 +82,7 @@ class AvoidMariadbDowngrade(ActiveAction):
 
 class UpdateMariadbDatabase(ActiveAction):
     def __init__(self):
-        self.name = "fixing mariadb databases"
+        self.name = "updating mariadb databases"
 
     def _is_required(self):
         return _is_mariadb_installed() and _is_version_larger(MARIADB_VERSION_ON_ALMA, _get_mariadb_version())

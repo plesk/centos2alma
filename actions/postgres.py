@@ -30,7 +30,7 @@ def _is_modern_postgres():
 
 class CheckOutdatedPostgresInstalled(CheckAction):
     def __init__(self):
-        self.name = "check postgres version 10 or later is installed"
+        self.name = "checking postgres version 10 or later is installed"
         self.description = '''Postgres version less then 10. This means the database should be upgraded.
 \tIt might leads to data lose. Please make backup of your database and call the script with --upgrade-postgres.
 \tOr update postgres to version 10 and upgrade your databases.'''
@@ -42,7 +42,7 @@ class CheckOutdatedPostgresInstalled(CheckAction):
 class PostgresDatabasesUpdate(ActiveAction):
 
     def __init__(self):
-        self.name = "update postgres databases"
+        self.name = "updating postgres databases"
         self.service_name = 'postgresql'
 
     def _is_required(self):
