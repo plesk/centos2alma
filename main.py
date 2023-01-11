@@ -84,6 +84,7 @@ def construct_actions(options, stage_flag):
                 actions.UpdateMariadbDatabase(),
                 actions.ReinstallPleskComponents(),
                 actions.DisableSuspiciousKernelModules(),
+                actions.FixSpamassassinConfig(),
                 actions.RulePleskRelatedServices(),
                 actions.RuleSelinux(),
             ],
@@ -106,7 +107,6 @@ def construct_actions(options, stage_flag):
             4: [
                 actions.AdoptPleskRepositories(),
                 actions.StartPleskBasicServices(),
-                actions.FixSpamassassinConfig(),
             ],
         })
 
