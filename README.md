@@ -16,22 +16,8 @@ To use the script, simply run it without any arguments:
 ```shell
 > ./distupgrader
 ```
-This will start the conversion process. Note that this process will turn off your Plesk services, so hosted sites will not be accessible.
-At the end of the conversion, you will see a report from leapp:
-```
-============================================================
-                           REPORT                           
-============================================================
-
-A report has been generated at /var/log/leapp/leapp-report.json
-A report has been generated at /var/log/leapp/leapp-report.txt
-
-============================================================
-                       END OF REPORT                        
-============================================================
-```
-
-To continue the conversion process, reboot your instance. This will start the temporary update distro, which will reinstall new packages and configure AlmaLinux. This process will take about 30 minutes. Upon completion, the server will be rebooted again. The distupgrader script will then perform the final steps of reconfiguring and restoring Plesk-related services, configurations, and databases. This may take a significant amount of time if the databases contain a large amount of data.
+This will start the conversion process. Please note that during this process, Plesk services will be temporarily shut down and hosted sites will not be accessible. At the end of the preparation process the server will be rebooted.
+Next, a temporary distro will be used to convert your CentOS 7 system to AlmaLinux 8. This process is estimated to take approximately 20 minutes. Once completed, the server will undergo another reboot. The distupgrader script will then perform the final steps of reconfiguring and restoring Plesk-related services, configurations, and databases. This may take a significant amount of time if the databases contain a large amount of data.
 Once the process is complete, the distupgrader script will reboot the server one final time, at which point it should be ready to use.
 
 ### Conversion stages
