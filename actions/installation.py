@@ -1,6 +1,7 @@
 from .action import ActiveAction
 
 import subprocess
+import common
 
 
 class LeapInstallation(ActiveAction):
@@ -8,12 +9,8 @@ class LeapInstallation(ActiveAction):
     def __init__(self):
         self.name = "installing leapp"
 
-    def _is_pkg_installed(self, pkg_name):
-        res = subprocess.run(["rpm", "--quiet", "--query", pkg_name])
-        return res.returncode == 0
-
     def _prepare_action(self):
-        if not self._is_pkg_installed("elevate-release"):
+        if not common.is_package_installed("elevate-release"):
             subprocess.check_call(["yum", "install", "-y", "http://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
 
         pkgs_to_install = [
