@@ -25,14 +25,20 @@ class FixSpamassassinConfig(ActiveAction):
     # because we change spamassassin.service configuration in scope of this action.
     def __init__(self):
         self.name = "fix spamassassin configuration"
-        self.spamassassin_config_path = "/etc/mail/spamassassin/local.cf"
+
+    def _is_required(self):
+        return common.is_package_installed("psa-spamassassin")
 
     def _prepare_action(self):
-        pass
+        subprocess.check_call(["systemctl", "stop", "spamassassin.service"])
+        subprocess.check_call(["systemctl", "disable", "spamassassin.service"])
 
     def _post_action(self):
         subprocess.check_call(["plesk", "sbin", "spammng", "--enable"])
         subprocess.check_call(["plesk", "sbin", "spammng", "--update", "--enable-server-configs", "--enable-user-configs"])
+
+        subprocess.check_call(["systemctl", "daemon-reload"])
+        subprocess.check_call(["systemctl", "enable", "spamassassin.service"])
 
 
 class DisableSuspiciousKernelModules(ActiveAction):
