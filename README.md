@@ -10,6 +10,25 @@ Before using this script, it is important to take the following precautions:
 2. Ensure that you have a way to restart the server in the event that the direct ssh connection is lost. There is a risk that the conversion process may hang in a temporary update distro that does not start any network interfaces. One way to mitigate this risk is to have a serial port connection to the server, which will allow you to monitor the upgrade distro and the first boot progress, and to reboot the server if necessary.
 3. It may be helpful to have a snapshot that can be used as a recovery point in case the conversion process fails.
 
+## Timing
+The estimated time for the conversion process is between 30 to 60 minutes. Please note that **Plesk services, hosted sites, and emails will be unavailable during the entirety of the conversion process**. The conversion process itself will be divided into three stages:
+- the Preparation stage, which will take between 15 to 25 minutes
+- the Conversion stage, which will take between 15 to 30 minutes and during this stage, the server will not be available remotely, so you need to monitor the process through serial port console
+- the Final stage, which will take between 5 to 10 minutes.
+
+## Restrictions
+There is a list of known restrictions that we are actively working to resolve:
+- Qmail - Authentication is broken after the conversion
+- Plesk premium Antivirus - prevent MariaDB startup on the first boot of AlmaLinux
+- Monitoring extension - The monitoring service cannot be enabled after the conversion
+- Docker extension - Leapp is unable to perform the preupgrade, so the conversion cannot be completed
+- Ruby - Ruby applications not working after a conversion
+
+## Requirements
+- To performs the conversion process with the script you should have Plesk installed
+- Recommended to have at least 10 GB of free storage space to accommodate the packages required for the conversion
+- The system should have at least 1 GB of RAM to ensure the process runs smoothly
+
 ## How to use the script
 
 To use the script, simply run it without any arguments:
@@ -42,10 +61,3 @@ This problem may occur in rare situations, such as when a custom python installa
 
 ### Distupgrader finish failed on a first boot
 The problem can be identified in the distupgrader log '/var/log/plesk/distupgrader.log'. If the distupgrader finish stage fails for any reason, you can rerun it with 'distupgrader -s finish' after addressing the cause of the failure.
-## Restrictions
-There is a list of known restrictions that we are actively working to resolve:
-- Qmail - Authentication is broken after the conversion
-- Plesk premium Antivirus - prevent MariaDB startup on the first boot of AlmaLinux
-- Monitoring extension - The monitoring service cannot be enabled after the conversion
-- Docker extension - Leapp is unable to perform the preupgrade, so the conversion cannot be completed
-- Ruby - Ruby applications not working after a conversion
