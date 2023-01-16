@@ -11,6 +11,7 @@ class RulePleskRelatedServices(ActiveAction):
         plesk_known_systemd_services = [
             "crond.service",
             "dovecot.service",
+            "drwebd.service",
             "fail2ban.service",
             "httpd.service",
             "mailman.service",
