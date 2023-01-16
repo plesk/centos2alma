@@ -1,4 +1,4 @@
-from .action import ActiveAction
+from .action import ActiveAction, CheckAction
 
 import os
 import subprocess
@@ -90,3 +90,15 @@ class FinishMessage(ActiveAction):
 
     def _post_action(self):
         common.log.info("Done! Your instance has been converted into AlmaLinux8.")
+
+
+class PleskInstallerNotInProgress(CheckAction):
+    def __init__(self):
+        self.name = "checking if Plesk installer is in progress"
+        self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer --stop' to abort it."
+
+    def _do_check(self):
+        installer_check = subprocess.run(["plesk", "installer", "--query-status", "--enable-xml-output"], stdout=subprocess.PIPE, universal_newlines=True)
+        if "query_ok" in installer_check.stdout:
+            return True
+        return False

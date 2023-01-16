@@ -40,7 +40,9 @@ def is_required_conditions_satisfied(options, stage_flag):
     if Stages.finish in stage_flag:
         return True
 
-    checks = []
+    checks = [
+        actions.PleskInstallerNotInProgress(),
+    ]
     if not options.upgrade_postgres_allowed:
         checks.append(actions.CheckOutdatedPostgresInstalled())
 
