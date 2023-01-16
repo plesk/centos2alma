@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 
 import common
 
@@ -18,7 +19,7 @@ baseurl={url}
 REPO_HEAD_WITH_METALINK = """
 [{id}]
 name={name}
-metalink={link}
+metalink={url}
 """
 
 
@@ -114,6 +115,56 @@ def _extract_repodata(repofile):
     yield (id, name, url, metalink, additional)
 
 
+def is_repo_ok(id, name, url, metalink):
+    if name is None:
+        common.log.warn("Repository info for '[{id}]' has no a name".format(id=id))
+        return False
+
+    if url is None and metalink is None:
+        common.log.warn("Repository info for '{id}' has no baseurl and metalink".format(id=id))
+        return False
+
+    return True
+
+
+def adopt_repositories(repofile, ignore=None):
+    if ignore is None:
+        ignore = []
+
+    common.log.debug("Adopt repofile '{filename}' for AlmaLinux 8".format(filename=repofile))
+
+    if not os.path.exists(repofile):
+        common.log.warn("The repository adapter has tried to open an unexistent file: {filename}".format(filename=repofile))
+        return
+
+    with open(repofile + ".next", "a") as dst:
+        for id, name, url, metalink, additional_lines in _extract_repodata(repofile):
+            if not is_repo_ok(id, name, url, metalink):
+                continue
+
+            if id in ignore:
+                common.log.debug("Skip repository '{id}' adaptation since it is in ignore list.".format(id=id))
+                continue
+
+            common.log.debug("Adopt repository with id '{id}' is extracted.".format(id=id))
+
+            id = _do_id_replacement(id)
+            name = _do_name_replacement(name)
+            if url is not None:
+                url = _do_url_replacement(url)
+                repo_format = REPO_HEAD_WITH_URL
+            else:
+                url = _do_url_replacement(metalink)
+                repo_format = REPO_HEAD_WITH_METALINK
+
+            dst.write(repo_format.format(id=id, name=name, url=url))
+
+            for line in [_do_common_replacement(add_line) for add_line in additional_lines]:
+                dst.write(line)
+
+    shutil.move(repofile + ".next", repofile)
+
+
 def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP_REPOS_FILE_PATH, mapfile_path=LEAPP_MAP_FILE_PATH):
     if ignore is None:
         ignore = []
@@ -127,12 +178,7 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
                 continue
 
             for id, name, url, metalink, additional_lines in _extract_repodata(file):
-                if name is None:
-                    common.log.warn("Repository info for '[{id}]' from '{repofile}' has not a name".format(id=id, repofile=file))
-                    continue
-
-                if url is None and metalink is None:
-                    common.log.warn("Repository info for '{id}' from '{repofile}' has not baseurl and metalink".format(id=id, repofile=file))
+                if not is_repo_ok(id, name, url, metalink):
                     continue
 
                 if id in ignore:
@@ -143,22 +189,24 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
 
                 new_id = _do_id_replacement(id)
                 name = _do_name_replacement(name)
-                url = _do_url_replacement(url)
-                metalink = _do_url_replacement(metalink)
-
                 if url is not None:
-                    leapp_repos_file.write(REPO_HEAD_WITH_URL.format(id=new_id, name=name, url=url))
+                    url = _do_url_replacement(url)
+                    repo_format = REPO_HEAD_WITH_URL
                 else:
-                    leapp_repos_file.write(REPO_HEAD_WITH_METALINK.format(id=new_id, name=name, link=metalink))
+                    url = _do_url_replacement(metalink)
+                    repo_format = REPO_HEAD_WITH_METALINK
+
+                leapp_repos_file.write(repo_format.format(id=new_id, name=name, url=url))
 
                 for line in [_do_common_replacement(add_line) for add_line in additional_lines]:
                     leapp_repos_file.write(line)
 
                 # Special case for plesk repository. We need to add dist repository to install some of plesk packages
+                # We support metalink for plesk repository, regardless of the fact we don't use them now
                 if id.startswith("PLESK_18_0") and "extras" in id and url is not None:
-                    leapp_repos_file.write(REPO_HEAD_WITH_URL.format(id=new_id.replace("-extras", ""),
-                                                                     name=name.replace("extras", ""),
-                                                                     url=url.replace("extras", "dist")))
+                    leapp_repos_file.write(repo_format.format(id=new_id.replace("-extras", ""),
+                                                              name=name.replace("extras", ""),
+                                                              url=url.replace("extras", "dist")))
                     leapp_repos_file.write("enabled=1\ngpgcheck=1\n")
 
                     map_file.write("{oldrepo},{newrepo},{newrepo},all,all,x86_64,rpm,ga,ga\n".format(oldrepo=id, newrepo=new_id.replace("-extras", "")))

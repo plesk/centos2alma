@@ -81,8 +81,6 @@ class AdoptPleskRepositories(ActiveAction):
                 "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",
                 "PLESK_17_PHP55", "PLESK_17_PHP56", "PLESK_17_PHP70",
             ])
-            common.replace_string(file.path, "rpm-CentOS-7", "rpm-CentOS-8",
-                                  lambda line: "PHP_7.1" in line or "PHP_7.2" in line or "PHP_7.3" in line)
-            common.replace_string(file.path, "rpm-CentOS-7", "rpm-RedHat-el8")
+            common.adopt_repositories(file.path)
 
         subprocess.check_call(["dnf", "-y", "update"])
