@@ -22,15 +22,21 @@ class RulePleskRelatedServices(ActiveAction):
             "plesk-ssh-terminal.service",
             "plesk-task-manager.service",
             "plesk-web-socket.service",
-            "postfix.service",
             "psa.service",
             "sw-collectd.service",
             "sw-cp-server.service",
             "sw-engine.service",
         ]
-        self.plesk_systemd_services = [service for service in plesk_known_systemd_services if self._is_service_exsists(service)]
+        self.plesk_systemd_services = [service for service in plesk_known_systemd_services if self._is_service_exists(service)]
 
-    def _is_service_exsists(self, service):
+        # We don't remove postfix service when remove it during qmail installation
+        # so we should choose the right smtp service, otherwise they will conflict
+        if self._is_service_exists("qmail.service"):
+            self.plesk_systemd_services.append("qmail.service")
+        else:
+            self.plesk_systemd_services.append("postfix.service")
+
+    def _is_service_exists(self, service):
         return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
 
     def _prepare_action(self):
