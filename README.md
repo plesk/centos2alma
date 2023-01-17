@@ -16,16 +16,20 @@ The estimated time for the conversion process is between 30 to 60 minutes. Pleas
 - the Conversion stage, which will take between 15 to 30 minutes and during this stage, the server will not be available remotely, so you need to monitor the process through serial port console
 - the Final stage, which will take between 5 to 10 minutes.
 
-## Restrictions
-There is a list of known restrictions that we are actively working to resolve:
-- Qmail - Authentication is broken after the conversion
-- Plesk premium Antivirus - prevent MariaDB startup on the first boot of AlmaLinux
-- Monitoring extension - The monitoring service cannot be enabled after the conversion
-- Docker extension - Leapp is unable to perform the preupgrade, so the conversion cannot be completed
-- Ruby - Ruby applications not working after a conversion
+## Known problems
+### Stoppers
+The following factors should prevent you from using the script to perform a conversion as they may cause issues with essential services.
+- **Qmail component is installed** - SMTP authentication is broken after the conversion
+- **Ruby extension is installed** - Ruby applications not working after the conversion
+- **PostgreSQL from 10.23 and newer is installed** - will now work after the conversion due to a downgrade
+- **The distro is not CentOS 7** - the script has not been tested on other RHEL 7 based distributions. Therefore, the conversion process may have unexpected results when used on these other distros.
+### Restrictions
+The following restrictions should not prevent the conversion from taking place, but it's good to be aware of them. Most likely they will not be fixed in future.
+- PHP from 5.4 to 7.1 will not receive any updates after the conversion. The versions are deprecated and not supported in AlmaLinux 8. It's important to note that these versions may have security vulnerabilities, so it's recommended to migrate to the latest versions of PHP.
 
 ## Requirements
-- To performs the conversion process with the script you should have Plesk installed
+- To perform the conversion process, you should have Plesk 18.0.42 or a later version installed
+- You should have Centos 7.9 or greater installed. 
 - Recommended to have at least 10 GB of free storage space to accommodate the packages required for the conversion
 - The system should have at least 1 GB of RAM to ensure the process runs smoothly
 
@@ -54,7 +58,7 @@ The ELevate debug logs can be found in '/var/log/leapp/leapp-upgrade.log', and r
 
 ## Possible problems
 
-### Leapp unable to hangle package
+### Leapp unable to handle package
 In some cases, leapp may not be able to handle certain installed packages, especially if they were installed from uncommon repositories. In this case, the distupgrader will fail while running leapp preupgrade or leapp upgrade with an explanatory message. The simplest way to fix this problem is to remove the old package and reinstall a similar package once the conversion is complete.
 ### Upgrade distro is hung
 This problem may occur in rare situations, such as when a custom python installation is present. In this case, the conversion process will fail in the scope of the upgrade temporary distro, and the distro will hang without any notification. To identify the problem, you should connect to your instance using a serial port and check the status. To fix the problem, reboot the server. Note that an unfinished installation process may result in missing packages and other issues.
