@@ -8,13 +8,23 @@ import shutil
 _PATH_TO_PGSQL = '/var/lib/pgsql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
 _PATH_TO_OLD_DATA = os.path.join(_PATH_TO_PGSQL, 'data-old')
+_MODERN_POSTGRES = 10
 
 
 def _is_postgres_installed():
     return os.path.exists(_PATH_TO_DATA)
 
 
-def _is_modern_postgres():
+def _get_postgres_major_version():
+    version_out = subprocess.check_output(['psql', '--version'], universal_newlines=True)
+    return int(version_out.split(' ')[2].split('.')[0])
+
+
+def _is_database_initialized():
+    return os.path.exists(os.path.join(_PATH_TO_DATA, "PG_VERSION"))
+
+
+def _is_modern_database():
     version_file_path = os.path.join(_PATH_TO_DATA, "PG_VERSION")
 
     if not os.path.exists(version_file_path):
@@ -22,10 +32,8 @@ def _is_modern_postgres():
 
     with open(version_file_path, 'r') as version_file:
         version = int(version_file.readline().split('.')[0])
-        if version >= 10:
+        if version >= _MODERN_POSTGRES:
             return True
-
-    return False
 
 
 class CheckOutdatedPostgresInstalled(CheckAction):
@@ -36,7 +44,7 @@ class CheckOutdatedPostgresInstalled(CheckAction):
 \tOr update postgres to version 10 and upgrade your databases.'''
 
     def _do_check(self):
-        return not _is_postgres_installed() or _is_modern_postgres()
+        return not _is_postgres_installed() or not _is_database_initialized() or _get_postgres_major_version() >= _MODERN_POSTGRES
 
 
 class PostgresDatabasesUpdate(ActiveAction):
@@ -46,16 +54,13 @@ class PostgresDatabasesUpdate(ActiveAction):
         self.service_name = 'postgresql'
 
     def _is_required(self):
-        return _is_postgres_installed()
+        return _is_postgres_installed() and _is_database_initialized() and not _is_modern_database()
 
     def _prepare_action(self):
         subprocess.check_call(['systemctl', 'stop', self.service_name])
         subprocess.check_call(['systemctl', 'disable', self.service_name])
 
     def _upgrade_database(self):
-        if _is_modern_postgres():
-            return
-
         subprocess.check_call(['dnf', 'install', '-y', 'postgresql-upgrade'])
 
         subprocess.check_call(['postgresql-setup', '--upgrade'])
