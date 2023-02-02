@@ -70,6 +70,7 @@ def construct_actions(options, stage_flag):
                 actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
                 actions.LeapReposConfiguration(),
                 actions.AvoidMariadbDowngrade(),
+                actions.PostgresReinstallModernPackage(),
                 actions.LeapChoicesConfiguration(),
                 actions.FixNamedConfig(),
             ],
