@@ -13,3 +13,6 @@ class DoConvert(ActiveAction):
 
     def _post_action(self):
         pass
+
+    def _revert_action(self):
+        pass

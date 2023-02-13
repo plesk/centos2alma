@@ -25,5 +25,8 @@ def is_package_installed(pkg):
     return res.returncode == 0
 
 
+def install_packages(pkgs):
+    subprocess.check_call(["yum", "install", "-y"] + pkgs)
+
 def remove_packages(pkg):
     subprocess.check_call(["rpm", "-e", "--nodeps", pkg])

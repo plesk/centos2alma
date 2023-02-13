@@ -23,3 +23,6 @@ class LeapInstallation(ActiveAction):
     def _post_action(self):
         # Todo. We could actually remove installed leap packages at the end
         pass
+
+    def _revert_action(self):
+        pass

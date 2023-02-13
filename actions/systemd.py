@@ -47,6 +47,10 @@ class RulePleskRelatedServices(ActiveAction):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
         # Don't do startup because the services will be started up after reboot at the end of the script anyway.
 
+    def _revert_action(self):
+        subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
+        subprocess.check_call(["systemctl", "start"] + self.plesk_systemd_services)
+
 
 class AddUpgradeSystemdService(ActiveAction):
 
@@ -82,6 +86,9 @@ WantedBy=multi-user.target
         if os.path.exists(self.service_file_path):
             os.remove(self.service_file_path)
 
+    def _revert_action(self):
+        subprocess.check_call(["systemctl", "disable", self.service_name])
+
 
 class StartPleskBasicServices(ActiveAction):
 
@@ -95,9 +102,15 @@ class StartPleskBasicServices(ActiveAction):
             "sw-engine.service",
         ]
 
+    def _enable_services(self):
+        subprocess.check_call(["systemctl", "enable"] + self.plesk_basic_services)
+        subprocess.check_call(["systemctl", "start"] + self.plesk_basic_services)
+
     def _prepare_action(self):
         pass
 
     def _post_action(self):
-        subprocess.check_call(["systemctl", "enable"] + self.plesk_basic_services)
-        subprocess.check_call(["systemctl", "start"] + self.plesk_basic_services)
+        self._enable_services()
+
+    def _revert_action(self):
+        self._enable_services()

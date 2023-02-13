@@ -24,6 +24,9 @@ class RemovingPackages(ActiveAction):
     def _post_action(self):
         pass
 
+    def _revert_action(self):
+        common.install_packages(self.conflict_pkgs)
+
 
 class ReinstallPleskComponents(ActiveAction):
     def __init__(self):
@@ -47,11 +50,11 @@ class ReinstallPleskComponents(ActiveAction):
         common.remove_packages("psa-phpmyadmin")
         subprocess.check_call(["plesk", "installer", "update"])
 
-        components = [
-            "roundcube"
-        ]
+        subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
 
-        subprocess.check_call(["plesk", "installer", "add", "--components"] + components)
+    def _revert_action(self):
+        subprocess.check_call(["plesk", "installer", "update"])
+        subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
 
 
 class UpdatePlesk(ActiveAction):
@@ -62,6 +65,9 @@ class UpdatePlesk(ActiveAction):
         subprocess.check_call(["plesk", "installer", "update"])
 
     def _post_action(self):
+        pass
+
+    def _revert_action(self):
         pass
 
 
@@ -84,3 +90,6 @@ class AdoptPleskRepositories(ActiveAction):
             common.adopt_repositories(file.path)
 
         subprocess.check_call(["dnf", "-y", "update"])
+
+    def _revert_action(self):
+        pass

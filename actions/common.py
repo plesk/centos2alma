@@ -19,6 +19,10 @@ class FixNamedConfig(ActiveAction):
         if os.path.exists(self.user_options_path):
             os.unlink(self.user_options_path)
 
+    def _revert_action(self):
+        if os.path.exists(self.user_options_path):
+            os.unlink(self.user_options_path)
+
 
 class FixSpamassassinConfig(ActiveAction):
     # Make sure the trick is preformed before any call of 'systemctl daemon-reload'
@@ -39,6 +43,10 @@ class FixSpamassassinConfig(ActiveAction):
 
         subprocess.check_call(["systemctl", "daemon-reload"])
         subprocess.check_call(["systemctl", "enable", "spamassassin.service"])
+
+    def _revert_action(self):
+        subprocess.check_call(["systemctl", "enable", "spamassassin.service"])
+        subprocess.check_call(["systemctl", "start", "spamassassin.service"])
 
 
 class DisableSuspiciousKernelModules(ActiveAction):
@@ -68,6 +76,10 @@ class DisableSuspiciousKernelModules(ActiveAction):
         for module in self.suspicious_modules:
             common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
+    def _revert_action(self):
+        for module in self.suspicious_modules:
+            common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
+
 
 class RuleSelinux(ActiveAction):
     def __init__(self):
@@ -80,6 +92,9 @@ class RuleSelinux(ActiveAction):
     def _post_action(self):
         common.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
 
+    def _revert_action(self):
+        common.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
+
 
 class FinishMessage(ActiveAction):
     def __init__(self):
@@ -90,6 +105,9 @@ class FinishMessage(ActiveAction):
 
     def _post_action(self):
         common.log.info("Done! Your instance has been converted into AlmaLinux8.")
+
+    def _revert_action(self):
+        common.log.info("Revert is over, now plesk should be in working state.")
 
 
 class PleskInstallerNotInProgress(CheckAction):

@@ -29,6 +29,9 @@ class LeapReposConfiguration(ActiveAction):
         # Since only leap related files should be changed, there is no to do after a conversation
         pass
 
+    def _revert_action(self):
+        pass
+
 
 class LeapChoicesConfiguration(ActiveAction):
 
@@ -41,6 +44,9 @@ class LeapChoicesConfiguration(ActiveAction):
 
     def _post_action(self):
         # Since only leap related files should be changed, there is no to do after a conversation
+        pass
+
+    def _revert_action(self):
         pass
 
 
@@ -92,3 +98,6 @@ class RemoveSystemdResumeService(Actor):
     def _post_action(self):
         if os.path.exists(os.path.dirname(self.path)):
             shutil.rmtree(os.path.dirname(self.path))
+
+    def _revert_action(self):
+        pass
