@@ -163,7 +163,8 @@ class ReverseActionFlow(ActiveFlow):
         return self
 
     def __exit__(self, *kwargs):
-        os.remove(self.PATH_TO_ACTIONS_DATA)
+        if os.path.exists(self.PATH_TO_ACTIONS_DATA):
+            os.remove(self.PATH_TO_ACTIONS_DATA)
 
     def _get_flow(self):
         return dict(reversed(list(self.stages.items())))
