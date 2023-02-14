@@ -119,6 +119,10 @@ def construct_actions(options, stage_flag):
 
 
 def extract_stage_flag(options):
+    # revert flag has the highest priority
+    if options.revert:
+        stage_flag = Stages.revert
+
     if options.stage is None:
         return Stages.prepare | Stages.convert
     elif options.stage == StagesStrings.prepare:
@@ -153,6 +157,8 @@ def main():
                     help="Choose a stage of a conversation process. Prepare should be used before any other actions."
                          "Start - when you ready for a conversation process. The process will take about 20 minutes."
                          "Finish should be called at the end of conversation, right after the first reboot.")
+    opts.add_option("-r", "--revert", action="store_true", dest="revert", default=False,
+                    help="Revert all changes made by the distupgrader if moving to AlmaLinux is not performed yet.")
     opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
                     help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
                          "So make sure you backup your database before the upgrade.")

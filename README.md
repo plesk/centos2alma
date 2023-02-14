@@ -56,6 +56,12 @@ In most cases, it is not necessary to check the logs. However, if something goes
 The distupgrader logs can be found in '/var/log/plesk/distupgrader.log', and will also be written to stdout.
 The ELevate debug logs can be found in '/var/log/leapp/leapp-upgrade.log', and reports can be found in '/var/log/leapp/leapp-report.txt' and '/var/log/leapp/leapp-report.json'.
 
+### Revert
+If the script fails during the prepare or start stage before reboot, use the distupgrader script with the '-r' or '--revert' option to restore Plesk to a working state. The distupgrader will undo some of the changes made and restart Plesk-related systemd services. Once you have resolved the problem, you can attempt the conversion again.
+Please note:
+- **Revert can't be done after the conversion to AlmaLinux 8 already has happened**. It means this is no way to revert changes after the first reboot triggered by distupgrader with revert option. Use instance snapshot in this case.
+- The revert process does not remove Leapp or packages installed by Leapp, so any space on the persistence storage reserved by Leapp will not be freed during the revert process.
+
 ## Possible problems
 
 ### Leapp unable to handle package
