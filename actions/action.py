@@ -25,6 +25,9 @@ class ActiveAction(Action):
     def invoke_post(self):
         self._post_action()
 
+    def invoke_revert(self):
+        self._revert_action()
+
     def is_required(self):
         return self._is_required()
 
@@ -37,6 +40,9 @@ class ActiveAction(Action):
 
     def _post_action(self):
         raise NotImplementedError("Not implemented post action is called")
+
+    def _revert_action(self):
+        raise NotImplementedError("Not implemented revert action is called")
 
 
 class ActionState(str, Enum):
@@ -150,14 +156,15 @@ class PrepareActionsFlow(ActiveFlow):
         action.invoke_prepare()
 
 
-class FinishActionsFlow(ActiveFlow):
+class ReverseActionFlow(ActiveFlow):
 
     def __enter__(self):
         self.actions_data = self._load_actions_state()
         return self
 
     def __exit__(self, *kwargs):
-        os.remove(self.PATH_TO_ACTIONS_DATA)
+        if os.path.exists(self.PATH_TO_ACTIONS_DATA):
+            os.remove(self.PATH_TO_ACTIONS_DATA)
 
     def _get_flow(self):
         return dict(reversed(list(self.stages.items())))
@@ -174,9 +181,15 @@ class FinishActionsFlow(ActiveFlow):
 
         return action.is_required()
 
+
+class FinishActionsFlow(ReverseActionFlow):
     def _invoke_action(self, action):
         action.invoke_post()
 
+
+class RevertActionsFlow(ReverseActionFlow):
+    def _invoke_action(self, action):
+        action.invoke_revert()
 
 class CheckAction(Action):
     def do_check(self):

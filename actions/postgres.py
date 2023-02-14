@@ -94,6 +94,9 @@ class PostgresDatabasesUpdate(ActiveAction):
         self._upgrade_database()
         self._enable_postgresql()
 
+    def _revert_action(self):
+        self._enable_postgresql()
+
 
 class PostgresReinstallModernPackage(ActiveAction):
     # Leapp is going to remove postgresql package from the system during conversion process.
@@ -138,4 +141,12 @@ class PostgresReinstallModernPackage(ActiveAction):
                 service_name = 'postgresql-' + str(major_version)
                 subprocess.check_call(['systemctl', 'enable', service_name])
                 subprocess.check_call(['systemctl', 'start', service_name])
+                os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
+
+    def _revert_action(self):
+        for major_version in self._get_versions():
+            if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
+                service_name = 'postgresql-' + str(major_version)
+                subprocess.check_call(['systemctl', 'stop', service_name])
+                subprocess.check_call(['systemctl', 'disable', service_name])
                 os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))

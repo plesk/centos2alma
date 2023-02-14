@@ -24,6 +24,7 @@ class Stages(Flag):
     prepare = auto()
     convert = auto()
     finish = auto()
+    revert = auto()
     # Todo. The tst stage for debugging purpose only, don't forget to remove it
     test = auto()
 
@@ -32,6 +33,7 @@ class StagesStrings(str, Enum):
     prepare = "prepare"
     convert = "start"
     finish = "finish"
+    revert = "revert"
     # Todo. The tst stage for debugging purpose only, don't forget to remove it
     test = "test"
 
@@ -61,7 +63,7 @@ def construct_actions(options, stage_flag):
     if Stages.test in stage_flag:
         raise Exception("There are no steps in the test stage. You could use this stage to call some actions in development purposes.")
 
-    if Stages.prepare in stage_flag or Stages.finish in stage_flag:
+    if Stages.prepare in stage_flag or Stages.finish in stage_flag or Stages.revert in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
                 actions.LeapInstallation(),
@@ -76,7 +78,7 @@ def construct_actions(options, stage_flag):
             ],
         })
 
-    if Stages.convert in stage_flag or Stages.finish in stage_flag:
+    if Stages.convert in stage_flag or Stages.finish in stage_flag or Stages.revert in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
                 actions.UpdatePlesk(),
@@ -125,10 +127,21 @@ def extract_stage_flag(options):
         return Stages.convert
     elif options.stage == StagesStrings.finish:
         return Stages.finish
+    elif options.stage == StagesStrings.revert:
+        return Stages.revert
     elif options.stage == StagesStrings.test:
         return Stages.test
 
     raise Exception("Unknown stage: {}".format(options.stage))
+
+
+def get_flow(stage_flag, actions_map):
+    if Stages.finish in stage_flag:
+        return actions.FinishActionsFlow(actions_map)
+    elif Stages.revert in stage_flag:
+        return actions.RevertActionsFlow(actions_map)
+    else:
+        return actions.PrepareActionsFlow(actions_map)
 
 
 def main():
@@ -136,7 +149,7 @@ def main():
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",
-                    choices=(StagesStrings.prepare, StagesStrings.convert, StagesStrings.finish),
+                    choices=(StagesStrings.prepare, StagesStrings.convert, StagesStrings.finish, StagesStrings.revert),
                     help="Choose a stage of a conversation process. Prepare should be used before any other actions."
                          "Start - when you ready for a conversation process. The process will take about 20 minutes."
                          "Finish should be called at the end of conversation, right after the first reboot.")
@@ -155,7 +168,7 @@ def main():
     actions_map = construct_actions(options, stage_flag)
 
     try:
-        with actions.PrepareActionsFlow(actions_map) if Stages.finish not in stage_flag else actions.FinishActionsFlow(actions_map) as flow:
+        with get_flow(stage_flag, actions_map) as flow:
             flow.validate_actions()
             flow.pass_actions()
     except Exception as ex:
