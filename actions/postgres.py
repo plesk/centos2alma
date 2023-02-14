@@ -4,6 +4,7 @@ import os
 import subprocess
 import shutil
 
+from common import leapp_configs
 
 _PATH_TO_PGSQL = '/var/lib/pgsql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
@@ -12,7 +13,7 @@ _MODERN_POSTGRES = 10
 
 
 def _is_postgres_installed():
-    return os.path.exists(_PATH_TO_DATA)
+    return os.path.exists(_PATH_TO_PGSQL)
 
 
 def _get_postgres_major_version():
@@ -92,3 +93,49 @@ class PostgresDatabasesUpdate(ActiveAction):
     def _post_action(self):
         self._upgrade_database()
         self._enable_postgresql()
+
+
+class PostgresReinstallModernPackage(ActiveAction):
+    # Leapp is going to remove postgresql package from the system during conversion process.
+    # So during this action we shouldn't use any postgresql related commands. Luckily data will not be removed
+    # and we can use them to recognize versions of postgresql we should install.
+    def __init__(self):
+        self.name = "reinstall modern postgres package from rhel-8 based repository"
+
+    def _get_versions(self):
+        return [int(dataset) for dataset in os.listdir(_PATH_TO_PGSQL) if dataset.isnumeric()]
+
+    def _is_required(self):
+        return _is_postgres_installed() and any([major_version >= _MODERN_POSTGRES for major_version in self._get_versions()])
+
+    def _is_service_active(self, service):
+        res = subprocess.run(['systemctl', 'is-active', service])
+        return res.returncode == 0
+
+    def _prepare_action(self):
+        leapp_configs.add_repositories_mapping(["/etc/yum.repos.d/pgdg-redhat-all.repo"])
+
+        for major_version in self._get_versions():
+            service_name = 'postgresql-' + str(major_version)
+            if self._is_service_active(service_name):
+                with open(os.path.join(_PATH_TO_PGSQL, str(major_version)) + '.enabled', 'w') as fp:
+                    pass
+                subprocess.check_call(['systemctl', 'stop', service_name])
+                subprocess.check_call(['systemctl', 'disable', service_name])
+
+    def _post_action(self):
+        for major_version in self._get_versions():
+            if major_version > _MODERN_POSTGRES:
+                subprocess.check_call(['dnf', '-q', '-y', 'module', 'disable', 'postgresql'])
+                subprocess.check_call(['dnf', 'update'])
+                subprocess.check_call(['dnf', 'install', "-y", 'postgresql' + str(major_version), 'postgresql' + str(major_version) + '-server'])
+            else:
+                subprocess.check_call(['dnf', '-q', '-y', 'module', 'enable', 'postgresql'])
+                subprocess.check_call(['dnf', 'update'])
+                subprocess.check_call(['dnf', 'install', "-y", 'postgresql', 'postgresql' + '-server'])
+
+            if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
+                service_name = 'postgresql-' + str(major_version)
+                subprocess.check_call(['systemctl', 'enable', service_name])
+                subprocess.check_call(['systemctl', 'start', service_name])
+                os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
