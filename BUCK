@@ -3,12 +3,12 @@
 
 python_library(
     name = 'actions.lib',
-    srcs = glob(['./actions/*.py'])
+    srcs = glob(['./actions/*.py']),
 )
 
 python_library(
     name = 'common.lib',
-    srcs = glob(['./common/*.py'])
+    srcs = glob(['./common/*.py']),
 )
 
 python_library(
@@ -21,11 +21,13 @@ python_library(
 )
 
 python_test(
-    name = 'common.lib.tests',
+    name = 'libs.tests',
     srcs = glob(['./tests/*.py']),
     deps = [
         ':common.lib',
+        ':actions.lib',
     ],
+    platform = 'py3',
 )
 
 python_binary(
