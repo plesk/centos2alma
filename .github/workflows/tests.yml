@@ -20,4 +20,4 @@ jobs:
           && sudo apt-get install openjdk-8-jre-headless
           && sudo dpkg --install buck.deb
     - name: Perform tests
-      run: buck test :common.lib.tests
+      run: buck test :libs.tests
