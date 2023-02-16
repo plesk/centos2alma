@@ -21,12 +21,9 @@ def remove_repositories(repofile, repositories):
     shutil.move(repofile + ".next", repofile)
 
 
-def replace_string(filename, original_substring, new_substring, filter=None):
+def replace_string(filename, original_substring, new_substring):
     with open(filename, "r") as original, open(filename + ".next", "w") as dst:
         for line in original.readlines():
-            if filter is not None and not filter(line):
-                dst.write(line)
-                continue
             line = line.replace(original_substring, new_substring)
             dst.write(line)
 

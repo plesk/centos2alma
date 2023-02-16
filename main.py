@@ -74,6 +74,7 @@ def construct_actions(options, stage_flag):
                 actions.AvoidMariadbDowngrade(),
                 actions.PostgresReinstallModernPackage(),
                 actions.LeapChoicesConfiguration(),
+                actions.PatchLeappErrorOutput(),
                 actions.FixNamedConfig(),
             ],
         })
