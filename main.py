@@ -108,6 +108,7 @@ def construct_actions(options, stage_flag):
     if Stages.finish in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
+                actions.AddFinishSshLoginMessage(),
                 actions.FinishMessage(),
             ],
             4: [
