@@ -96,6 +96,28 @@ class RuleSelinux(ActiveAction):
         common.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
 
 
+class AddFinishSshLoginMessage(ActiveAction):
+    def __init__(self):
+        self.name = "add finish ssh login message"
+        self.motd_path = "/etc/motd"
+        self.message = """
+===============================================================================
+Message from Plesk distupgrade tool:
+Congratulations! Your instance has been successfully converted into AlmaLinux8.
+Please remove this message from /etc/motd file.
+===============================================================================
+"""
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        with open(self.motd_path, "a") as motd:
+            motd.write(self.message)
+
+    def _revert_action(self):
+        pass
+
 class FinishMessage(ActiveAction):
     def __init__(self):
         self.name = "printing congratulations"
