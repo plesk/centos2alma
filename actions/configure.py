@@ -3,7 +3,7 @@ from .action import ActiveAction
 import os
 import shutil
 
-from common import leapp_configs
+from common import leapp_configs, files
 
 
 class LeapReposConfiguration(ActiveAction):
@@ -100,4 +100,21 @@ class RemoveSystemdResumeService(Actor):
             shutil.rmtree(os.path.dirname(self.path))
 
     def _revert_action(self):
+        pass
+
+
+class PatchLeappErrorOutput(ActiveAction):
+
+    def __init__(self):
+        self.name = "patch leapp error log output"
+        self.path_to_src = "/usr/share/leapp-repository/repositories/system_upgrade/common/libraries/dnfplugin.py"
+
+    def _prepare_action(self):
+        # Looks like there is no setter for stdout/stderr in the python for leapp
+        files.replace_string(self.path_to_src, "if six.PY2:", "if False:")
+
+    def _post_action(self):
+        pass
+
+    def _reverse_action(self):
         pass
