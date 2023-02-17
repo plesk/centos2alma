@@ -42,6 +42,14 @@ To use the script, simply run it without any arguments:
 This will start the conversion process. Please note that during this process, Plesk services will be temporarily shut down and hosted sites will not be accessible. At the end of the preparation process the server will be rebooted.
 Next, a temporary distro will be used to convert your CentOS 7 system to AlmaLinux 8. This process is estimated to take approximately 20 minutes. Once completed, the server will undergo another reboot. The distupgrader script will then perform the final steps of reconfiguring and restoring Plesk-related services, configurations, and databases. This may take a significant amount of time if the databases contain a large amount of data.
 Once the process is complete, the distupgrader script will reboot the server one final time, at which point it should be ready to use.
+If everything is done, you will be informed on ssh connection greetings with this message:
+```
+===============================================================================
+Message from Plesk distupgrade tool:
+Congratulations! Your instance has been successfully converted into AlmaLinux8.
+Please remove this message from /etc/motd file.
+===============================================================================
+```
 
 ### Conversion stages
 The conversion process can be divided into several stages: "prepare", "start", and "finish". Use the flag "-s" to run only one stage of the conversion process.
@@ -70,4 +78,13 @@ In some cases, leapp may not be able to handle certain installed packages, espec
 This problem may occur in rare situations, such as when a custom python installation is present. In this case, the conversion process will fail in the scope of the upgrade temporary distro, and the distro will hang without any notification. To identify the problem, you should connect to your instance using a serial port and check the status. To fix the problem, reboot the server. Note that an unfinished installation process may result in missing packages and other issues.
 
 ### Distupgrader finish failed on a first boot
+If something wrong happens in the finish stage, you will be informed on your first ssh connection with this message:
+```
+===============================================================================
+Message from Plesk distupgrade tool:
+Something is wrong during finishing stage of Centos 7 to AlmaLinux 8 conversion
+Please check /var/log/plesk/distupgrader.log for more details.
+Please remove this message from /etc/motd file.
+===============================================================================
+```
 The problem can be identified in the distupgrader log '/var/log/plesk/distupgrader.log'. If the distupgrader finish stage fails for any reason, you can rerun it with 'distupgrader -s finish' after addressing the cause of the failure.

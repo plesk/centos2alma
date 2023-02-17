@@ -150,6 +150,18 @@ def get_flow(stage_flag, actions_map):
         return actions.PrepareActionsFlow(actions_map)
 
 
+def inform_about_problems():
+    with open("/etc/motd", "a") as motd:
+        motd.write("""
+===============================================================================
+Message from Plesk distupgrade tool:
+Something is wrong during finishing stage of Centos 7 to AlmaLinux 8 conversion
+Please check /var/log/plesk/distupgrader.log for more details.
+Please remove this message from /etc/motd file.
+===============================================================================
+""")
+
+
 def main():
     common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
 
@@ -181,6 +193,9 @@ def main():
             flow.pass_actions()
     except Exception as ex:
         common.log.err("{}".format(ex))
+        if stage_flag == Stages.finish:
+            inform_about_problems()
+
         return 1
 
     if Stages.convert in stage_flag or Stages.finish in stage_flag:
