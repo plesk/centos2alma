@@ -112,7 +112,6 @@ def construct_actions(options, stage_flag):
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
                 actions.AddFinishSshLoginMessage(),
-                actions.FinishMessage(),
             ],
             4: [
                 actions.AdoptPleskRepositories(),
@@ -209,7 +208,7 @@ def main():
             common.log.err("Distupgrade process has been failed. Error: {}".format(flow.get_error()))
 
             sys.stdout.write("\n{}\n".format(flow.get_error()))
-            sys.stdout.write("\033[91mDistupgrade process has been failed.\033[0m Please check \033[93m{}\033[0m for more details\n".format(common.DEFAULT_LOG_FILE))
+            sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
 
             if stage_flag == Stages.finish:
                 inform_about_problems()
@@ -217,6 +216,11 @@ def main():
 
     if Stages.convert in stage_flag or Stages.finish in stage_flag:
         common.log.info("Going to reboot the system")
+        if Stages.convert in stage_flag:
+            sys.stdout.write(common.CONVERT_RESTART_MESSAGE)
+        elif Stages.finish in stage_flag:
+            sys.stdout.write(common.FINISH_RESTART_MESSAGE)
+
         subprocess.call(["systemctl", "reboot"])
 
     return 0

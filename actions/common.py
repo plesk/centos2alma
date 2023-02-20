@@ -119,19 +119,6 @@ Please remove this message from /etc/motd file.
     def _revert_action(self):
         pass
 
-class FinishMessage(ActiveAction):
-    def __init__(self):
-        self.name = "printing congratulations"
-
-    def _prepare_action(self):
-        pass
-
-    def _post_action(self):
-        common.log.info("Done! Your instance has been converted into AlmaLinux8.")
-
-    def _revert_action(self):
-        common.log.info("Revert is over, now plesk should be in working state.")
-
 
 class PleskInstallerNotInProgress(CheckAction):
     def __init__(self):
