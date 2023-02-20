@@ -178,7 +178,7 @@ def start_flow(flow):
 
 
 def main():
-    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
+    common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",

@@ -1,6 +1,9 @@
 import logging
 
 
+DEFAULT_LOG_FILE = "/var/log/plesk/distupgrader.log"
+
+
 class log():
 
     logger = logging.getLogger("distupgrader")

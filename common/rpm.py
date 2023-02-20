@@ -1,5 +1,7 @@
 import subprocess
 
+from common import util
+
 
 def filter_installed_packages(lookup_pkgs):
     pkgs = []
@@ -26,7 +28,7 @@ def is_package_installed(pkg):
 
 
 def install_packages(pkgs):
-    subprocess.check_call(["yum", "install", "-y"] + pkgs)
+    util.logged_check_call(["yum", "install", "-y"] + pkgs)
 
 def remove_packages(pkg):
-    subprocess.check_call(["rpm", "-e", "--nodeps", pkg])
+    util.logged_check_call(["rpm", "-e", "--nodeps", pkg])
