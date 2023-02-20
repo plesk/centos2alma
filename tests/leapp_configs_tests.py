@@ -258,3 +258,60 @@ class SetPackageRepositoryTests(unittest.TestCase):
             print(json_data)
             print(self.INITIAL_JSON)
             self.assertEqual(json_data, self.INITIAL_JSON)
+
+
+class SetPackageActionTests(unittest.TestCase):
+    INITIAL_JSON = {
+        "packageinfo": [
+            {
+                "action": 1,
+                "in_packageset": {
+                    "package": [
+                        {
+                            "name": "some",
+                            "repository": "some-repo",
+                        },
+                    ],
+                },
+            },
+            {
+                "action": 4,
+                "in_packageset": {
+                    "package": [
+                        {
+                            "name": "other",
+                            "repository": "some-repo",
+                        },
+                    ],
+                },
+            }
+        ]
+    }
+
+    JSON_FILE_PATH = "leapp_upgrade_repositories.json"
+    # Since json could take pretty much symbols remove the restriction
+    maxDiff = None
+
+    def setUp(self):
+        with open(self.JSON_FILE_PATH, "w") as f:
+            f.write(json.dumps(self.INITIAL_JSON, indent=4))
+
+    def tearDown(self):
+        if os.path.exists(self.JSON_FILE_PATH):
+            os.remove(self.JSON_FILE_PATH)
+        pass
+
+    def test_set_package_action(self):
+        leapp_configs.set_package_action("some", 3, leapp_pkgs_conf_path=self.JSON_FILE_PATH)
+
+        with open(self.JSON_FILE_PATH) as f:
+            json_data = json.load(f)
+            self.assertEqual(json_data["packageinfo"][0]["action"], 3)
+            self.assertEqual(json_data["packageinfo"][1]["action"], 4)
+
+    def test_set_unexcited_package_action(self):
+        leapp_configs.set_package_action("unexsisted", 3, leapp_pkgs_conf_path=self.JSON_FILE_PATH)
+
+        with open(self.JSON_FILE_PATH, "r") as f:
+            json_data = json.load(f)
+            self.assertEqual(json_data, self.INITIAL_JSON)
