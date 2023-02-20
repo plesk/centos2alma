@@ -2,6 +2,8 @@ import os
 import json
 import shutil
 
+from enum import IntEnum
+
 import common
 
 
@@ -65,6 +67,7 @@ def _do_url_replacement(url):
         lambda to_change: to_change.replace("centos7", "centos8"),
         lambda to_change: to_change.replace("centos/7", "centos/8"),
         lambda to_change: to_change.replace("rhel-$releasever", "rhel-8"),
+        lambda to_change: to_change.replace("$releasever", "8"),
     ])
 
 
@@ -231,5 +234,30 @@ def set_package_repository(package, repository, leapp_pkgs_conf_path=LEAPP_PKGS_
             for outpkg in info["out_packageset"]["package"]:
                 if outpkg["name"] == package:
                     outpkg["repository"] = repository
+
+    common.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
+
+
+# The following types are defined in the leapp-repository repository and can be used
+# to define the action type of the package in the pes-events.json file.
+class LeappActionType(IntEnum):
+    PRESENT = 0
+    REMOVED = 1
+    DEPRECATED = 2
+    REPLACED = 3
+    SPLIT = 4
+    MERGED = 5
+    MOVED = 6
+    RENAMED = 7
+
+
+def set_package_action(package, type, leapp_pkgs_conf_path=LEAPP_PKGS_CONF_PATH):
+    pkg_mapping = None
+    with open(leapp_pkgs_conf_path, "r") as pkg_mapping_file:
+        pkg_mapping = json.load(pkg_mapping_file)
+        for info in pkg_mapping["packageinfo"]:
+            for inpackage in info["in_packageset"]["package"]:
+                if inpackage["name"] == package:
+                    info["action"] = type
 
     common.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
