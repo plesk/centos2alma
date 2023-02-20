@@ -1,5 +1,9 @@
 import os
 import json
+import math
+import time
+import sys
+
 from enum import Enum
 
 import common
@@ -16,6 +20,12 @@ class Action():
 
     def __repr__(self):
         return "{classname}".format(classname=self.__class__.__name__)
+
+    def estimate_time(self):
+        # Assume all actions takes no more than 1 second by default
+        # We trying to avoid estimate for small actions like
+        # "change one line in string" or "remove one file"... etc
+        return 1
 
 
 class ActiveAction(Action):
@@ -69,6 +79,11 @@ class ActiveFlow(ActionsFlow):
 
     def __init__(self, stages):
         super().__init__(stages)
+        self._finished = False
+        self.current_stage = "initiliazing"
+        self.current_action = "initiliazing"
+        self.total_time = 0
+        self.error = None
 
     def validate_actions(self):
         # Note. This one is for development porpuses only
@@ -79,6 +94,7 @@ class ActiveFlow(ActionsFlow):
 
     def pass_actions(self):
         stages = self._get_flow()
+        self._finished = False
 
         for stage_id, actions in stages.items():
             self._pre_stage(stage_id, actions)
@@ -88,24 +104,27 @@ class ActiveFlow(ActionsFlow):
                     self._save_action_state(action.name, ActionState.skiped)
                     continue
 
-                common.log.info("Do: {description!s}".format(description=action))
-
                 try:
                     self._invoke_action(action)
                 except Exception as ex:
                     self._save_action_state(action.name, ActionState.failed)
-                    raise Exception("Failed: {description!s}. The reason: {error}".format(description=action, error=ex))
+                    self.error = Exception("Failed: {description!s}. The reason: {error}".format(description=action, error=ex))
+                    return False
 
                 self._save_action_state(action.name, ActionState.success)
                 common.log.info("Success: {description!s}".format(description=action))
 
             self._post_stage(stage_id, actions)
 
+        self._finished = True
+        return True
+
     def _get_flow(self):
         pass
 
     def _pre_stage(self, stage_id, actions):
         common.log.info("Start stage {stage}.".format(stage=stage_id))
+        self.current_stage = stage_id
         pass
 
     def _post_stage(self, stage_id, actions):
@@ -115,7 +134,8 @@ class ActiveFlow(ActionsFlow):
         return action.is_required()
 
     def _invoke_action(self, action):
-        pass
+        common.log.info("Do: {description!s}".format(description=action))
+        self.current_action = action.name
 
     def _save_action_state(self, name, state):
         pass
@@ -126,6 +146,31 @@ class ActiveFlow(ActionsFlow):
                 return json.load(actions_data_file)
 
         return {"actions": []}
+
+    def is_finished(self):
+        return self._finished or self.error is not None
+
+    def is_failed(self):
+        return self.error is not None
+
+    def get_error(self):
+        return self.error
+
+    def get_current_stage(self):
+        return self.current_stage
+
+    def get_current_action(self):
+        return self.current_action
+
+    def get_total_time(self):
+        if self.total_time != 0:
+            return self.total_time
+
+        for _, actions in self.stages.items():
+            for action in actions:
+                self.total_time += action.estimate_time()
+
+        return self.total_time
 
 
 class PrepareActionsFlow(ActiveFlow):
@@ -153,6 +198,7 @@ class PrepareActionsFlow(ActiveFlow):
         return self.stages
 
     def _invoke_action(self, action):
+        super()._invoke_action(action)
         action.invoke_prepare()
 
 
@@ -184,11 +230,13 @@ class ReverseActionFlow(ActiveFlow):
 
 class FinishActionsFlow(ReverseActionFlow):
     def _invoke_action(self, action):
+        super()._invoke_action(action)
         action.invoke_post()
 
 
 class RevertActionsFlow(ReverseActionFlow):
     def _invoke_action(self, action):
+        super()._invoke_action(action)
         action.invoke_revert()
 
 class CheckAction(Action):
@@ -218,3 +266,45 @@ class CheckFlow(ActionsFlow):
                 is_all_passed = False
 
         return is_all_passed
+
+
+class FlowProgressbar():
+    def __init__(self, flow):
+        self.flow = flow
+        self.total_time = flow.get_total_time()
+
+    def _seconds_to_minutes(self, seconds):
+        minutes = int(seconds / 60)
+        seconds = int(seconds % 60)
+        return f"{minutes:02d}:{seconds:02d}"
+
+    def get_action_description(self):
+        description = f" stage {self.flow.get_current_stage()} / action {self.flow.get_current_action()} "
+        description_length = len(description)
+        return "(" + " " * math.floor((50 - description_length) / 2) + description + " " * math.ceil((50 - description_length) / 2) + ")"
+
+    def display(self):
+        start_time = time.time()
+        passed_time = 0
+
+        while passed_time < self.total_time and not self.flow.is_finished():
+            percent = int((passed_time) / self.total_time * 100)
+
+            description = self.get_action_description()
+
+            progress = "=" * int(percent / 2) + ">" + " " * (50 - int(percent / 2))
+            progress = progress[:25] + description + progress[25:]
+
+            if percent < 80:
+                color = "\033[92m"  # green
+            else:
+                color = "\033[93m"  # yellow
+
+            sys.stdout.write(f"\r{color}[{progress}] {self._seconds_to_minutes(passed_time)} / {self._seconds_to_minutes(self.total_time)}\033[0m")
+            sys.stdout.flush()
+            time.sleep(1)
+            passed_time = time.time() - start_time
+
+        if passed_time > self.total_time:
+            sys.stdout.write("\r\033[91m[" + "X" * 25 + self.get_action_description() + "X" * 25 + "] exceed\033[0m")
+            sys.stdout.write(common.TIME_EXCEEDED_MESSAGE.format(common.DEFAULT_LOG_FILE))

@@ -6,6 +6,7 @@ import subprocess
 import common
 
 
+
 class FixNamedConfig(ActiveAction):
     def __init__(self):
         self.name = "fix named configuration"

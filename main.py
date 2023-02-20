@@ -6,6 +6,7 @@ import common
 import subprocess
 import sys
 import os
+import threading
 from optparse import OptionParser
 from enum import Enum, Flag, auto
 
@@ -164,6 +165,18 @@ Please remove this message from /etc/motd file.
 """)
 
 
+def start_flow(flow):
+    progressbar = actions.FlowProgressbar(flow)
+    progress = threading.Thread(target=progressbar.display)
+    executor = threading.Thread(target=flow.pass_actions)
+
+    progress.start()
+    executor.start()
+
+    executor.join()
+    progress.join()
+
+
 def main():
     common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
 
@@ -189,16 +202,18 @@ def main():
 
     actions_map = construct_actions(options, stage_flag)
 
-    try:
-        with get_flow(stage_flag, actions_map) as flow:
-            flow.validate_actions()
-            flow.pass_actions()
-    except Exception as ex:
-        common.log.err("{}".format(ex))
-        if stage_flag == Stages.finish:
-            inform_about_problems()
+    with get_flow(stage_flag, actions_map) as flow:
+        flow.validate_actions()
+        start_flow(flow)
+        if flow.is_failed():
+            common.log.err("Distupgrade process has been failed. Error: {}".format(flow.get_error()))
 
-        return 1
+            sys.stdout.write("\n{}\n".format(flow.get_error()))
+            sys.stdout.write("\033[91mDistupgrade process has been failed.\033[0m Please check \033[93m{}\033[0m for more details\n".format(common.DEFAULT_LOG_FILE))
+
+            if stage_flag == Stages.finish:
+                inform_about_problems()
+            return 1
 
     if Stages.convert in stage_flag or Stages.finish in stage_flag:
         common.log.info("Going to reboot the system")

@@ -53,6 +53,9 @@ class RulePleskRelatedServices(ActiveAction):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
         subprocess.check_call(["systemctl", "start"] + self.plesk_systemd_services)
 
+    def estimate_time(self):
+        return 10
+
 
 class AddUpgradeSystemdService(ActiveAction):
 
