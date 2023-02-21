@@ -89,6 +89,7 @@ def construct_actions(options, stage_flag):
                 actions.RemovingPackages(),
                 actions.PostgresDatabasesUpdate(),
                 actions.UpdateMariadbDatabase(),
+                actions.AddMysqlConnector(),
                 actions.ReinstallPleskComponents(),
                 actions.DisableSuspiciousKernelModules(),
                 actions.FixSpamassassinConfig(),
