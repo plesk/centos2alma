@@ -125,7 +125,7 @@ def construct_actions(options, stage_flag):
 def extract_stage_flag(options):
     # revert flag has the highest priority
     if options.revert:
-        stage_flag = Stages.revert
+        return Stages.revert
 
     if options.stage is None:
         return Stages.prepare | Stages.convert
