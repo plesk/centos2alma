@@ -16,6 +16,7 @@ class RulePleskRelatedServices(ActiveAction):
             "httpd.service",
             "mailman.service",
             "mariadb.service",
+            "mysqld.service",
             "named-chroot.service",
             "plesk-ext-monitoring-hcd.service",
             "plesk-ip-remapping.service",
@@ -96,6 +97,7 @@ class StartPleskBasicServices(ActiveAction):
         self.name = "starting plesk services"
         self.plesk_basic_services = [
             "mariadb.service",
+            "mysqld.service",
             "plesk-task-manager.service",
             "plesk-web-socket.service",
             "sw-cp-server.service",
