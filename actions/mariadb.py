@@ -46,6 +46,21 @@ def _is_mariadb_installed():
     return "MariaDB" in out
 
 
+def _is_mysql_installed():
+    util = _get_mariadb_utilname()
+    if util is None or util == "mariadb":
+        return False
+
+    process = subprocess.Popen([util, "--version"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True)
+    out, _ = process.communicate()
+    if process.returncode != 0:
+        return False
+
+    return "MariaDB" not in out
+
+
 def _get_mariadb_version():
     util = _get_mariadb_utilname()
     process = subprocess.Popen([util, "--version"],
@@ -103,6 +118,23 @@ class UpdateMariadbDatabase(ActiveAction):
         # Also find a way to drop cookies, because it will ruin your day
         # We have to delete it once again, because leapp going to install it in scope of conversation process,
         # but without right configs
+
+    def _revert_action(self):
+        pass
+
+
+class AddMysqlConnector(ActiveAction):
+    def __init__(self):
+        self.name = "install mysql connector"
+
+    def _is_required(self):
+        return _is_mysql_installed()
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        subprocess.check_call(["dnf", "install", "-y", "mariadb-connector-c"])
 
     def _revert_action(self):
         pass
