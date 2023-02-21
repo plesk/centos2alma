@@ -4,6 +4,10 @@ import subprocess
 import os
 
 
+def _is_service_exists(service):
+    return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
+
+
 class RulePleskRelatedServices(ActiveAction):
 
     def __init__(self):
@@ -28,17 +32,14 @@ class RulePleskRelatedServices(ActiveAction):
             "sw-cp-server.service",
             "sw-engine.service",
         ]
-        self.plesk_systemd_services = [service for service in plesk_known_systemd_services if self._is_service_exists(service)]
+        self.plesk_systemd_services = [service for service in plesk_known_systemd_services if _is_service_exists(service)]
 
         # We don't remove postfix service when remove it during qmail installation
         # so we should choose the right smtp service, otherwise they will conflict
-        if self._is_service_exists("qmail.service"):
+        if _is_service_exists("qmail.service"):
             self.plesk_systemd_services.append("qmail.service")
         else:
             self.plesk_systemd_services.append("postfix.service")
-
-    def _is_service_exists(self, service):
-        return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
 
     def _prepare_action(self):
         subprocess.check_call(["systemctl", "stop"] + self.plesk_systemd_services)
@@ -103,6 +104,7 @@ class StartPleskBasicServices(ActiveAction):
             "sw-cp-server.service",
             "sw-engine.service",
         ]
+        self.plesk_basic_services = [service for service in self.plesk_basic_services if _is_service_exists(service)]
 
     def _enable_services(self):
         subprocess.check_call(["systemctl", "enable"] + self.plesk_basic_services)
