@@ -116,5 +116,5 @@ class PatchLeappErrorOutput(ActiveAction):
     def _post_action(self):
         pass
 
-    def _reverse_action(self):
+    def _revert_action(self):
         pass

@@ -54,7 +54,13 @@ class RulePleskRelatedServices(ActiveAction):
         util.logged_check_call(["systemctl", "enable"] + self.plesk_systemd_services)
         util.logged_check_call(["systemctl", "start"] + self.plesk_systemd_services)
 
-    def estimate_time(self):
+    def estimate_prepare_time(self):
+        return 10
+
+    def estimate_post_time(self):
+        return 5
+
+    def estimate_revert_time(self):
         return 10
 
 

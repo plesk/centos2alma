@@ -21,10 +21,17 @@ class Action():
     def __repr__(self):
         return "{classname}".format(classname=self.__class__.__name__)
 
-    def estimate_time(self):
-        # Assume all actions takes no more than 1 second by default
-        # We trying to avoid estimate for small actions like
-        # "change one line in string" or "remove one file"... etc
+    # For all estimates we assume all actions takes no more
+    # than 1 second by default.
+    # We trying to avoid estimate for small actions like
+    # "change one line in string" or "remove one file"... etc
+    def estimate_prepare_time(self):
+        return 1
+
+    def estimate_post_time(self):
+        return 1
+
+    def estimate_revert_time(self):
         return 1
 
 
@@ -162,13 +169,16 @@ class ActiveFlow(ActionsFlow):
     def get_current_action(self):
         return self.current_action
 
+    def _get_action_estimate(self, action):
+        return action.estimate_prepare_time()
+
     def get_total_time(self):
         if self.total_time != 0:
             return self.total_time
 
         for _, actions in self.stages.items():
             for action in actions:
-                self.total_time += action.estimate_time()
+                self.total_time += self._get_action_estimate(action)
 
         return self.total_time
 
@@ -200,6 +210,9 @@ class PrepareActionsFlow(ActiveFlow):
     def _invoke_action(self, action):
         super()._invoke_action(action)
         action.invoke_prepare()
+
+    def _get_action_estimate(self, action):
+        return action.estimate_prepare_time()
 
 
 class ReverseActionFlow(ActiveFlow):
@@ -233,11 +246,22 @@ class FinishActionsFlow(ReverseActionFlow):
         super()._invoke_action(action)
         action.invoke_post()
 
+    def _get_action_estimate(self, action):
+        if not self._is_action_required(action):
+            return 0
+        return action.estimate_post_time()
+
 
 class RevertActionsFlow(ReverseActionFlow):
     def _invoke_action(self, action):
         super()._invoke_action(action)
         action.invoke_revert()
+
+    def _get_action_estimate(self, action):
+        if not self._is_action_required(action):
+            return 0
+        return action.estimate_revert_time()
+
 
 class CheckAction(Action):
     def do_check(self):

@@ -28,8 +28,11 @@ class RemovingPackages(ActiveAction):
     def _revert_action(self):
         common.install_packages(self.conflict_pkgs)
 
-    def estimate_time(self):
+    def estimate_prepare_time(self):
         return 2
+
+    def estimate_revert_time(self):
+        return 10
 
 
 class ReinstallPleskComponents(ActiveAction):
@@ -60,8 +63,14 @@ class ReinstallPleskComponents(ActiveAction):
         util.logged_check_call(["plesk", "installer", "update"])
         util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
 
-    def estimate_time(self):
+    def estimate_prepare_time(self):
         return 10
+
+    def estimate_post_time(self):
+        return 2 * 60
+
+    def estimate_revert_time(self):
+        return 2 * 60
 
 
 class UpdatePlesk(ActiveAction):
@@ -77,8 +86,8 @@ class UpdatePlesk(ActiveAction):
     def _revert_action(self):
         pass
 
-    def estimate_time(self):
-        return 120
+    def estimate_prepare_time(self):
+        return 3 * 60
 
 
 class AdoptPleskRepositories(ActiveAction):
@@ -103,3 +112,6 @@ class AdoptPleskRepositories(ActiveAction):
 
     def _revert_action(self):
         pass
+
+    def estimate_post_time(self):
+        return 2 * 60

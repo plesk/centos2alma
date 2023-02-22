@@ -98,6 +98,9 @@ class PostgresDatabasesUpdate(ActiveAction):
     def _revert_action(self):
         self._enable_postgresql()
 
+    def estimate_post_time(self):
+        return 3 * 60
+
 
 class PostgresReinstallModernPackage(ActiveAction):
     # Leapp is going to remove postgresql package from the system during conversion process.
@@ -151,3 +154,6 @@ class PostgresReinstallModernPackage(ActiveAction):
                 util.logged_check_call(['systemctl', 'stop', service_name])
                 util.logged_check_call(['systemctl', 'disable', service_name])
                 os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
+
+    def estimate_post_time(self):
+        return 3 * 60

@@ -3,12 +3,14 @@
 import actions
 import common
 
-import subprocess
-import sys
+from datetime import datetime
 import os
+import sys
+import subprocess
 import threading
-from optparse import OptionParser
+
 from enum import Enum, Flag, auto
+from optparse import OptionParser
 
 
 def merge_dicts_of_lists(dict1, dict2):
@@ -220,11 +222,14 @@ def main():
     if Stages.convert in stage_flag or Stages.finish in stage_flag:
         common.log.info("Going to reboot the system")
         if Stages.convert in stage_flag:
-            sys.stdout.write(common.CONVERT_RESTART_MESSAGE)
+            sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(datetime.now().strftime("%H:%M:%S")))
         elif Stages.finish in stage_flag:
             sys.stdout.write(common.FINISH_RESTART_MESSAGE)
 
         subprocess.call(["systemctl", "reboot"])
+
+    if Stages.revert in stage_flag:
+        sys.stdout.write(common.REVET_FINISHED_MESSAGE)
 
     return 0
 
