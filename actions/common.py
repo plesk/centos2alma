@@ -4,6 +4,7 @@ import os
 import subprocess
 
 import common
+from common import util
 
 
 class FixNamedConfig(ActiveAction):
@@ -34,19 +35,19 @@ class FixSpamassassinConfig(ActiveAction):
         return common.is_package_installed("psa-spamassassin")
 
     def _prepare_action(self):
-        subprocess.check_call(["systemctl", "stop", "spamassassin.service"])
-        subprocess.check_call(["systemctl", "disable", "spamassassin.service"])
+        util.logged_check_call(["systemctl", "stop", "spamassassin.service"])
+        util.logged_check_call(["systemctl", "disable", "spamassassin.service"])
 
     def _post_action(self):
-        subprocess.check_call(["plesk", "sbin", "spammng", "--enable"])
-        subprocess.check_call(["plesk", "sbin", "spammng", "--update", "--enable-server-configs", "--enable-user-configs"])
+        util.logged_check_call(["plesk", "sbin", "spammng", "--enable"])
+        util.logged_check_call(["plesk", "sbin", "spammng", "--update", "--enable-server-configs", "--enable-user-configs"])
 
-        subprocess.check_call(["systemctl", "daemon-reload"])
-        subprocess.check_call(["systemctl", "enable", "spamassassin.service"])
+        util.logged_check_call(["systemctl", "daemon-reload"])
+        util.logged_check_call(["systemctl", "enable", "spamassassin.service"])
 
     def _revert_action(self):
-        subprocess.check_call(["systemctl", "enable", "spamassassin.service"])
-        subprocess.check_call(["systemctl", "start", "spamassassin.service"])
+        util.logged_check_call(["systemctl", "enable", "spamassassin.service"])
+        util.logged_check_call(["systemctl", "start", "spamassassin.service"])
 
 
 class DisableSuspiciousKernelModules(ActiveAction):
@@ -70,7 +71,7 @@ class DisableSuspiciousKernelModules(ActiveAction):
                 kern_mods_config.write("blacklist {module}\n".format(module=suspicious_module))
 
         for enabled_modules in self._get_enabled_modules(self.suspicious_modules):
-            subprocess.check_call(["rmmod", enabled_modules])
+            util.logged_check_call(["rmmod", enabled_modules])
 
     def _post_action(self):
         for module in self.suspicious_modules:
@@ -117,19 +118,6 @@ Please remove this message from /etc/motd file.
 
     def _revert_action(self):
         pass
-
-class FinishMessage(ActiveAction):
-    def __init__(self):
-        self.name = "printing congratulations"
-
-    def _prepare_action(self):
-        pass
-
-    def _post_action(self):
-        common.log.info("Done! Your instance has been converted into AlmaLinux8.")
-
-    def _revert_action(self):
-        common.log.info("Revert is over, now plesk should be in working state.")
 
 
 class PleskInstallerNotInProgress(CheckAction):

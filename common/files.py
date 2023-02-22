@@ -40,3 +40,8 @@ def rewrite_json_file(filename, jobj):
         dst.write(json.dumps(jobj, indent=4))
 
     shutil.move(filename + ".next", filename)
+
+
+def get_last_lines(filename, n):
+    with open(filename) as f:
+        return f.readlines()[-n:]

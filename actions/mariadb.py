@@ -6,6 +6,7 @@ import os
 
 from common import leapp_configs
 from common import log
+from common import util
 
 
 MARIADB_VERSION_ON_ALMA = "10.3.35"
@@ -110,11 +111,11 @@ class UpdateMariadbDatabase(ActiveAction):
 
     def _post_action(self):
         # We should be sure mariadb is started, otherwise restore woulden't work
-        subprocess.check_call(["systemctl", "start", "mariadb"])
+        util.logged_check_call(["systemctl", "start", "mariadb"])
 
         with open('/etc/psa/.psa.shadow', 'r') as shadowfile:
             shadowdata = shadowfile.readline().rstrip()
-            subprocess.check_call(["mysql_upgrade", "-uadmin", "-p" + shadowdata])
+            util.logged_check_call(["mysql_upgrade", "-uadmin", "-p" + shadowdata])
         # Also find a way to drop cookies, because it will ruin your day
         # We have to delete it once again, because leapp going to install it in scope of conversation process,
         # but without right configs

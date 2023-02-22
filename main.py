@@ -6,6 +6,7 @@ import common
 import subprocess
 import sys
 import os
+import threading
 from optparse import OptionParser
 from enum import Enum, Flag, auto
 
@@ -111,7 +112,6 @@ def construct_actions(options, stage_flag):
         actions_map = merge_dicts_of_lists(actions_map, {
             1: [
                 actions.AddFinishSshLoginMessage(),
-                actions.FinishMessage(),
             ],
             4: [
                 actions.AdoptPleskRepositories(),
@@ -164,8 +164,20 @@ Please remove this message from /etc/motd file.
 """)
 
 
+def start_flow(flow):
+    progressbar = actions.FlowProgressbar(flow)
+    progress = threading.Thread(target=progressbar.display)
+    executor = threading.Thread(target=flow.pass_actions)
+
+    progress.start()
+    executor.start()
+
+    executor.join()
+    progress.join()
+
+
 def main():
-    common.log.init_logger(["/var/log/plesk/distupgrader.log"], [sys.stdout], console=True)
+    common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
 
     opts = OptionParser(usage="distupgrader [options] [stage]")
     opts.add_option("-s", "--stage", type="choice",
@@ -189,19 +201,29 @@ def main():
 
     actions_map = construct_actions(options, stage_flag)
 
-    try:
-        with get_flow(stage_flag, actions_map) as flow:
-            flow.validate_actions()
-            flow.pass_actions()
-    except Exception as ex:
-        common.log.err("{}".format(ex))
-        if stage_flag == Stages.finish:
-            inform_about_problems()
+    with get_flow(stage_flag, actions_map) as flow:
+        flow.validate_actions()
+        start_flow(flow)
+        if flow.is_failed():
+            common.log.err("Distupgrade process has been failed. Error: {}".format(flow.get_error()))
 
-        return 1
+            sys.stdout.write("\n{}\n".format(flow.get_error()))
+            sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
+            sys.stdout.write("Last 100 lines of the log file:\n")
+            for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
+                sys.stdout.write(line)
+
+            if stage_flag == Stages.finish:
+                inform_about_problems()
+            return 1
 
     if Stages.convert in stage_flag or Stages.finish in stage_flag:
         common.log.info("Going to reboot the system")
+        if Stages.convert in stage_flag:
+            sys.stdout.write(common.CONVERT_RESTART_MESSAGE)
+        elif Stages.finish in stage_flag:
+            sys.stdout.write(common.FINISH_RESTART_MESSAGE)
+
         subprocess.call(["systemctl", "reboot"])
 
     return 0

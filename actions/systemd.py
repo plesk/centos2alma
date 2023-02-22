@@ -3,6 +3,7 @@ from .action import ActiveAction
 import subprocess
 import os
 
+from common import util
 
 def _is_service_exists(service):
     return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
@@ -42,16 +43,19 @@ class RulePleskRelatedServices(ActiveAction):
             self.plesk_systemd_services.append("postfix.service")
 
     def _prepare_action(self):
-        subprocess.check_call(["systemctl", "stop"] + self.plesk_systemd_services)
-        subprocess.check_call(["systemctl", "disable"] + self.plesk_systemd_services)
+        util.logged_check_call(["systemctl", "stop"] + self.plesk_systemd_services)
+        util.logged_check_call(["systemctl", "disable"] + self.plesk_systemd_services)
 
     def _post_action(self):
-        subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
+        util.logged_check_call(["systemctl", "enable"] + self.plesk_systemd_services)
         # Don't do startup because the services will be started up after reboot at the end of the script anyway.
 
     def _revert_action(self):
-        subprocess.check_call(["systemctl", "enable"] + self.plesk_systemd_services)
-        subprocess.check_call(["systemctl", "start"] + self.plesk_systemd_services)
+        util.logged_check_call(["systemctl", "enable"] + self.plesk_systemd_services)
+        util.logged_check_call(["systemctl", "start"] + self.plesk_systemd_services)
+
+    def estimate_time(self):
+        return 10
 
 
 class AddUpgradeSystemdService(ActiveAction):
@@ -80,16 +84,16 @@ WantedBy=multi-user.target
         with open(self.service_file_path, "w") as dst:
             dst.write(self.service_content.format(script_path=self.script_path))
 
-        subprocess.check_call(["systemctl", "enable", self.service_name])
+        util.logged_check_call(["systemctl", "enable", self.service_name])
 
     def _post_action(self):
-        subprocess.check_call(["systemctl", "disable", self.service_name])
+        util.logged_check_call(["systemctl", "disable", self.service_name])
 
         if os.path.exists(self.service_file_path):
             os.remove(self.service_file_path)
 
     def _revert_action(self):
-        subprocess.check_call(["systemctl", "disable", self.service_name])
+        util.logged_check_call(["systemctl", "disable", self.service_name])
 
 
 class StartPleskBasicServices(ActiveAction):
@@ -107,8 +111,8 @@ class StartPleskBasicServices(ActiveAction):
         self.plesk_basic_services = [service for service in self.plesk_basic_services if _is_service_exists(service)]
 
     def _enable_services(self):
-        subprocess.check_call(["systemctl", "enable"] + self.plesk_basic_services)
-        subprocess.check_call(["systemctl", "start"] + self.plesk_basic_services)
+        util.logged_check_call(["systemctl", "enable"] + self.plesk_basic_services)
+        util.logged_check_call(["systemctl", "start"] + self.plesk_basic_services)
 
     def _prepare_action(self):
         pass

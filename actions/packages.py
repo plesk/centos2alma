@@ -4,6 +4,7 @@ import subprocess
 import os
 
 import common
+from common import util
 
 
 class RemovingPackages(ActiveAction):
@@ -27,6 +28,9 @@ class RemovingPackages(ActiveAction):
     def _revert_action(self):
         common.install_packages(self.conflict_pkgs)
 
+    def estimate_time(self):
+        return 2
+
 
 class ReinstallPleskComponents(ActiveAction):
     def __init__(self):
@@ -48,13 +52,16 @@ class ReinstallPleskComponents(ActiveAction):
         # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
         common.remove_packages("psa-phpmyadmin")
-        subprocess.check_call(["plesk", "installer", "update"])
+        util.logged_check_call(["plesk", "installer", "update"])
 
-        subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
+        util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
 
     def _revert_action(self):
-        subprocess.check_call(["plesk", "installer", "update"])
-        subprocess.check_call(["plesk", "installer", "add", "--components", "roundcube"])
+        util.logged_check_call(["plesk", "installer", "update"])
+        util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
+
+    def estimate_time(self):
+        return 10
 
 
 class UpdatePlesk(ActiveAction):
@@ -62,13 +69,16 @@ class UpdatePlesk(ActiveAction):
         self.name = "updating plesk"
 
     def _prepare_action(self):
-        subprocess.check_call(["plesk", "installer", "update"])
+        util.logged_check_call(["plesk", "installer", "update"])
 
     def _post_action(self):
         pass
 
     def _revert_action(self):
         pass
+
+    def estimate_time(self):
+        return 120
 
 
 class AdoptPleskRepositories(ActiveAction):
@@ -89,7 +99,7 @@ class AdoptPleskRepositories(ActiveAction):
             ])
             common.adopt_repositories(file.path)
 
-        subprocess.check_call(["dnf", "-y", "update"])
+        util.logged_check_call(["dnf", "-y", "update"])
 
     def _revert_action(self):
         pass

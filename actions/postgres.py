@@ -5,6 +5,7 @@ import subprocess
 import shutil
 
 from common import leapp_configs
+from common import util
 
 _PATH_TO_PGSQL = '/var/lib/pgsql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
@@ -58,13 +59,13 @@ class PostgresDatabasesUpdate(ActiveAction):
         return _is_postgres_installed() and _is_database_initialized() and not _is_modern_database()
 
     def _prepare_action(self):
-        subprocess.check_call(['systemctl', 'stop', self.service_name])
-        subprocess.check_call(['systemctl', 'disable', self.service_name])
+        util.logged_check_call(['systemctl', 'stop', self.service_name])
+        util.logged_check_call(['systemctl', 'disable', self.service_name])
 
     def _upgrade_database(self):
-        subprocess.check_call(['dnf', 'install', '-y', 'postgresql-upgrade'])
+        util.logged_check_call(['dnf', 'install', '-y', 'postgresql-upgrade'])
 
-        subprocess.check_call(['postgresql-setup', '--upgrade'])
+        util.logged_check_call(['postgresql-setup', '--upgrade'])
 
         old_config_path = os.path.join(_PATH_TO_OLD_DATA, 'pg_hba.conf')
         new_config_path = os.path.join(_PATH_TO_DATA, 'pg_hba.conf')
@@ -84,11 +85,11 @@ class PostgresDatabasesUpdate(ActiveAction):
 
         shutil.move(next_config_path, new_config_path)
 
-        subprocess.check_call(['dnf', 'remove', '-y', 'postgresql-upgrade'])
+        util.logged_check_call(['dnf', 'remove', '-y', 'postgresql-upgrade'])
 
     def _enable_postgresql(self):
-        subprocess.check_call(['systemctl', 'enable', self.service_name])
-        subprocess.check_call(['systemctl', 'start', self.service_name])
+        util.logged_check_call(['systemctl', 'enable', self.service_name])
+        util.logged_check_call(['systemctl', 'start', self.service_name])
 
     def _post_action(self):
         self._upgrade_database()
@@ -123,30 +124,30 @@ class PostgresReinstallModernPackage(ActiveAction):
             if self._is_service_active(service_name):
                 with open(os.path.join(_PATH_TO_PGSQL, str(major_version)) + '.enabled', 'w') as fp:
                     pass
-                subprocess.check_call(['systemctl', 'stop', service_name])
-                subprocess.check_call(['systemctl', 'disable', service_name])
+                util.logged_check_call(['systemctl', 'stop', service_name])
+                util.logged_check_call(['systemctl', 'disable', service_name])
 
     def _post_action(self):
         for major_version in self._get_versions():
             if major_version > _MODERN_POSTGRES:
-                subprocess.check_call(['dnf', '-q', '-y', 'module', 'disable', 'postgresql'])
-                subprocess.check_call(['dnf', 'update'])
-                subprocess.check_call(['dnf', 'install', "-y", 'postgresql' + str(major_version), 'postgresql' + str(major_version) + '-server'])
+                util.logged_check_call(['dnf', '-q', '-y', 'module', 'disable', 'postgresql'])
+                util.logged_check_call(['dnf', 'update'])
+                util.logged_check_call(['dnf', 'install', "-y", 'postgresql' + str(major_version), 'postgresql' + str(major_version) + '-server'])
             else:
-                subprocess.check_call(['dnf', '-q', '-y', 'module', 'enable', 'postgresql'])
-                subprocess.check_call(['dnf', 'update'])
-                subprocess.check_call(['dnf', 'install', "-y", 'postgresql', 'postgresql' + '-server'])
+                util.logged_check_call(['dnf', '-q', '-y', 'module', 'enable', 'postgresql'])
+                util.logged_check_call(['dnf', 'update'])
+                util.logged_check_call(['dnf', 'install', "-y", 'postgresql', 'postgresql' + '-server'])
 
             if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
-                subprocess.check_call(['systemctl', 'enable', service_name])
-                subprocess.check_call(['systemctl', 'start', service_name])
+                util.logged_check_call(['systemctl', 'enable', service_name])
+                util.logged_check_call(['systemctl', 'start', service_name])
                 os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
 
     def _revert_action(self):
         for major_version in self._get_versions():
             if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
-                subprocess.check_call(['systemctl', 'stop', service_name])
-                subprocess.check_call(['systemctl', 'disable', service_name])
+                util.logged_check_call(['systemctl', 'stop', service_name])
+                util.logged_check_call(['systemctl', 'disable', service_name])
                 os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
