@@ -9,6 +9,7 @@ Before using this script, it is important to take the following precautions:
 1. Make sure that you have backed up all of your databases and have the means to restore them. We will be using standard mariadb and postgresql tools to upgrade the databases, and it is highly recommended to have backups in case something goes wrong.
 2. Ensure that you have a way to restart the server in the event that the direct ssh connection is lost. There is a risk that the conversion process may hang in a temporary update distro that does not start any network interfaces. One way to mitigate this risk is to have a serial port connection to the server, which will allow you to monitor the upgrade distro and the first boot progress, and to reboot the server if necessary.
 3. It may be helpful to have a snapshot that can be used as a recovery point in case the conversion process fails.
+4. Check [Known problems](#known-problems) section below for the list of known issues.
 
 ## Timing
 The estimated time for the conversion process is between 30 to 60 minutes. Please note that **Plesk services, hosted sites, and emails will be unavailable during the entirety of the conversion process**. The conversion process itself will be divided into three stages:
@@ -19,10 +20,10 @@ The estimated time for the conversion process is between 30 to 60 minutes. Pleas
 ## Known problems
 ### Stoppers
 The following factors should prevent you from using the script to perform a conversion as they may cause issues with essential services.
-- **Qmail component is installed** - SMTP authentication is broken after the conversion
-- **Ruby extension is installed** - Ruby applications not working after the conversion
-- **PostgreSQL from 10.23 and newer is installed** - will now work after the conversion due to a downgrade
 - **The distro is not CentOS 7** - the script has not been tested on other RHEL 7 based distributions. Therefore, the conversion process may have unexpected results when used on these other distros.
+- **Your plesk version is lower than 18.0.42** - conversion process don't support lower versions of Plesk.
+- **Ruby extension is installed** - some complex Ruby applications (like radmine) could be broken after the conversion
+- **Kolab extension is installed** - conversion process not supports Kolab extension yet
 ### Restrictions
 The following restrictions should not prevent the conversion from taking place, but it's good to be aware of them. Most likely they will not be fixed in future.
 - PHP from 5.4 to 7.1 will not receive any updates after the conversion. The versions are deprecated and not supported in AlmaLinux 8. It's important to note that these versions may have security vulnerabilities, so it's recommended to migrate to the latest versions of PHP.
@@ -34,8 +35,16 @@ The following restrictions should not prevent the conversion from taking place, 
 - The system should have at least 1 GB of RAM to ensure the process runs smoothly
 
 ## How to use the script
-
-To use the script, simply run it without any arguments:
+To make sure you could monitor the conversion process we recommend to use ['screen' utility](https://www.gnu.org/software/screen/) to start the script in the background. To do this, run the following command:
+```shell
+> screen -S distupgrader
+> ./distupgrader
+```
+If you lost your ssh connection to the server, you can reconnect to the screen session by running the following command:
+```shell
+> screen -r distupgrader
+```
+To run script without 'screen' utility, you can use the following command:
 ```shell
 > ./distupgrader
 ```
