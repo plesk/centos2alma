@@ -30,5 +30,6 @@ TIME_EXCEEDED_MESSAGE = """
 \033[91m**************************************************************************************
 The conversion process time is exceeded. This may mean that the process is stuck.
 Please check the log file \033[93m{}\033[91m for more details.
+You could use Ctrl+C to interrupt the process and call it again.
 **************************************************************************************\033[0m
 """
