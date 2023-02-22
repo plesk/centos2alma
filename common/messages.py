@@ -14,6 +14,12 @@ The conversion process is over. The system will be rebooted now to complete the 
 **************************************************************************************\033[0m
 """
 
+REVET_FINISHED_MESSAGE = """
+\033[92m**************************************************************************************
+The revert process is over. Now your plesk should be in working state.
+**************************************************************************************\033[0m
+"""
+
 FAIL_MESSAGE = """
 \033[91m**************************************************************************************
 The conversion process has been failed. Please check the log file \033[93m{}\033[91m for more details.

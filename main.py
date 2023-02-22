@@ -226,6 +226,9 @@ def main():
 
         subprocess.call(["systemctl", "reboot"])
 
+    if Stages.revert in stage_flag:
+        sys.stdout.write(common.REVET_FINISHED_MESSAGE)
+
     return 0
 
 
