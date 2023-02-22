@@ -4,7 +4,7 @@ CONVERT_RESTART_MESSAGE = """
 \033[92m**************************************************************************************
 The preparation process is over. The system will be rebooted now to perform the conversion inside a temporary upgrade distro.
 You cannot connect to the instance via ssh during this process. To monitor the process, you could use a console port.
-The conversion process will takes about 30 minutes. Current server time: {}.
+The conversion process will takes about 25 minutes. Current server time: {}.
 **************************************************************************************\033[0m
 """
 

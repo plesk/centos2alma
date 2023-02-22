@@ -186,7 +186,7 @@ This is a script that can be used to convert a CentOS 7 server with Plesk to Alm
                 This part should take no more than 20 minutes.
 - Conversion  - This is the main part of the process, which occurs inside the temporary distribution.
                 During this process, it will not be possible to connect to the server via ssh.
-                The conversion process should take about 15 minutes.
+                The conversion process should take about 20 minutes.
 - Finishing   - This is the last part of the process, which will return the server to its working state.
                 The process should take about no more than 5 minutes
 
