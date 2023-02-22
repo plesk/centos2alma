@@ -209,6 +209,9 @@ def main():
 
             sys.stdout.write("\n{}\n".format(flow.get_error()))
             sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
+            sys.stdout.write("Last 100 lines of the log file:\n")
+            for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
+                sys.stdout.write(line)
 
             if stage_flag == Stages.finish:
                 inform_about_problems()
