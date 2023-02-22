@@ -107,7 +107,7 @@ class PostgresReinstallModernPackage(ActiveAction):
     # So during this action we shouldn't use any postgresql related commands. Luckily data will not be removed
     # and we can use them to recognize versions of postgresql we should install.
     def __init__(self):
-        self.name = "reinstall modern postgres package from rhel-8 based repository"
+        self.name = "reinstall modern postgresql"
 
     def _get_versions(self):
         return [int(dataset) for dataset in os.listdir(_PATH_TO_PGSQL) if dataset.isnumeric()]
