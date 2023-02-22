@@ -9,7 +9,7 @@ from common import leapp_configs, files
 class LeapReposConfiguration(ActiveAction):
 
     def __init__(self):
-        self.name = "adding leapp mapping for plesk repositories"
+        self.name = "map plesk repositories for leapp"
 
     def _prepare_action(self):
         repofiles = []
