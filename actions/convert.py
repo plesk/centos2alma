@@ -17,5 +17,5 @@ class DoConvert(ActiveAction):
     def _revert_action(self):
         pass
 
-    def estimate_time(self):
+    def estimate_prepare_time(self):
         return 17 * 60

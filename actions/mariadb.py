@@ -123,6 +123,9 @@ class UpdateMariadbDatabase(ActiveAction):
     def _revert_action(self):
         pass
 
+    def estimate_post_time(self):
+        return 2 * 60
+
 
 class AddMysqlConnector(ActiveAction):
     def __init__(self):
