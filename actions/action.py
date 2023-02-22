@@ -2,6 +2,7 @@ import os
 import json
 import math
 import time
+import shutil
 import sys
 
 from enum import Enum
@@ -317,14 +318,26 @@ class FlowProgressbar():
             description = self.get_action_description()
 
             progress = "=" * int(percent / 2) + ">" + " " * (50 - int(percent / 2))
-            progress = progress[:25] + description + progress[25:]
+            progress = "[" + progress[:25] + description + progress[25:] + "]"
+
+            terminal_size, _ = shutil.get_terminal_size()
+            output = ""
+            if terminal_size > 118:
+                output = progress + " " + self._seconds_to_minutes(passed_time) + " / " + self._seconds_to_minutes(self.total_time)
+            elif terminal_size > 65 and terminal_size < 118:
+                output = description + " " + self._seconds_to_minutes(passed_time) + " / " + self._seconds_to_minutes(self.total_time)
+            else:
+                output = self._seconds_to_minutes(passed_time) + " / " + self._seconds_to_minutes(self.total_time)
+
+            clean = " " * (terminal_size - len(output))
 
             if percent < 80:
                 color = "\033[92m"  # green
             else:
                 color = "\033[93m"  # yellow
+            drop_color = "\033[0m"
 
-            sys.stdout.write(f"\r{color}[{progress}] {self._seconds_to_minutes(passed_time)} / {self._seconds_to_minutes(self.total_time)}\033[0m")
+            sys.stdout.write(f"\r{color}{output}{clean}{drop_color}")
             sys.stdout.flush()
             time.sleep(1)
             passed_time = time.time() - start_time
