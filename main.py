@@ -186,6 +186,15 @@ We recommend to call for support with this file attached to solve problems with 
 """
 
 
+def show_status():
+    if not os.path.exists("/tmp/distupgrader.status"):
+        print("Conversion process is not running.")
+
+    print("Conversion process in progress:")
+    status = common.get_last_lines("/tmp/distupgrader.status", 1)
+    print(status[0])
+
+
 def main():
     common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
 
@@ -211,7 +220,14 @@ def main():
                          "So make sure you backup your database before the upgrade.")
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
                     help="Choose a stage of a conversation process. Available stages: prepare, start, revert, finish.")
+    opts.add_option("--status", action="store_true", dest="status", default=False,
+                    help="Show status of the distupgrader process.")
+
     options, _ = opts.parse_args(args=sys.argv[1:])
+
+    if options.status:
+        show_status()
+        return 0
 
     if not is_required_conditions_satisfied(options, options.stage):
         common.log.err("Please fix noted problems before proceed the conversation")
