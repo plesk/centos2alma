@@ -251,13 +251,13 @@ def main():
                          "If the previous finish failed, this stage can be called again.")
     opts.add_option("--retry", action="store_true", dest="retry", default=False,
                     help="Option could be used to retry conversion process if it was failed")
+    opts.add_option("--status", action="store_true", dest="status", default=False,
+                    help="Show status of the distupgrader process.")
     opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
                     help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
                          "So make sure you backup your database before the upgrade.")
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
-                    help="Choose a stage of a conversation process. Available stages: prepare, start, revert, finish.")
-    opts.add_option("--status", action="store_true", dest="status", default=False,
-                    help="Show status of the distupgrader process.")
+                    help="Choose a stage of a conversation process. Available stages: 'prepare', 'start', 'revert', 'finish'.")
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 
