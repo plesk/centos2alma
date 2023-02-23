@@ -113,6 +113,7 @@ def construct_actions(options, stage_flag):
             ],
             4: [
                 actions.DoConvert(),
+                actions.AddInProgressSshLoginMessage(),
             ],
         })
         if options.upgrade_postgres_allowed:

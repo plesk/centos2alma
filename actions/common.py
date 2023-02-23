@@ -1,6 +1,7 @@
 from .action import ActiveAction, CheckAction
 
 import os
+import shutil
 import subprocess
 
 import common
@@ -101,11 +102,20 @@ class AddFinishSshLoginMessage(ActiveAction):
     def __init__(self):
         self.name = "add finish ssh login message"
         self.motd_path = "/etc/motd"
-        self.message = """
+        self.finish_message = """
 ===============================================================================
 Message from Plesk distupgrade tool:
 Congratulations! Your instance has been successfully converted into AlmaLinux8.
 Please remove this message from /etc/motd file.
+===============================================================================
+"""
+        self.in_progress_message = """
+===============================================================================
+Message from Plesk distupgrade tool:
+Your instance is being converted into AlmaLinux8. Please wait until the script
+finish last preparations and reboot the instance.
+You could check the progress by running 'distupgrade --status' command
+or monitor progress with 'distupgrade --monitor' command.
 ===============================================================================
 """
 
@@ -113,11 +123,40 @@ Please remove this message from /etc/motd file.
         pass
 
     def _post_action(self):
+        common.restore_file_from_backup(self.motd_path)
+
         with open(self.motd_path, "a") as motd:
-            motd.write(self.message)
+            motd.write(self.finish_message)
 
     def _revert_action(self):
         pass
+
+
+class AddInProgressSshLoginMessage(ActiveAction):
+    def __init__(self):
+        self.name = "add in progress ssh login message"
+        self.motd_path = "/etc/motd"
+        self.in_progress_message = """
+===============================================================================
+Message from Plesk distupgrade tool:
+Your instance is being converted into AlmaLinux8. Please wait until the script
+finish last preparations and reboot the instance.
+You could check the progress by running 'distupgrade --status' command
+or monitor progress with 'distupgrade --monitor' command.
+===============================================================================
+"""
+
+    def _prepare_action(self):
+        common.backup_file(self.motd_path)
+
+        with open(self.motd_path, "a") as motd:
+            motd.write(self.in_progress_message)
+
+    def _post_action(self):
+        pass
+
+    def _revert_action(self):
+        common.restore_file_from_backup(self.motd_path)
 
 
 class PleskInstallerNotInProgress(CheckAction):
