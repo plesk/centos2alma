@@ -23,7 +23,7 @@ The revert process is over. Now your plesk should be in working state.
 FAIL_MESSAGE = """
 \033[91m**************************************************************************************
 The conversion process has been failed. Please check the log file \033[93m{}\033[91m for more details.
-Please contact us on github.com/plesk/distupgrader/issues or our support team with this log file attached.
+Please submit an issue to https://github.com/plesk/distupgrader/issues with attached log file.
 **************************************************************************************\033[0m
 """
 

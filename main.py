@@ -170,22 +170,6 @@ def start_flow(flow):
         progress.join()
 
 
-HELP_MESSAGE = f"""distupgrader [options]
-
-This is a script that can be used to convert a CentOS 7 server with Plesk to AlmaLinux 8. The process involves three parts:
-- Preparation - In this part, leapp is installed and configured, and the system is prepared for the conversion.
-                The leapp utility is then called, which creates a temporary distribution for the conversion.
-                This part should take no more than 20 minutes.
-- Conversion  - This is the main part of the process, which occurs inside the temporary distribution.
-                During this process, it will not be possible to connect to the server via ssh.
-                The conversion process should take about 20 minutes.
-- Finishing   - This is the last part of the process, which will return the server to its working state.
-                The process should take about no more than 5 minutes
-
-The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are any issues, please check this file for more details.
-We recommend to call for support with this file attached to solve problems with conversion.
-"""
-
 STATUS_FILE_PATH = "/tmp/distupgrader.status"
 
 
@@ -247,6 +231,25 @@ def do_convert(options):
 
     if Stages.revert in options.stage:
         sys.stdout.write(common.REVET_FINISHED_MESSAGE)
+
+
+HELP_MESSAGE = f"""distupgrader [options]
+
+
+This is a script that can be used to convert a CentOS 7 server with Plesk to AlmaLinux 8. The process involves three parts:
+- Preparation - In this part, leapp is installed and configured, and the system is prepared for the conversion.
+                The leapp utility is then called, which creates a temporary distribution for the conversion.
+                This part should take no more than 20 minutes.
+- Conversion  - This is the main part of the process, which occurs inside the temporary distribution.
+                During this process, it will not be possible to connect to the server via ssh.
+                The conversion process should take about 20 minutes.
+- Finishing   - This is the last part of the process, which will return the server to its working state.
+                The process should take about no more than 5 minutes
+
+
+The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are any issues, please check this file for more details.
+If you face some problems, please submit an issue to https://github.com/plesk/distupgrader/issues with attached log file.
+"""
 
 
 def main():
