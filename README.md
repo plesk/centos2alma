@@ -61,7 +61,7 @@ Please remove this message from /etc/motd file.
 ```
 
 ### Conversion stages
-The conversion process can be divided into several stages: "prepare", "start", and "finish". Use the flag "-s" to run only one stage of the conversion process.
+The conversion process can be divided into several stages: "prepare", "start", and "finish". To run only one stage of the conversion process you could use flags "--prepare", "--start", "--finish" or -s flag with name of the target stage.
 1. The "prepare" stage should always be called first. It installs ELevate and makes additional configurations for it. This stage does not disable any services, so it can be safely run at any time.
 2. The "start" stage disables Plesk-related services and runs ELevate. This will result in the stopping of Plesk services and the rebooting of the server.
 3. The "finish" stage should be called on the first boot of AlmaLinux 8. The distupgrader finish can be re-run if something goes wrong during the first boot to ensure that the problem is fixed and Plesk is ready to use."

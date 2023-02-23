@@ -9,8 +9,8 @@ import sys
 import subprocess
 import threading
 
-from enum import Enum, Flag, auto
-from optparse import OptionParser
+from enum import Flag, auto
+from optparse import OptionParser, OptionValueError
 
 
 def merge_dicts_of_lists(dict1, dict2):
@@ -32,13 +32,24 @@ class Stages(Flag):
     test = auto()
 
 
-class StagesStrings(str, Enum):
-    prepare = "prepare"
-    convert = "start"
-    finish = "finish"
-    revert = "revert"
-    # Todo. The tst stage for debugging purpose only, don't forget to remove it
-    test = "test"
+def convert_string_to_stage(option, opt_str, value, parser):
+    if value == "prepare":
+        parser.values.stage = Stages.prepare
+        return
+    elif value == "start" or value == "convert":
+        parser.values.stage = Stages.convert
+        return
+    elif value == "finish":
+        parser.values.stage = Stages.finish
+        return
+    elif value == "revert":
+        parser.values.stage = Stages.revert
+        return
+    elif value == "test":
+        parser.values.stage = Stages.test
+        return
+
+    raise OptionValueError("Unknown stage: {}".format(value))
 
 
 def is_required_conditions_satisfied(options, stage_flag):
@@ -124,27 +135,6 @@ def construct_actions(options, stage_flag):
     return actions_map
 
 
-def extract_stage_flag(options):
-    # revert flag has the highest priority
-    if options.revert:
-        return Stages.revert
-
-    if options.stage is None:
-        return Stages.prepare | Stages.convert
-    elif options.stage == StagesStrings.prepare:
-        return Stages.prepare
-    elif options.stage == StagesStrings.convert:
-        return Stages.convert
-    elif options.stage == StagesStrings.finish:
-        return Stages.finish
-    elif options.stage == StagesStrings.revert:
-        return Stages.revert
-    elif options.stage == StagesStrings.test:
-        return Stages.test
-
-    raise Exception("Unknown stage: {}".format(options.stage))
-
-
 def get_flow(stage_flag, actions_map):
     if Stages.finish in stage_flag:
         return actions.FinishActionsFlow(actions_map)
@@ -192,14 +182,6 @@ This is a script that can be used to convert a CentOS 7 server with Plesk to Alm
 
 The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are any issues, please check this file for more details.
 We recommend to call for support with this file attached to solve problems with conversion.
-
-The script can be called at different stages of the conversion process. The stages are:
-prepare - This stage installs and configures leapp. Plesk will still be in a working state after this stage,
-          so it is safe to call this stage before any other actions.
-convert - This stage calls the leapp utility to convert the system and reboot the instance to enter the temporary distribution.
-revert  - This stage can be called if the convert stage fails and will return Plesk to its working state.
-finish  - This stage will be automatically called after the conversion is finished and will return Plesk to its working state.
-          If the previous finish failed, this stage can be called again.
 """
 
 
@@ -207,28 +189,36 @@ def main():
     common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
 
     opts = OptionParser(usage=HELP_MESSAGE)
-    opts.add_option("-s", "--stage", type="choice",
-                    choices=(StagesStrings.prepare, StagesStrings.convert, StagesStrings.finish, StagesStrings.revert),
-                    help="Choose a stage of a conversation process. Available stages: prepare, start, revert, finish.")
-    opts.add_option("-r", "--revert", action="store_true", dest="revert", default=False,
+    opts.set_default("stage", Stages.prepare | Stages.convert)
+    opts.add_option("--prepare", action="store_const", dest="stage", const=Stages.prepare,
+                    help="Call only prepare stage. This stage installs and configures leapp."
+                         "Plesk will still be in a working state after this stage,"
+                         "so it is safe to call this stage before any other actions.")
+    opts.add_option("--start", action="store_const", dest="stage", const=Stages.convert,
+                    help="Call only convert stage. This stage calls the leapp utility to convert the system"
+                         "and reboot the instance to enter the temporary distribution.")
+    opts.add_option("-r", "--revert", action="store_const", dest="stage", const=Stages.revert,
                     help="Revert all changes made by the distupgrader if moving to AlmaLinux is not performed yet.")
+    opts.add_option("--finish", action="store_const", dest="stage", const=Stages.finish,
+                    help="Call only finish stage. This stage will be automatically called after the conversion is finished"
+                         "and will return Plesk to its working state."
+                         "If the previous finish failed, this stage can be called again.")
     opts.add_option("--retry", action="store_true", dest="retry", default=False,
                     help="Option could be used to retry conversion process if it was failed")
     opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
                     help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
                          "So make sure you backup your database before the upgrade.")
-
+    opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
+                    help="Choose a stage of a conversation process. Available stages: prepare, start, revert, finish.")
     options, _ = opts.parse_args(args=sys.argv[1:])
 
-    stage_flag = extract_stage_flag(options)
-
-    if not is_required_conditions_satisfied(options, stage_flag):
+    if not is_required_conditions_satisfied(options, options.stage):
         common.log.err("Please fix noted problems before proceed the conversation")
         return 1
 
-    actions_map = construct_actions(options, stage_flag)
+    actions_map = construct_actions(options, options.stage)
 
-    with get_flow(stage_flag, actions_map) as flow:
+    with get_flow(options.stage, actions_map) as flow:
         flow.validate_actions()
         start_flow(flow)
         if flow.is_failed():
@@ -240,20 +230,20 @@ def main():
             for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
                 sys.stdout.write(line)
 
-            if stage_flag == Stages.finish:
+            if options.stage == Stages.finish:
                 inform_about_problems()
             return 1
 
-    if Stages.convert in stage_flag or Stages.finish in stage_flag:
+    if Stages.convert in options.stage or Stages.finish in options.stage:
         common.log.info("Going to reboot the system")
-        if Stages.convert in stage_flag:
+        if Stages.convert in options.stage:
             sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(datetime.now().strftime("%H:%M:%S")))
-        elif Stages.finish in stage_flag:
+        elif Stages.finish in options.stage:
             sys.stdout.write(common.FINISH_RESTART_MESSAGE)
 
         subprocess.call(["systemctl", "reboot"])
 
-    if Stages.revert in stage_flag:
+    if Stages.revert in options.stage:
         sys.stdout.write(common.REVET_FINISHED_MESSAGE)
 
     return 0
