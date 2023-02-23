@@ -157,15 +157,16 @@ Please remove this message from /etc/motd file.
 
 
 def start_flow(flow):
-    progressbar = actions.FlowProgressbar(flow)
-    progress = threading.Thread(target=progressbar.display)
-    executor = threading.Thread(target=flow.pass_actions)
+    with common.FileWriter("/tmp/distupgrader.status") as status_writer, common.StdoutWriter() as stdout_writer:
+        progressbar = actions.FlowProgressbar(flow, [stdout_writer, status_writer])
+        progress = threading.Thread(target=progressbar.display)
+        executor = threading.Thread(target=flow.pass_actions)
 
-    progress.start()
-    executor.start()
+        progress.start()
+        executor.start()
 
-    executor.join()
-    progress.join()
+        executor.join()
+        progress.join()
 
 
 HELP_MESSAGE = f"""distupgrader [options]

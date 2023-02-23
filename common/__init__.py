@@ -4,3 +4,4 @@ from .messages import *
 from .files import *
 from .rpm import *
 from .util import *
+from .writer import *
