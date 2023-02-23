@@ -44,10 +44,20 @@ If you lost your ssh connection to the server, you can reconnect to the screen s
 ```shell
 > screen -r distupgrader
 ```
-To run script without 'screen' utility, you can use the following command:
+
+
+Also you could call distupgrader in the background mode:
 ```shell
-> ./distupgrader
+> ./distupgrader &
 ```
+And monitor status with '--status' or '--monitor' flags:
+```shell
+> ./distupgrader --status
+> ./distupgrader --monitor
+... live monitor session ...
+```
+
+
 This will start the conversion process. Please note that during this process, Plesk services will be temporarily shut down and hosted sites will not be accessible. At the end of the preparation process the server will be rebooted.
 Next, a temporary distro will be used to convert your CentOS 7 system to AlmaLinux 8. This process is estimated to take approximately 20 minutes. Once completed, the server will undergo another reboot. The distupgrader script will then perform the final steps of reconfiguring and restoring Plesk-related services, configurations, and databases. This may take a significant amount of time if the databases contain a large amount of data.
 Once the process is complete, the distupgrader script will reboot the server one final time, at which point it should be ready to use.
@@ -78,6 +88,18 @@ If the script fails during the prepare or start stage before reboot, use the dis
 Please note:
 - **Revert can't be done after the conversion to AlmaLinux 8 already has happened**. It means this is no way to revert changes after the first reboot triggered by distupgrader with revert option. Use instance snapshot in this case.
 - The revert process does not remove Leapp or packages installed by Leapp, so any space on the persistence storage reserved by Leapp will not be freed during the revert process.
+
+### Check if the conversion process in progress and monitor it
+To check if the conversion process in progress and monitor it, you could use '--status' flags. It will show if the conversion is already started, how long it was running and estimate time to finish. Also it will show the current stage of the conversion process.
+```shell
+> ./distupgrader --status
+``` 
+
+The conversion process can be monitored in real time using the '--monitor' flag.
+```shell
+> ./distupgrader --monitor
+( stage 3 / action re-installing plesk components  ) 02:26 / 06:18
+```
 
 ## Possible problems
 
