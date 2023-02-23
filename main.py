@@ -8,6 +8,7 @@ import os
 import sys
 import subprocess
 import threading
+import time
 
 from enum import Flag, auto
 from optparse import OptionParser, OptionValueError
@@ -157,7 +158,7 @@ Please remove this message from /etc/motd file.
 
 
 def start_flow(flow):
-    with common.FileWriter("/tmp/distupgrader.status") as status_writer, common.StdoutWriter() as stdout_writer:
+    with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
         progressbar = actions.FlowProgressbar(flow, [stdout_writer, status_writer])
         progress = threading.Thread(target=progressbar.display)
         executor = threading.Thread(target=flow.pass_actions)
@@ -185,14 +186,31 @@ The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are
 We recommend to call for support with this file attached to solve problems with conversion.
 """
 
+STATUS_FILE_PATH = "/tmp/distupgrader.status"
+
 
 def show_status():
-    if not os.path.exists("/tmp/distupgrader.status"):
+    if not os.path.exists(STATUS_FILE_PATH):
         print("Conversion process is not running.")
+        return
 
     print("Conversion process in progress:")
-    status = common.get_last_lines("/tmp/distupgrader.status", 1)
+    status = common.get_last_lines(STATUS_FILE_PATH, 1)
     print(status[0])
+
+
+def monitor_status():
+    if not os.path.exists(STATUS_FILE_PATH):
+        print("Conversion process is not running.")
+        return
+
+    with open(STATUS_FILE_PATH, "r") as status:
+        status.readlines()
+        while os.path.exists(STATUS_FILE_PATH):
+            line = status.readline().rstrip()
+            sys.stdout.write("\r" + line)
+            sys.stdout.flush()
+            time.sleep(1)
 
 
 def do_convert(options):
@@ -252,7 +270,9 @@ def main():
     opts.add_option("--retry", action="store_true", dest="retry", default=False,
                     help="Option could be used to retry conversion process if it was failed")
     opts.add_option("--status", action="store_true", dest="status", default=False,
-                    help="Show status of the distupgrader process.")
+                    help="Show status of the conversion process.")
+    opts.add_option("--monitor", action="store_true", dest="monitor", default=False,
+                    help="Live monitor status of the conversion process.")
     opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
                     help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
                          "So make sure you backup your database before the upgrade.")
@@ -263,6 +283,10 @@ def main():
 
     if options.status:
         show_status()
+        return 0
+    
+    if options.monitor:
+        monitor_status()
         return 0
 
     do_convert(options)
