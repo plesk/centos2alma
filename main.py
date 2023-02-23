@@ -182,14 +182,6 @@ This is a script that can be used to convert a CentOS 7 server with Plesk to Alm
 
 The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are any issues, please check this file for more details.
 We recommend to call for support with this file attached to solve problems with conversion.
-
-The script can be called at different stages of the conversion process. The stages are:
-prepare - This stage installs and configures leapp. Plesk will still be in a working state after this stage,
-          so it is safe to call this stage before any other actions.
-convert - This stage calls the leapp utility to convert the system and reboot the instance to enter the temporary distribution.
-revert  - This stage can be called if the convert stage fails and will return Plesk to its working state.
-finish  - This stage will be automatically called after the conversion is finished and will return Plesk to its working state.
-          If the previous finish failed, this stage can be called again.
 """
 
 
