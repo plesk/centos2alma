@@ -54,7 +54,7 @@ class FixSpamassassinConfig(ActiveAction):
 class DisableSuspiciousKernelModules(ActiveAction):
     def __init__(self):
         self.name = "rule suspicious kernel modules"
-        self.suspicious_modules = ["pata_acpi", "btrfs"]
+        self.suspicious_modules = ["pata_acpi", "btrfs", "floppy"]
         self.modules_konfig_path = "/etc/modprobe.d/pataacpibl.conf"
 
     def _get_enabled_modules(self, lookup_modules):
@@ -162,7 +162,7 @@ or monitor progress with 'distupgrade --monitor' command.
 class PleskInstallerNotInProgress(CheckAction):
     def __init__(self):
         self.name = "checking if Plesk installer is in progress"
-        self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer --stop' to abort it."
+        self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer stop' to abort it."
 
     def _do_check(self):
         installer_check = subprocess.run(["plesk", "installer", "--query-status", "--enable-xml-output"], stdout=subprocess.PIPE, universal_newlines=True)
