@@ -54,7 +54,7 @@ class FixSpamassassinConfig(ActiveAction):
 class DisableSuspiciousKernelModules(ActiveAction):
     def __init__(self):
         self.name = "rule suspicious kernel modules"
-        self.suspicious_modules = ["pata_acpi", "btrfs"]
+        self.suspicious_modules = ["pata_acpi", "btrfs", "floppy"]
         self.modules_konfig_path = "/etc/modprobe.d/pataacpibl.conf"
 
     def _get_enabled_modules(self, lookup_modules):
