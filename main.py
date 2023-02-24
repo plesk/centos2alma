@@ -66,7 +66,14 @@ def is_required_conditions_satisfied(options, stage_flag):
     try:
         with actions.CheckFlow(checks) as check_flow:
             check_flow.validate_actions()
-            return check_flow.make_checks()
+            failed_checks = check_flow.make_checks()
+            for check in failed_checks:
+                sys.stdout.write(check )
+                common.log.err(check)
+
+            if failed_checks:
+                return False
+            return True
     except Exception as ex:
         common.log.err("{}".format(ex))
         return False

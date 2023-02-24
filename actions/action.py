@@ -282,15 +282,14 @@ class CheckFlow(ActionsFlow):
                 raise TypeError("Non an CheckAction passed into check flow. Name of the action is {name!s}".format(check.name))
 
     def make_checks(self):
-        is_all_passed = True
+        failed_checks_msgs = []
         common.log.debug("Start checks")
         for check in self.stages:
             common.log.debug("Make check {name}".format(name=check.name))
             if not check.do_check():
-                common.log.err("Required pre-conversion condition {name!s} not met:\n{description!s}".format(name=check.name, description=check.description))
-                is_all_passed = False
+                failed_checks_msgs.append(f"Required pre-conversion condition {check.name!s} not met:\n\t{check.description!s}\n")
 
-        return is_all_passed
+        return failed_checks_msgs
 
 
 class FlowProgressbar():
