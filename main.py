@@ -205,6 +205,30 @@ def monitor_status():
             time.sleep(1)
 
 
+def handle_error(error):
+    sys.stdout.write("\n{}\n".format(error))
+    sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
+    sys.stdout.write("Last 100 lines of the log file:\n")
+
+    error_message = f"Distupgrade process has been failed. Error: {error}.\n\n"
+    for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
+        sys.stdout.write(line)
+        error_message += line
+
+    # Todo. For now we works only on RHEL-based distros, so the path
+    # to the send-error-report utility will be the same.
+    # But if we will support Debian-based we should choose path carefully
+    send_error_path = "/usr/local/psa/admin/bin/send-error-report"
+    try:
+        if os.path.exists(send_error_path):
+            subprocess.run([send_error_path, "backend"], input=error_message.encode())
+    except Exception:
+        # We don't care about errors to avoid mislead of the user
+        pass
+
+    common.log.err(f"Distupgrade process has been failed. Error: {error}")
+
+
 def do_convert(options):
     if not is_required_conditions_satisfied(options, options.stage):
         common.log.err("Please fix noted problems before proceed the conversation")
@@ -216,16 +240,11 @@ def do_convert(options):
         flow.validate_actions()
         start_flow(flow)
         if flow.is_failed():
-            common.log.err("Distupgrade process has been failed. Error: {}".format(flow.get_error()))
-
-            sys.stdout.write("\n{}\n".format(flow.get_error()))
-            sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
-            sys.stdout.write("Last 100 lines of the log file:\n")
-            for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
-                sys.stdout.write(line)
+            handle_error(flow.get_error())
 
             if options.stage == Stages.finish:
                 inform_about_problems()
+
             return 1
 
     if Stages.convert in options.stage or Stages.finish in options.stage:
