@@ -361,7 +361,8 @@ class TestCheckFlow(unittest.TestCase):
         check_action = TrueCheckAction()
         with actions.CheckFlow([ check_action ]) as flow:
             flow.validate_actions()
-            self.assertTrue(flow.make_checks())
+            res = flow.make_checks()
+            self.assertEqual(len(res), 0)
 
     def test_several_true(self):
         checks = []
@@ -370,9 +371,10 @@ class TestCheckFlow(unittest.TestCase):
 
         with actions.CheckFlow(checks) as flow:
             flow.validate_actions()
-            self.assertTrue(flow.make_checks())
+            res = flow.make_checks()
+            self.assertEqual(len(res), 0)
 
-    def test_several_checks_with_false(self):
+    def test_several_checks_with_one_false(self):
         checks = []
         checks.append(FalseCheckAction())
         for _ in range(5):
@@ -380,4 +382,17 @@ class TestCheckFlow(unittest.TestCase):
 
         with actions.CheckFlow(checks) as flow:
             flow.validate_actions()
-            self.assertFalse(flow.make_checks())
+            res = flow.make_checks()
+            self.assertEqual(len(res), 1)
+
+    def test_several_checks_with_several_false(self):
+        checks = []
+        for _ in range(5):
+            checks.append(FalseCheckAction())
+        for _ in range(5):
+            checks.append(TrueCheckAction())
+
+        with actions.CheckFlow(checks) as flow:
+            flow.validate_actions()
+            res = flow.make_checks()
+            self.assertEqual(len(res), 5)
