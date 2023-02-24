@@ -1,3 +1,4 @@
+import os
 import shutil
 import json
 
@@ -45,3 +46,15 @@ def rewrite_json_file(filename, jobj):
 def get_last_lines(filename, n):
     with open(filename) as f:
         return f.readlines()[-n:]
+
+
+def backup_file(filename):
+    if os.path.exists(filename):
+        shutil.copy(filename, filename + ".bak")
+
+
+def restore_file_from_backup(filename):
+    if os.path.exists(filename + ".bak"):
+        shutil.move(filename + ".bak", filename)
+    else:
+        os.remove(filename)

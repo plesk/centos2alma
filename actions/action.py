@@ -294,9 +294,13 @@ class CheckFlow(ActionsFlow):
 
 
 class FlowProgressbar():
-    def __init__(self, flow):
+    def __init__(self, flow, writers=None):
         self.flow = flow
         self.total_time = flow.get_total_time()
+
+        if writers is None:
+            writers = [common.StdoutWriter]
+        self.writers = writers
 
     def _seconds_to_minutes(self, seconds):
         minutes = int(seconds / 60)
@@ -307,6 +311,10 @@ class FlowProgressbar():
         description = f" stage {self.flow.get_current_stage()} / action {self.flow.get_current_action()} "
         description_length = len(description)
         return "(" + " " * math.floor((50 - description_length) / 2) + description + " " * math.ceil((50 - description_length) / 2) + ")"
+
+    def write(self, msg):
+        for writer in self.writers:
+            writer.write(msg)
 
     def display(self):
         start_time = time.time()
@@ -337,11 +345,11 @@ class FlowProgressbar():
                 color = "\033[93m"  # yellow
             drop_color = "\033[0m"
 
-            sys.stdout.write(f"\r{color}{output}{clean}{drop_color}")
-            sys.stdout.flush()
+            self.write(f"\r{color}{output}{clean}{drop_color}")
             time.sleep(1)
             passed_time = time.time() - start_time
 
         if passed_time > self.total_time:
-            sys.stdout.write("\r\033[91m[" + "X" * 25 + self.get_action_description() + "X" * 25 + "] exceed\033[0m")
-            sys.stdout.write(common.TIME_EXCEEDED_MESSAGE.format(common.DEFAULT_LOG_FILE))
+            self.write("\r\033[91m[" + "X" * 25 + self.get_action_description() + "X" * 25 + "] exceed\033[0m")
+            self.write(common.TIME_EXCEEDED_MESSAGE.format(common.DEFAULT_LOG_FILE))
+

@@ -8,6 +8,7 @@ import os
 import sys
 import subprocess
 import threading
+import time
 
 from enum import Flag, auto
 from optparse import OptionParser, OptionValueError
@@ -112,6 +113,7 @@ def construct_actions(options, stage_flag):
             ],
             4: [
                 actions.DoConvert(),
+                actions.AddInProgressSshLoginMessage(),
             ],
         })
         if options.upgrade_postgres_allowed:
@@ -157,61 +159,46 @@ Please remove this message from /etc/motd file.
 
 
 def start_flow(flow):
-    progressbar = actions.FlowProgressbar(flow)
-    progress = threading.Thread(target=progressbar.display)
-    executor = threading.Thread(target=flow.pass_actions)
+    with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
+        progressbar = actions.FlowProgressbar(flow, [stdout_writer, status_writer])
+        progress = threading.Thread(target=progressbar.display)
+        executor = threading.Thread(target=flow.pass_actions)
 
-    progress.start()
-    executor.start()
+        progress.start()
+        executor.start()
 
-    executor.join()
-    progress.join()
-
-
-HELP_MESSAGE = f"""distupgrader [options]
-
-This is a script that can be used to convert a CentOS 7 server with Plesk to AlmaLinux 8. The process involves three parts:
-- Preparation - In this part, leapp is installed and configured, and the system is prepared for the conversion.
-                The leapp utility is then called, which creates a temporary distribution for the conversion.
-                This part should take no more than 20 minutes.
-- Conversion  - This is the main part of the process, which occurs inside the temporary distribution.
-                During this process, it will not be possible to connect to the server via ssh.
-                The conversion process should take about 20 minutes.
-- Finishing   - This is the last part of the process, which will return the server to its working state.
-                The process should take about no more than 5 minutes
-
-The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are any issues, please check this file for more details.
-We recommend to call for support with this file attached to solve problems with conversion.
-"""
+        executor.join()
+        progress.join()
 
 
-def main():
-    common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
+STATUS_FILE_PATH = "/tmp/distupgrader.status"
 
-    opts = OptionParser(usage=HELP_MESSAGE)
-    opts.set_default("stage", Stages.prepare | Stages.convert)
-    opts.add_option("--prepare", action="store_const", dest="stage", const=Stages.prepare,
-                    help="Call only prepare stage. This stage installs and configures leapp."
-                         "Plesk will still be in a working state after this stage,"
-                         "so it is safe to call this stage before any other actions.")
-    opts.add_option("--start", action="store_const", dest="stage", const=Stages.convert,
-                    help="Call only convert stage. This stage calls the leapp utility to convert the system"
-                         "and reboot the instance to enter the temporary distribution.")
-    opts.add_option("-r", "--revert", action="store_const", dest="stage", const=Stages.revert,
-                    help="Revert all changes made by the distupgrader if moving to AlmaLinux is not performed yet.")
-    opts.add_option("--finish", action="store_const", dest="stage", const=Stages.finish,
-                    help="Call only finish stage. This stage will be automatically called after the conversion is finished"
-                         "and will return Plesk to its working state."
-                         "If the previous finish failed, this stage can be called again.")
-    opts.add_option("--retry", action="store_true", dest="retry", default=False,
-                    help="Option could be used to retry conversion process if it was failed")
-    opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
-                    help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
-                         "So make sure you backup your database before the upgrade.")
-    opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
-                    help="Choose a stage of a conversation process. Available stages: prepare, start, revert, finish.")
-    options, _ = opts.parse_args(args=sys.argv[1:])
 
+def show_status():
+    if not os.path.exists(STATUS_FILE_PATH):
+        print("Conversion process is not running.")
+        return
+
+    print("Conversion process in progress:")
+    status = common.get_last_lines(STATUS_FILE_PATH, 1)
+    print(status[0])
+
+
+def monitor_status():
+    if not os.path.exists(STATUS_FILE_PATH):
+        print("Conversion process is not running.")
+        return
+
+    with open(STATUS_FILE_PATH, "r") as status:
+        status.readlines()
+        while os.path.exists(STATUS_FILE_PATH):
+            line = status.readline().rstrip()
+            sys.stdout.write("\r" + line)
+            sys.stdout.flush()
+            time.sleep(1)
+
+
+def do_convert(options):
     if not is_required_conditions_satisfied(options, options.stage):
         common.log.err("Please fix noted problems before proceed the conversation")
         return 1
@@ -246,6 +233,67 @@ def main():
     if Stages.revert in options.stage:
         sys.stdout.write(common.REVET_FINISHED_MESSAGE)
 
+
+HELP_MESSAGE = f"""distupgrader [options]
+
+
+This is a script that can be used to convert a CentOS 7 server with Plesk to AlmaLinux 8. The process involves three parts:
+- Preparation - In this part, leapp is installed and configured, and the system is prepared for the conversion.
+                The leapp utility is then called, which creates a temporary distribution for the conversion.
+                This part should take no more than 20 minutes.
+- Conversion  - This is the main part of the process, which occurs inside the temporary distribution.
+                During this process, it will not be possible to connect to the server via ssh.
+                The conversion process should take about 20 minutes.
+- Finishing   - This is the last part of the process, which will return the server to its working state.
+                The process should take about no more than 5 minutes
+
+
+The process will write a log to the {common.DEFAULT_LOG_FILE} file. If there are any issues, please check this file for more details.
+If you face some problems, please submit an issue to https://github.com/plesk/distupgrader/issues with attached log file.
+"""
+
+
+def main():
+    common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
+
+    opts = OptionParser(usage=HELP_MESSAGE)
+    opts.set_default("stage", Stages.prepare | Stages.convert)
+    opts.add_option("--prepare", action="store_const", dest="stage", const=Stages.prepare,
+                    help="Call only prepare stage. This stage installs and configures leapp."
+                         "Plesk will still be in a working state after this stage,"
+                         "so it is safe to call this stage before any other actions.")
+    opts.add_option("--start", action="store_const", dest="stage", const=Stages.convert,
+                    help="Call only convert stage. This stage calls the leapp utility to convert the system"
+                         "and reboot the instance to enter the temporary distribution.")
+    opts.add_option("-r", "--revert", action="store_const", dest="stage", const=Stages.revert,
+                    help="Revert all changes made by the distupgrader if moving to AlmaLinux is not performed yet.")
+    opts.add_option("--finish", action="store_const", dest="stage", const=Stages.finish,
+                    help="Call only finish stage. This stage will be automatically called after the conversion is finished"
+                         "and will return Plesk to its working state."
+                         "If the previous finish failed, this stage can be called again.")
+    opts.add_option("--retry", action="store_true", dest="retry", default=False,
+                    help="Option could be used to retry conversion process if it was failed")
+    opts.add_option("--status", action="store_true", dest="status", default=False,
+                    help="Show status of the conversion process.")
+    opts.add_option("--monitor", action="store_true", dest="monitor", default=False,
+                    help="Live monitor status of the conversion process.")
+    opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
+                    help="Allow postgresql database upgrade. Not the operation could be dangerous and wipe your database."
+                         "So make sure you backup your database before the upgrade.")
+    opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
+                    help="Choose a stage of a conversation process. Available stages: 'prepare', 'start', 'revert', 'finish'.")
+
+    options, _ = opts.parse_args(args=sys.argv[1:])
+
+    if options.status:
+        show_status()
+        return 0
+    
+    if options.monitor:
+        monitor_status()
+        return 0
+
+    do_convert(options)
     return 0
 
 
