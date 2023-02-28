@@ -250,7 +250,8 @@ def do_convert(options):
     if Stages.convert in options.stage or Stages.finish in options.stage:
         common.log.info("Going to reboot the system")
         if Stages.convert in options.stage:
-            sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(datetime.now().strftime("%H:%M:%S")))
+            sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),
+                                                                   script_path=os.path.abspath(sys.argv[0])))
         elif Stages.finish in options.stage:
             sys.stdout.write(common.FINISH_RESTART_MESSAGE)
 

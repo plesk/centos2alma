@@ -1,8 +1,8 @@
 from .action import ActiveAction, CheckAction
 
 import os
-import shutil
 import subprocess
+import sys
 
 import common
 from common import util
@@ -109,15 +109,6 @@ Congratulations! Your instance has been successfully converted into AlmaLinux8.
 Please remove this message from /etc/motd file.
 ===============================================================================
 """
-        self.in_progress_message = """
-===============================================================================
-Message from Plesk distupgrade tool:
-Your instance is being converted into AlmaLinux8. Please wait until the script
-finish last preparations and reboot the instance.
-You could check the progress by running 'distupgrade --status' command
-or monitor progress with 'distupgrade --monitor' command.
-===============================================================================
-"""
 
     def _prepare_action(self):
         pass
@@ -136,13 +127,14 @@ class AddInProgressSshLoginMessage(ActiveAction):
     def __init__(self):
         self.name = "add in progress ssh login message"
         self.motd_path = "/etc/motd"
-        self.in_progress_message = """
+        path_to_script = os.path.abspath(sys.argv[0])
+        self.in_progress_message = f"""
 ===============================================================================
 Message from Plesk distupgrade tool:
 Your instance is being converted into AlmaLinux8. Please wait until the script
 finish last preparations and reboot the instance.
-You could check the progress by running 'distupgrade --status' command
-or monitor progress with 'distupgrade --monitor' command.
+You could check the progress by running '{path_to_script} --status' command
+or monitor progress with '{path_to_script} --monitor' command.
 ===============================================================================
 """
 
