@@ -2,10 +2,10 @@
 
 CONVERT_RESTART_MESSAGE = """
 \033[92m**************************************************************************************
-The preparation process is over. The system will be rebooted now to perform the conversion inside a temporary upgrade distro.
-You cannot connect to the instance via ssh during this process. To monitor the process, you could use a console port.
-The conversion process will takes about 25 minutes. Current server time: {time}.
-When you able to connect to the instance again, you could use the following command to check the conversion status:
+The conversion is ready to begin. The server will now be rebooted into the temporary OS distribution.
+You cannot connect to the server via SSH during this process. To monitor the process, use a serial port console.
+The conversion process will take about 25 minutes. Current server time: {time}.
+Once you are able to connect to the server, use one of the following commands to see or monitor the conversion status:
     {script_path} --status
 or
     {script_path} --monitor
@@ -14,27 +14,27 @@ or
 
 FINISH_RESTART_MESSAGE = """
 \033[92m**************************************************************************************
-The conversion process is over. The system will be rebooted now to complete the conversion.
+The conversion process has finished. The server will now reboot to finalize the conversion.
 **************************************************************************************\033[0m
 """
 
 REVET_FINISHED_MESSAGE = """
 \033[92m**************************************************************************************
-The revert process is over. Now your plesk should be in working state.
+All changes have been reverted. Plesk should now return to normal operation.
 **************************************************************************************\033[0m
 """
 
 FAIL_MESSAGE = """
 \033[91m**************************************************************************************
-The conversion process has been failed. Please check the log file \033[93m{}\033[91m for more details.
-Please submit an issue to https://github.com/plesk/distupgrader/issues with attached log file.
+The conversion process has failed. See the /var/log/plesk/distupgrader.log file for more information.
+For assistance, submit an issue here https://github.com/plesk/distupgrader/issues and attach this log file.
 **************************************************************************************\033[0m
 """
 
 TIME_EXCEEDED_MESSAGE = """
 \033[91m**************************************************************************************
-The conversion process time is exceeded. This may mean that the process is stuck.
-Please check the log file \033[93m{}\033[91m for more details.
-You could use Ctrl+C to interrupt the process and call it again.
+The conversion process is taking too long. It may be stuck.
+See the /var/log/plesk/distupgrader.log file for more information.
+It is safe to interrupt the process with Ctrl+C and restart it from the same stage.
 **************************************************************************************\033[0m
 """

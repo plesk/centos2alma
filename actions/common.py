@@ -105,8 +105,8 @@ class AddFinishSshLoginMessage(ActiveAction):
         self.finish_message = """
 ===============================================================================
 Message from Plesk distupgrade tool:
-Congratulations! Your instance has been successfully converted into AlmaLinux8.
-Please remove this message from /etc/motd file.
+The server has been converted to AlmaLinux 8.
+You can remove this message from the /etc/motd file.
 ===============================================================================
 """
 
@@ -131,10 +131,9 @@ class AddInProgressSshLoginMessage(ActiveAction):
         self.in_progress_message = f"""
 ===============================================================================
 Message from Plesk distupgrade tool:
-Your instance is being converted into AlmaLinux8. Please wait until the script
-finish last preparations and reboot the instance.
-You could check the progress by running '{path_to_script} --status' command
-or monitor progress with '{path_to_script} --monitor' command.
+The server is being converted to AlmaLinux 8. Please wait.
+To see the current conversion status, run the '{path_to_script} --status' command.
+To monitor the conversion progress in real time, run the '{path_to_script} --monitor' command.
 ===============================================================================
 """
 
