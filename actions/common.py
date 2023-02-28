@@ -161,3 +161,59 @@ class PleskInstallerNotInProgress(CheckAction):
         if "query_ok" in installer_check.stdout:
             return True
         return False
+
+
+class DistroIsCentos7(CheckAction):
+    def __init__(self):
+        self.name = "checking if distro is CentOS7"
+        self.description = "Your distributive is not CentOS7. Unfortunately we are not supporting non CentOS7 distributives yet."
+
+    def _do_check(self):
+        if not os.path.exists("/etc/os-release"):
+            return False
+
+        is_centos = False
+        is_7 = False
+
+        with open("/etc/os-release") as os_release:
+            for line in os_release:
+                if line.startswith("NAME="):
+                    if "CentOS" in line:
+                        is_centos = True
+                    else:
+                        return False
+                elif line.startswith("VERSION_ID="):
+                    if line.startswith("VERSION_ID=\"7"):
+                        is_7 = True
+                    else:
+                        return False
+
+        return is_centos and is_7
+
+
+class DistroIsAlmalinux8(CheckAction):
+    def __init__(self):
+        self.name = "checking if distro is AlmaLinux8"
+        self.description = "Your distributive is not AlmaLinux8. Finish stage can be started only on AlmaLinux8."
+
+    def _do_check(self):
+        if not os.path.exists("/etc/os-release"):
+            return False
+
+        is_alma = False
+        is_8 = False
+
+        with open("/etc/os-release") as os_release:
+            for line in os_release:
+                if line.startswith("NAME="):
+                    if "AlmaLinux" in line:
+                        is_alma = True
+                    else:
+                        return False
+                elif line.startswith("VERSION_ID="):
+                    if line.startswith("VERSION_ID=\"8"):
+                        is_8 = True
+                    else:
+                        return False
+
+        return is_alma and is_8

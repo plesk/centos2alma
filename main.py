@@ -54,21 +54,25 @@ def convert_string_to_stage(option, opt_str, value, parser):
 
 
 def is_required_conditions_satisfied(options, stage_flag):
+    checks = []
     if Stages.finish in stage_flag:
-        return True
-
-    checks = [
-        actions.PleskInstallerNotInProgress(),
-    ]
-    if not options.upgrade_postgres_allowed:
-        checks.append(actions.CheckOutdatedPostgresInstalled())
+        checks = [
+            actions.DistroIsAlmalinux8(),
+        ]
+    else:
+        checks = [
+            actions.DistroIsCentos7(),
+            actions.PleskInstallerNotInProgress(),
+        ]
+        if not options.upgrade_postgres_allowed:
+            checks.append(actions.CheckOutdatedPostgresInstalled())
 
     try:
         with actions.CheckFlow(checks) as check_flow:
             check_flow.validate_actions()
             failed_checks = check_flow.make_checks()
             for check in failed_checks:
-                sys.stdout.write(check )
+                sys.stdout.write(check)
                 common.log.err(check)
 
             if failed_checks:
