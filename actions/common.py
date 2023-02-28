@@ -1,8 +1,8 @@
 from .action import ActiveAction, CheckAction
 
 import os
-import shutil
 import subprocess
+import sys
 
 import common
 from common import util
@@ -109,15 +109,6 @@ Congratulations! Your instance has been successfully converted into AlmaLinux8.
 Please remove this message from /etc/motd file.
 ===============================================================================
 """
-        self.in_progress_message = """
-===============================================================================
-Message from Plesk distupgrade tool:
-Your instance is being converted into AlmaLinux8. Please wait until the script
-finish last preparations and reboot the instance.
-You could check the progress by running 'distupgrade --status' command
-or monitor progress with 'distupgrade --monitor' command.
-===============================================================================
-"""
 
     def _prepare_action(self):
         pass
@@ -136,13 +127,14 @@ class AddInProgressSshLoginMessage(ActiveAction):
     def __init__(self):
         self.name = "add in progress ssh login message"
         self.motd_path = "/etc/motd"
-        self.in_progress_message = """
+        path_to_script = os.path.abspath(sys.argv[0])
+        self.in_progress_message = f"""
 ===============================================================================
 Message from Plesk distupgrade tool:
 Your instance is being converted into AlmaLinux8. Please wait until the script
 finish last preparations and reboot the instance.
-You could check the progress by running 'distupgrade --status' command
-or monitor progress with 'distupgrade --monitor' command.
+You could check the progress by running '{path_to_script} --status' command
+or monitor progress with '{path_to_script} --monitor' command.
 ===============================================================================
 """
 
@@ -169,3 +161,59 @@ class PleskInstallerNotInProgress(CheckAction):
         if "query_ok" in installer_check.stdout:
             return True
         return False
+
+
+class DistroIsCentos7(CheckAction):
+    def __init__(self):
+        self.name = "checking if distro is CentOS7"
+        self.description = "Your distributive is not CentOS7. Unfortunately we are not supporting non CentOS7 distributives yet."
+
+    def _do_check(self):
+        if not os.path.exists("/etc/os-release"):
+            return False
+
+        is_centos = False
+        is_7 = False
+
+        with open("/etc/os-release") as os_release:
+            for line in os_release:
+                if line.startswith("NAME="):
+                    if "CentOS" in line:
+                        is_centos = True
+                    else:
+                        return False
+                elif line.startswith("VERSION_ID="):
+                    if line.startswith("VERSION_ID=\"7"):
+                        is_7 = True
+                    else:
+                        return False
+
+        return is_centos and is_7
+
+
+class DistroIsAlmalinux8(CheckAction):
+    def __init__(self):
+        self.name = "checking if distro is AlmaLinux8"
+        self.description = "Your distributive is not AlmaLinux8. Finish stage can be started only on AlmaLinux8."
+
+    def _do_check(self):
+        if not os.path.exists("/etc/os-release"):
+            return False
+
+        is_alma = False
+        is_8 = False
+
+        with open("/etc/os-release") as os_release:
+            for line in os_release:
+                if line.startswith("NAME="):
+                    if "AlmaLinux" in line:
+                        is_alma = True
+                    else:
+                        return False
+                elif line.startswith("VERSION_ID="):
+                    if line.startswith("VERSION_ID=\"8"):
+                        is_8 = True
+                    else:
+                        return False
+
+        return is_alma and is_8
