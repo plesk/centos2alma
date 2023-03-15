@@ -98,7 +98,6 @@ def construct_actions(options, stage_flag):
                 actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
                 actions.LeapReposConfiguration(),
                 actions.AvoidMariadbDowngrade(),
-                actions.PostgresReinstallModernPackage(),
                 actions.LeapChoicesConfiguration(),
                 actions.FixupImunify(),
                 actions.PatchLeappErrorOutput(),
@@ -110,6 +109,7 @@ def construct_actions(options, stage_flag):
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
                 actions.UpdatePlesk(),
+                actions.PostgresReinstallModernPackage(),
             ],
             3: [
                 actions.RemovingPackages(),
