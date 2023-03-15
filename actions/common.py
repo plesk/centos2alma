@@ -1,6 +1,7 @@
 from .action import ActiveAction, CheckAction
 
 import os
+import platform
 import subprocess
 import sys
 
@@ -162,32 +163,19 @@ class PleskInstallerNotInProgress(CheckAction):
         return False
 
 
-class DistroIsCentos7(CheckAction):
+class DistroIsCentos79(CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
-        self.description = "Your distributive is not CentOS7. Unfortunately we are not supporting non CentOS7 distributives yet."
+        self.description = """Your distributive is not CentOS 7.9. Unfortunately we are not supporting non CentOS 7.9 distributives yet.
+\tIf you use any other version of Centos 7 please update it to Centos 7.9.
+"""
 
     def _do_check(self):
-        if not os.path.exists("/etc/os-release"):
-            return False
-
-        is_centos = False
-        is_7 = False
-
-        with open("/etc/os-release") as os_release:
-            for line in os_release:
-                if line.startswith("NAME="):
-                    if "CentOS" in line:
-                        is_centos = True
-                    else:
-                        return False
-                elif line.startswith("VERSION_ID="):
-                    if line.startswith("VERSION_ID=\"7"):
-                        is_7 = True
-                    else:
-                        return False
-
-        return is_centos and is_7
+        distro = platform.linux_distribution()
+        major_version, minor_version, _ = distro[1].split(".")
+        if distro[0] == "CentOS Linux" and int(major_version) == 7 and int(minor_version) == 9:
+            return True
+        return False
 
 
 class DistroIsAlmalinux8(CheckAction):

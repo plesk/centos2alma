@@ -61,7 +61,7 @@ def is_required_conditions_satisfied(options, stage_flag):
         ]
     else:
         checks = [
-            actions.DistroIsCentos7(),
+            actions.DistroIsCentos79(),
             actions.PleskInstallerNotInProgress(),
         ]
         if not options.upgrade_postgres_allowed:
