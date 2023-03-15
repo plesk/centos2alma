@@ -4,10 +4,22 @@ import common
 
 
 def logged_check_call(cmd, **kwargs):
-    # ToDo. The solution looks not really thread safety.
-    # It's fine until we decide to run actions in parallel.
     common.log.info("Running: {cmd!s}. Output:".format(cmd=cmd))
-    with open(common.DEFAULT_LOG_FILE, "a") as log:
-        kwargs["stdout"] = log
-        kwargs["stderr"] = log
-        subprocess.check_call(cmd, **kwargs)
+
+    # I beleive we should be able pass argument to the subprocess function
+    # from the caller. So we have to inject stdout/stderr/universal_newlines
+    kwargs["stdout"] = subprocess.PIPE
+    kwargs["stderr"] = subprocess.STDOUT
+    kwargs["universal_newlines"] = True
+
+    process = subprocess.Popen(cmd, **kwargs)
+    while None is process.poll():
+        line = process.stdout.readline()
+        if line:
+            common.log.info(line.strip(), to_stream=False)
+
+    if process.returncode != 0:
+        common.log.err(f"Command '{cmd}' failed with return code {process.returncode}")
+        raise subprocess.CalledProcessError(process.returncode, cmd)
+
+    common.log.info("Command '{cmd}' finished successfully".format(cmd=cmd))
