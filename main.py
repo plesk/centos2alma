@@ -95,21 +95,21 @@ def construct_actions(options, stage_flag):
                 actions.LeapInstallation(),
             ],
             2: [
-                actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
                 actions.LeapReposConfiguration(),
                 actions.AvoidMariadbDowngrade(),
-                actions.PostgresReinstallModernPackage(),
                 actions.LeapChoicesConfiguration(),
                 actions.FixupImunify(),
                 actions.PatchLeappErrorOutput(),
-                actions.FixNamedConfig(),
             ],
         })
 
     if Stages.convert in stage_flag or Stages.finish in stage_flag or Stages.revert in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
             2: [
+                actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
                 actions.UpdatePlesk(),
+                actions.PostgresReinstallModernPackage(),
+                actions.FixNamedConfig(),
             ],
             3: [
                 actions.RemovingPackages(),
