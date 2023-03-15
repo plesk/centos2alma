@@ -101,7 +101,6 @@ def construct_actions(options, stage_flag):
                 actions.LeapChoicesConfiguration(),
                 actions.FixupImunify(),
                 actions.PatchLeappErrorOutput(),
-                actions.FixNamedConfig(),
             ],
         })
 
@@ -110,6 +109,7 @@ def construct_actions(options, stage_flag):
             2: [
                 actions.UpdatePlesk(),
                 actions.PostgresReinstallModernPackage(),
+                actions.FixNamedConfig(),
             ],
             3: [
                 actions.RemovingPackages(),
