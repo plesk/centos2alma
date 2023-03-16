@@ -23,3 +23,4 @@ def logged_check_call(cmd, **kwargs):
         raise subprocess.CalledProcessError(process.returncode, cmd)
 
     common.log.info("Command '{cmd}' finished successfully".format(cmd=cmd))
+

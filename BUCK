@@ -1,6 +1,14 @@
 # Copyright 1999-2022. Plesk International GmbH. All rights reserved.
 # vim:ft=python:
 
+DISTUPGRADER_VERSION = '1.1.0'
+
+genrule(
+    name = 'version',
+    out = 'version.json',
+    bash = r"""echo "{\"version\": \"%s\", \"revision\": \"`git rev-parse HEAD`\"}" > $OUT""" % (DISTUPGRADER_VERSION),
+)
+
 python_library(
     name = 'actions.lib',
     srcs = glob(['./actions/*.py']),
@@ -17,6 +25,9 @@ python_library(
     deps = [
         ':actions.lib',
         ':common.lib',
+    ],
+    resources = [
+        ':version',
     ],
 )
 
