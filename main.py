@@ -4,7 +4,9 @@ import actions
 import common
 
 from datetime import datetime
+import json
 import os
+import pkg_resources
 import sys
 import subprocess
 import threading
@@ -12,6 +14,19 @@ import time
 
 from enum import Flag, auto
 from optparse import OptionParser, OptionValueError
+
+
+def get_version():
+    with pkg_resources.resource_stream(__name__, "version.json") as f:
+        return json.load(f)["version"]
+
+
+def get_revision(short=True):
+    with pkg_resources.resource_stream(__name__, "version.json") as f:
+        revision = json.load(f)["revision"]
+        if short:
+            revision = revision[:8]
+        return revision
 
 
 def merge_dicts_of_lists(dict1, dict2):
@@ -279,6 +294,9 @@ Use this script to convert a CentOS 7 server with Plesk to AlmaLinux 8. The proc
 
 The script writes a log to the /var/log/plesk/distupgrader.log file. If there are any issues, you can find more information in the log file.
 For assistance, submit an issue here https://github.com/plesk/distupgrader/issues and attach this log file.
+
+
+Distupgrader version is {get_version()}-{get_revision()}.
 """
 
 
@@ -312,8 +330,14 @@ def main():
                          "hosted PostgreSQL databases before calling this option.")
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
                     help="Start one of the conversion process' stages. Allowed values: 'prepare', 'start', 'revert', and 'finish'.")
+    opts.add_option("-v", "--version", action="store_true", dest="version", default=False,
+                    help="Show the version of the distupgrader utility.")
 
     options, _ = opts.parse_args(args=sys.argv[1:])
+
+    if options.version:
+        print(get_version() + "-" + get_revision())
+        return 0
 
     if options.status:
         show_status()
