@@ -6,36 +6,61 @@ DEFAULT_LOG_FILE = "/var/log/plesk/distupgrader.log"
 
 class log():
 
-    logger = logging.getLogger("distupgrader")
+    files_logger = logging.getLogger("distupgrader_files")
+    streams_logger = logging.getLogger("distupgrader_streams")
 
     @staticmethod
     def init_logger(logfiles, streams, console=False, loglevel=logging.INFO):
-        log.logger.setLevel(loglevel)
+        log.files_logger.setLevel(loglevel)
+        log.streams_logger.setLevel(loglevel)
+
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-        handlers = [logging.FileHandler('/dev/console', mode='w')] if console else []
+        file_handlers = []
         for logfile in logfiles:
-            handlers.append(logging.FileHandler(logfile))
+            file_handlers.append(logging.FileHandler(logfile))
+
+        stream_handlers = [logging.FileHandler('/dev/console', mode='w')] if console else []
         for stream in streams:
-            handlers.append(logging.StreamHandler(stream))
+            stream_handlers.append(logging.StreamHandler(stream))
 
-        for handler in handlers:
-            handler.setLevel(level=logging.DEBUG)
+        for handler in file_handlers + stream_handlers:
             handler.setFormatter(formatter)
-            log.logger.addHandler(handler)
+
+        for handler in file_handlers:
+            log.files_logger.addHandler(handler)
+
+        for handler in stream_handlers:
+            log.streams_logger.addHandler(handler)
 
     @staticmethod
-    def debug(msg):
-        log.logger.debug(msg)
+    def debug(msg, to_file=True, to_stream=True):
+        if to_file:
+            log.files_logger.debug(msg)
+
+        if to_stream:
+            log.streams_logger.debug(msg)
 
     @staticmethod
-    def info(msg):
-        log.logger.info(msg)
+    def info(msg, to_file=True, to_stream=True):
+        if to_file:
+            log.files_logger.info(msg)
+
+        if to_stream:
+            log.streams_logger.info(msg)
 
     @staticmethod
-    def warn(msg):
-        log.logger.warn(msg)
+    def warn(msg, to_file=True, to_stream=True):
+        if to_file:
+            log.files_logger.warn(msg)
+
+        if to_stream:
+            log.streams_logger.warn(msg)
 
     @staticmethod
-    def err(msg):
-        log.logger.error(msg)
+    def err(msg, to_file=True, to_stream=True):
+        if to_file:
+            log.files_logger.error(msg)
+
+        if to_stream:
+            log.streams_logger.error(msg)

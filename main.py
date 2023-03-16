@@ -283,7 +283,7 @@ For assistance, submit an issue here https://github.com/plesk/distupgrader/issue
 
 
 def main():
-    common.log.init_logger([common.DEFAULT_LOG_FILE], [], console=True)
+    common.log.init_logger([common.DEFAULT_LOG_FILE], [])
 
     opts = OptionParser(usage=HELP_MESSAGE)
     opts.set_default("stage", Stages.prepare | Stages.convert)
