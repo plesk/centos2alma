@@ -15,7 +15,7 @@ def logged_check_call(cmd, **kwargs):
     process = subprocess.Popen(cmd, **kwargs)
     while None is process.poll():
         line = process.stdout.readline()
-        if line:
+        if line and line.strip():
             common.log.info(line.strip(), to_stream=False)
 
     if process.returncode != 0:
