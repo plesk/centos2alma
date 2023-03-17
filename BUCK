@@ -1,7 +1,7 @@
 # Copyright 1999-2022. Plesk International GmbH. All rights reserved.
 # vim:ft=python:
 
-DISTUPGRADER_VERSION = '1.1.0'
+DISTUPGRADER_VERSION = '0.1.0'
 
 genrule(
     name = 'version',
