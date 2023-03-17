@@ -172,7 +172,7 @@ class DistroIsCentos79(CheckAction):
 
     def _do_check(self):
         distro = platform.linux_distribution()
-        major_version, minor_version, _ = distro[1].split(".")
+        major_version, minor_version = distro[1].split(".")[:2]
         if distro[0] == "CentOS Linux" and int(major_version) == 7 and int(minor_version) == 9:
             return True
         return False
