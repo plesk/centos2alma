@@ -184,26 +184,11 @@ class DistroIsAlmalinux8(CheckAction):
         self.description = "Your distributive is not AlmaLinux8. Finish stage can be started only on AlmaLinux8."
 
     def _do_check(self):
-        if not os.path.exists("/etc/os-release"):
-            return False
-
-        is_alma = False
-        is_8 = False
-
-        with open("/etc/os-release") as os_release:
-            for line in os_release:
-                if line.startswith("NAME="):
-                    if "AlmaLinux" in line:
-                        is_alma = True
-                    else:
-                        return False
-                elif line.startswith("VERSION_ID="):
-                    if line.startswith("VERSION_ID=\"8"):
-                        is_8 = True
-                    else:
-                        return False
-
-        return is_alma and is_8
+        distro = platform.linux_distribution()
+        major_version = distro[1].split(".")[0]
+        if distro[0] == "AlmaLinux" and int(major_version) == 8:
+            return True
+        return False
 
 
 class PleskVersionIsActual(CheckAction):
