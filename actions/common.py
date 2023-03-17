@@ -204,3 +204,21 @@ class DistroIsAlmalinux8(CheckAction):
                         return False
 
         return is_alma and is_8
+
+
+class PleskVersionIsActual(CheckAction):
+    def __init__(self):
+        self.name = "checking if Plesk version is actual"
+        self.description = "Plesk version should be 18.0.43 or later. Please update Plesk to solve the problem."
+
+    def _do_check(self):
+        version_process = subprocess.run(["plesk", "version"], stdout=subprocess.PIPE, universal_newlines=True)
+        for line in version_process.stdout.splitlines():
+            if line.startswith("Product version"):
+                version = line.split()[-1]
+                major, _, iter, _ = version.split(".")
+                if int(major) >= 18 and int(iter) >= 43:
+                    return True
+                break
+
+        return False
