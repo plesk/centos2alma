@@ -30,5 +30,6 @@ def is_package_installed(pkg):
 def install_packages(pkgs):
     util.logged_check_call(["yum", "install", "-y"] + pkgs)
 
-def remove_packages(pkg):
-    util.logged_check_call(["rpm", "-e", "--nodeps", pkg])
+
+def remove_packages(pkgs):
+    util.logged_check_call(["rpm", "-e", "--nodeps"] + pkgs)

@@ -19,8 +19,7 @@ class RemovingPackages(ActiveAction):
         ]
 
     def _prepare_action(self):
-        for pkg in common.filter_installed_packages(self.conflict_pkgs):
-            common.remove_packages(pkg)
+        common.remove_packages(common.filter_installed_packages(self.conflict_pkgs))
 
     def _post_action(self):
         pass
@@ -45,16 +44,14 @@ class ReinstallPleskComponents(ActiveAction):
             "psa-phpmyadmin",
         ]
 
-        for pkg in components_pkgs:
-            if common.is_package_installed(pkg):
-                common.remove_packages(pkg)
+        common.remove_packages(common.filter_installed_packages(components_pkgs))
 
     def _post_action(self):
         # We should reinstall psa-phpmyadmin over plesk installer to make sure every trigger
         # will be called. It's because triggers that creates phpmyadmin configuration files
         # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
-        common.remove_packages("psa-phpmyadmin")
+        common.remove_packages(["psa-phpmyadmin"])
         util.logged_check_call(["plesk", "installer", "update"])
 
         util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
