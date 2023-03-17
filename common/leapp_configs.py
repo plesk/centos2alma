@@ -44,6 +44,7 @@ def _do_name_replacement(name):
     return _do_replacement(name, [
         lambda to_change: "Alma " + to_change,
         lambda to_change: to_change.replace("Enterprise Linux 7",  "Enterprise Linux 8"),
+        lambda to_change: to_change.replace("EPEL-7", "EPEL-8"),
         lambda to_change: to_change.replace("$releasever", "8"),
     ])
 
@@ -66,6 +67,7 @@ def _do_url_replacement(url):
         lambda to_change: to_change.replace("epel-source-7", "epel-source-8"),
         lambda to_change: to_change.replace("centos7", "centos8"),
         lambda to_change: to_change.replace("centos/7", "centos/8"),
+        lambda to_change: to_change.replace("CentOS_7", "CentOS_8"),
         lambda to_change: to_change.replace("rhel-$releasever", "rhel-8"),
         lambda to_change: to_change.replace("$releasever", "8"),
     ])

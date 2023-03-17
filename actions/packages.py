@@ -4,7 +4,7 @@ import subprocess
 import os
 
 import common
-from common import util
+from common import leapp_configs, util
 
 
 class RemovingPackages(ActiveAction):
@@ -112,6 +112,47 @@ class AdoptPleskRepositories(ActiveAction):
 
     def _revert_action(self):
         pass
+
+    def estimate_post_time(self):
+        return 2 * 60
+
+
+class AdoptKolabRepositories(ActiveAction):
+    def __init__(self):
+        self.name = "adopting kolab repositories"
+
+    def _is_required(self):
+        for file in os.scandir("/etc/yum.repos.d"):
+            if file.name.startswith("kolab") and file.name[-5:] == ".repo":
+                return True
+
+        return False
+
+    def _prepare_action(self):
+        repofiles = []
+
+        for file in os.scandir("/etc/yum.repos.d"):
+            if file.name.startswith("kolab") and file.name[-5:] == ".repo":
+                repofiles.append(file.path)
+
+        leapp_configs.add_repositories_mapping(repofiles, ignore=["kolab-16-source",
+                                                                  "kolab-16-testing-source",
+                                                                  "kolab-16-testing-candidate-source"])
+
+    def _post_action(self):
+        for file in os.scandir("/etc/yum.repos.d"):
+            if not file.name.startswith("kolab") or file.name[-5:] != ".repo":
+                continue
+
+            common.adopt_repositories(file.path)
+
+        util.logged_check_call(["dnf", "-y", "update"])
+
+    def _revert_action(self):
+        pass
+
+    def estimate_prepare_time(self):
+        return 30
 
     def estimate_post_time(self):
         return 2 * 60

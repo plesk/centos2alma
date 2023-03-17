@@ -113,6 +113,7 @@ def construct_actions(options, stage_flag):
                 actions.LeapReposConfiguration(),
                 actions.AvoidMariadbDowngrade(),
                 actions.LeapChoicesConfiguration(),
+                actions.AdoptKolabRepositories(),
                 actions.FixupImunify(),
                 actions.PatchLeappErrorOutput(),
             ],
