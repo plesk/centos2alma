@@ -26,6 +26,7 @@ class AddMappingTests(unittest.TestCase):
 
         with open(self.LEAPP_REPO_FILE) as f:
             lines = [line.rstrip() for line in f.readlines() if not line.rstrip() == ""]
+            print(lines)
             self.assertEqual(lines, expected_repos.splitlines())
 
         with open(self.LEAPP_MAP_FILE) as f:
@@ -82,9 +83,33 @@ repo3,alma-repo3,alma-repo3,all,all,x86_64,rpm,ga,ga
         self._perform_test({"simple_repos.repo": simple_repos},
                            expected_leapp_repos, expected_leapp_mapping)
 
+    def test_kolab_related_mapping(self):
+        kolab_repos = """[kolab-repo]
+name=Kolab repo
+baseurl=https://mirror.apheleia-it.ch/repos/Kolab:/16/CentOS_7_Plesk_17/src
+enabled=0
+priority=60
+skip_if_unavailable=1
+gpgcheck=1
+"""
 
-        def test_epel_mapping(self):
-            epel_like_repos = """[epel-repo]
+        expected_kolab_leapp_repos = """[alma-kolab-repo]
+name=Alma Kolab repo
+baseurl=https://mirror.apheleia-it.ch/repos/Kolab:/16/CentOS_8_Plesk_17/src
+enabled=0
+priority=60
+skip_if_unavailable=1
+gpgcheck=1
+"""
+
+        expected_kolab_leapp_mapping = """kolab-repo,alma-kolab-repo,alma-kolab-repo,all,all,x86_64,rpm,ga,ga
+"""
+
+        self._perform_test({"kolab.repo": kolab_repos},
+                           expected_kolab_leapp_repos, expected_kolab_leapp_mapping)
+
+    def test_epel_mapping(self):
+        epel_like_repos = """[epel-repo]
 name=EPEL-7 repo
 metalink=http://epel-repo/epel-7
 enabled=1
@@ -102,33 +127,31 @@ metalink=http://epel-repo/epel-source-7
 enabled=1
 gpgcheck=0
 """
-            expected_leapp_repos = """[alma-epel-repo]
+        expected_leapp_repos = """[alma-epel-repo]
 name=Alma EPEL-8 repo
 metalink=http://epel-repo/epel-8
 enabled=1
 gpgcheck=0
-
 [alma-epel-debug-repo]
 name=Alma EPEL-8 debug repo
 metalink=http://epel-repo/epel-debug-8
 enabled=1
 gpgcheck=0
-
 [alma-epel-source-repo]
 name=Alma EPEL-8 source repo
 metalink=http://epel-repo/epel-source-8
 enabled=1
 gpgcheck=0
 """
-            expected_leapp_mapping = """epel-repo,alma-epel-repo,alma-epel-repo,all,all,x86_64,rpm,ga,ga
+        expected_leapp_mapping = """epel-repo,alma-epel-repo,alma-epel-repo,all,all,x86_64,rpm,ga,ga
 epel-debug-repo,alma-epel-debug-repo,alma-epel-debug-repo,all,all,x86_64,rpm,ga,ga
 epel-source-repo,alma-epel-source-repo,alma-epel-source-repo,all,all,x86_64,rpm,ga,ga
 """
-            self._perform_test({"epel_repos.repo": epel_like_repos},
-                               expected_leapp_repos, expected_leapp_mapping)
+        self._perform_test({"epel_repos.repo": epel_like_repos},
+                           expected_leapp_repos, expected_leapp_mapping)
 
-        def test_plesk_mapping(self):
-            plesk_like_repos = """[PLESK_18_0_XX-extras]
+    def test_plesk_mapping(self):
+        plesk_like_repos = """[PLESK_18_0_XX-extras]
 name=plesk extras repo
 baseurl=http://plesk/rpm-CentOS-7/extras
 enabled=1
@@ -140,51 +163,48 @@ baseurl=http://plesk/rpm-CentOS-7/php-5.5
 enabled=1
 gpgcheck=0
 
-[PLESK_18_0_XX-PHP-7.2]
+[PLESK_18_0_XX-PHP72]
 name=plesk php 7.2 repo
-baseurl=http://plesk/rpm-CentOS-7/php-7.2
+baseurl=http://plesk/rpm-CentOS-7/PHP_7.2
 enabled=1
 gpgcheck=0
 
-[PLESK_18_0_XX-PHP-8.0]
+[PLESK_18_0_XX-PHP80]
 name=plesk php 8.0 repo
-baseurl=http://plesk/rpm-CentOS-7/php-8.2
+baseurl=http://plesk/rpm-CentOS-7/PHP_8.0
 enabled=1
 gpgcheck=0
 """
-            expected_leapp_repos = """[alma-PLESK_18_0_XX]
-name=Alma plesk repo
-baseurl=http://plesk/rpm-RedHat-el8/dist
-enabled=1
-gpgcheck=0
-
-[alma-PLESK_18_0_XX-extras]
+        expected_leapp_repos = """[alma-PLESK_18_0_XX-extras]
 name=Alma plesk extras repo
 baseurl=http://plesk/rpm-RedHat-el8/extras
 enabled=1
 gpgcheck=0
-
-[alma-PLESK_18_0_XX-PHP-7.2]
+[alma-PLESK_18_0_XX]
+name=Alma plesk  repo
+baseurl=http://plesk/rpm-RedHat-el8/dist
+enabled=1
+gpgcheck=1
+[alma-PLESK_18_0_XX-PHP72]
 name=Alma plesk php 7.2 repo
-baseurl=http://plesk/rpm-CentOS-8/php-7.2
+baseurl=http://plesk/rpm-CentOS-8/PHP_7.2
 enabled=1
 gpgcheck=0
-
-[alma-PLESK_18_0_XX-PHP-8.0]
+[alma-PLESK_18_0_XX-PHP80]
 name=Alma plesk php 8.0 repo
-baseurl=http://plesk/rpm-RedHat-el8/php-8.2
+baseurl=http://plesk/rpm-RedHat-el8/PHP_8.0
 enabled=1
 gpgcheck=0
 """
-            expected_leapp_mapping ="""PLESK_18_0_XX-extras,alma-PLESK_18_0_XX,alma-PLESK_18_0_XX,all,all,x86_64,rpm,ga,ga
+        expected_leapp_mapping = """PLESK_18_0_XX-extras,alma-PLESK_18_0_XX,alma-PLESK_18_0_XX,all,all,x86_64,rpm,ga,ga
 PLESK_18_0_XX-extras,alma-PLESK_18_0_XX-extras,alma-PLESK_18_0_XX-extras,all,all,x86_64,rpm,ga,ga
-PLESK_18_0_XX-PHP-7.2,alma-PLESK_18_0_XX-PHP-7.2,alma-PLESK_18_0_XX-PHP-7.2,all,all,x86_64,rpm,ga,ga
-PLESK_18_0_XX-PHP-8.0,alma-PLESK_18_0_XX-PHP-8.0,alma-PLESK_18_0_XX-PHP-8.0,all,all,x86_64,rpm,ga,ga
+PLESK_18_0_XX-PHP72,alma-PLESK_18_0_XX-PHP72,alma-PLESK_18_0_XX-PHP72,all,all,x86_64,rpm,ga,ga
+PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,all,all,x86_64,rpm,ga,ga
 """
 
-            self._perform_test({"plesk_repos.repo": plesk_like_repos},
-                               expected_leapp_repos, expected_leapp_mapping,
-                               ignore=["PLESK_18_0_XX-PHP-5.5"])
+        self._perform_test({"plesk_repos.repo": plesk_like_repos},
+                            expected_leapp_repos, expected_leapp_mapping,
+                            ignore=["PLESK_18_0_XX-PHP-5.5"])
 
 
 class SetPackageRepositoryTests(unittest.TestCase):
