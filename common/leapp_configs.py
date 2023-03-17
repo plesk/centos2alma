@@ -44,6 +44,7 @@ def _do_name_replacement(name):
     return _do_replacement(name, [
         lambda to_change: "Alma " + to_change,
         lambda to_change: to_change.replace("Enterprise Linux 7",  "Enterprise Linux 8"),
+        lambda to_change: to_change.replace("EPEL-7", "EPEL-8"),
         lambda to_change: to_change.replace("$releasever", "8"),
     ])
 
