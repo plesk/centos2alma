@@ -7,6 +7,8 @@ DEFAULT_LOG_FILE = "/var/log/plesk/distupgrader.log"
 class log():
 
     files_logger = logging.getLogger("distupgrader_files")
+
+    is_streams_enabled = False
     streams_logger = logging.getLogger("distupgrader_streams")
 
     @staticmethod
@@ -23,6 +25,8 @@ class log():
         stream_handlers = [logging.FileHandler('/dev/console', mode='w')] if console else []
         for stream in streams:
             stream_handlers.append(logging.StreamHandler(stream))
+        if len(stream_handlers):
+            log.is_streams_enabled = True
 
         for handler in file_handlers + stream_handlers:
             handler.setFormatter(formatter)
@@ -38,7 +42,7 @@ class log():
         if to_file:
             log.files_logger.debug(msg)
 
-        if to_stream:
+        if to_stream and log.is_streams_enabled:
             log.streams_logger.debug(msg)
 
     @staticmethod
@@ -46,7 +50,7 @@ class log():
         if to_file:
             log.files_logger.info(msg)
 
-        if to_stream:
+        if to_stream and log.is_streams_enabled:
             log.streams_logger.info(msg)
 
     @staticmethod
@@ -54,7 +58,7 @@ class log():
         if to_file:
             log.files_logger.warn(msg)
 
-        if to_stream:
+        if to_stream and log.is_streams_enabled:
             log.streams_logger.warn(msg)
 
     @staticmethod
@@ -62,5 +66,5 @@ class log():
         if to_file:
             log.files_logger.error(msg)
 
-        if to_stream:
+        if to_stream and log.is_streams_enabled:
             log.streams_logger.error(msg)

@@ -172,7 +172,7 @@ class DistroIsCentos79(CheckAction):
 
     def _do_check(self):
         distro = platform.linux_distribution()
-        major_version, minor_version, _ = distro[1].split(".")
+        major_version, minor_version = distro[1].split(".")[:2]
         if distro[0] == "CentOS Linux" and int(major_version) == 7 and int(minor_version) == 9:
             return True
         return False
@@ -184,23 +184,26 @@ class DistroIsAlmalinux8(CheckAction):
         self.description = "Your distributive is not AlmaLinux8. Finish stage can be started only on AlmaLinux8."
 
     def _do_check(self):
-        if not os.path.exists("/etc/os-release"):
-            return False
+        distro = platform.linux_distribution()
+        major_version = distro[1].split(".")[0]
+        if distro[0] == "AlmaLinux" and int(major_version) == 8:
+            return True
+        return False
 
-        is_alma = False
-        is_8 = False
 
-        with open("/etc/os-release") as os_release:
-            for line in os_release:
-                if line.startswith("NAME="):
-                    if "AlmaLinux" in line:
-                        is_alma = True
-                    else:
-                        return False
-                elif line.startswith("VERSION_ID="):
-                    if line.startswith("VERSION_ID=\"8"):
-                        is_8 = True
-                    else:
-                        return False
+class PleskVersionIsActual(CheckAction):
+    def __init__(self):
+        self.name = "checking if Plesk version is actual"
+        self.description = "Plesk version should be 18.0.43 or later. Please update Plesk to solve the problem."
 
-        return is_alma and is_8
+    def _do_check(self):
+        version_process = subprocess.run(["plesk", "version"], stdout=subprocess.PIPE, universal_newlines=True)
+        for line in version_process.stdout.splitlines():
+            if line.startswith("Product version"):
+                version = line.split()[-1]
+                major, _, iter, _ = version.split(".")
+                if int(major) >= 18 and int(iter) >= 43:
+                    return True
+                break
+
+        return False
