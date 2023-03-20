@@ -79,6 +79,7 @@ def is_required_conditions_satisfied(options, stage_flag):
             actions.DistroIsCentos79(),
             actions.PleskVersionIsActual(),
             actions.PleskInstallerNotInProgress(),
+            actions.CheckAvailableSpace(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())

@@ -2,6 +2,7 @@ from .action import ActiveAction, CheckAction
 
 import os
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -206,4 +207,32 @@ class PleskVersionIsActual(CheckAction):
                     return True
                 break
 
+        return False
+
+
+class CheckAvailableSpace(CheckAction):
+    def __init__(self):
+        self.name = "checking available space"
+        self.required_space = 5 * 1024 * 1024 * 1024  # 5GB
+        self.description = """There is insufficient disk space available. Leapp requires a minimum of {} of free space
+\ton the disk where the '/var/lib' directory is located. Available space: {}. 
+\tPlease free up space and try again.
+"""
+
+    def _huminize_size(self, size):
+        original = size
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
+            if size < 1024:
+                return f"{size:.2f} {unit}"
+            size /= 1024
+        return f"{original} B"
+
+    def _do_check(self):
+        # Leapp stores rhel 8 filesystem in /var/lib/leapp
+        # That's why it takes so much disk space
+        available_space = shutil.disk_usage("/var/lib")[2]
+        if available_space >= self.required_space:
+            return True
+
+        self.description = self.description.format(self._huminize_size(self.required_space), self._huminize_size(available_space))
         return False
