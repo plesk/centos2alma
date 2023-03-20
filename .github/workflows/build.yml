@@ -20,9 +20,9 @@ jobs:
           && sudo apt-get install openjdk-8-jre-headless
           && sudo dpkg --install buck.deb
     - name: Build our program
-      run: buck build :distupgrader
+      run: buck build :centos2alma
     - name: Store result
       uses: actions/upload-artifact@v3
       with:
-        name: distupgrader
-        path: ./buck-out/gen/distupgrader.pex
+        name: centos2alma
+        path: ./buck-out/gen/centos2alma.pex

@@ -83,7 +83,7 @@ class ActionsFlow():
 
 class ActiveFlow(ActionsFlow):
 
-    PATH_TO_ACTIONS_DATA = "/usr/local/psa/tmp/distupgrader_actions.json"
+    PATH_TO_ACTIONS_DATA = "/usr/local/psa/tmp/centos2alma_actions.json"
 
     def __init__(self, stages):
         super().__init__(stages)

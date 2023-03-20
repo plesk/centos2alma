@@ -67,9 +67,9 @@ class RulePleskRelatedServices(ActiveAction):
 class AddUpgradeSystemdService(ActiveAction):
 
     def __init__(self, script_path):
-        self.name = "adding distupgrader resume service"
+        self.name = "adding centos2alma resume service"
         self.script_path = script_path
-        self.service_name = 'plesk-distugrader.service'
+        self.service_name = 'plesk-centos2alma.service'
         self.service_file_path = os.path.join('/etc/systemd/system', self.service_name)
         self.service_content = '''
 [Unit]

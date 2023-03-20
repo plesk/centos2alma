@@ -1,12 +1,12 @@
 # Copyright 1999-2022. Plesk International GmbH. All rights reserved.
 # vim:ft=python:
 
-DISTUPGRADER_VERSION = '0.1.0'
+PRODUCT_VERSION = '0.1.0'
 
 genrule(
     name = 'version',
     out = 'version.json',
-    bash = r"""echo "{\"version\": \"%s\", \"revision\": \"`git rev-parse HEAD`\"}" > $OUT""" % (DISTUPGRADER_VERSION),
+    bash = r"""echo "{\"version\": \"%s\", \"revision\": \"`git rev-parse HEAD`\"}" > $OUT""" % (PRODUCT_VERSION),
 )
 
 python_library(
@@ -20,7 +20,7 @@ python_library(
 )
 
 python_library(
-    name = 'distupgrader.lib',
+    name = 'libs.lib',
     srcs = glob(['main.py']),
     deps = [
         ':actions.lib',
@@ -42,10 +42,10 @@ python_test(
 )
 
 python_binary(
-    name = 'distupgrader',
+    name = 'centos2alma',
     platform = 'py3',
     main_module = 'main',
     deps = [
-        ':distupgrader.lib',
+        ':libs.lib',
     ]
 )

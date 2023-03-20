@@ -105,7 +105,7 @@ class AddFinishSshLoginMessage(ActiveAction):
         self.motd_path = "/etc/motd"
         self.finish_message = """
 ===============================================================================
-Message from Plesk distupgrade tool:
+Message from Plesk centos2alma tool:
 The server has been converted to AlmaLinux 8.
 You can remove this message from the /etc/motd file.
 ===============================================================================
@@ -131,7 +131,7 @@ class AddInProgressSshLoginMessage(ActiveAction):
         path_to_script = os.path.abspath(sys.argv[0])
         self.in_progress_message = f"""
 ===============================================================================
-Message from Plesk distupgrade tool:
+Message from Plesk centos2alma tool:
 The server is being converted to AlmaLinux 8. Please wait.
 To see the current conversion status, run the '{path_to_script} --status' command.
 To monitor the conversion progress in real time, run the '{path_to_script} --monitor' command.
