@@ -28,7 +28,7 @@ Do not use the script if any of the following is true:
 ## Requirements
 - Plesk 18.0.43 or later.
 - CentOS 7.9 or later. 
-- At least 10 GB of free disk space.
+- At least 5 GB of free disk space.
 - At least 1 GB of RAM.
 
 ## Using the script
