@@ -22,7 +22,6 @@ Do not use the script if any of the following is true:
 - **You are running an OS other than CentOS 7.9**. The script was not tested on other Red Hat Enterprise Linux 7-based distributions. The conversion process may have unexpected results if started on a server not running CentOS 7.9. So we add checks to avoid any actions on such kinds of servers.
 - **Plesk version is 18.0.42 or earier**. The script only supports Plesk 18.0.43 and later.
 - **The Ruby extension is installed**. Ruby applications (such as radmine) could be broken after the conversion.
-- **The Kolab extension is installed**. The conversion process does not currently support Kolab.
 ### Limitations
 - PHP 7.1 and earlier are not supported in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. We strongly recommend using the latest PHP versions.
 
