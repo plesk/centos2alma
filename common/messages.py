@@ -26,7 +26,7 @@ All changes have been reverted. Plesk should now return to normal operation.
 
 FAIL_MESSAGE = """
 \033[91m**************************************************************************************
-The conversion process has failed. See the /var/log/plesk/distupgrader.log file for more information.
+The conversion process has failed. See the /var/log/plesk/centos2alma.log file for more information.
 For assistance, submit an issue here https://github.com/plesk/distupgrader/issues and attach this log file.
 **************************************************************************************\033[0m
 """
@@ -34,7 +34,7 @@ For assistance, submit an issue here https://github.com/plesk/distupgrader/issue
 TIME_EXCEEDED_MESSAGE = """
 \033[91m**************************************************************************************
 The conversion process is taking too long. It may be stuck.
-See the /var/log/plesk/distupgrader.log file for more information.
+See the /var/log/plesk/centos2alma.log file for more information.
 It is safe to interrupt the process with Ctrl+C and restart it from the same stage.
 **************************************************************************************\033[0m
 """

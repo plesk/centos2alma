@@ -178,9 +178,9 @@ def inform_about_problems():
     with open("/etc/motd", "a") as motd:
         motd.write("""
 ===============================================================================
-Message from Plesk distupgrade tool:
+Message from Plesk centos2alma tool:
 Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
-See the /var/log/plesk/distupgrader.log file for more information.
+See the /var/log/plesk/centos2alma.log file for more information.
 You can remove this message from the /etc/motd file.
 ===============================================================================
 """)
@@ -199,7 +199,7 @@ def start_flow(flow):
         progress.join()
 
 
-STATUS_FILE_PATH = "/tmp/distupgrader.status"
+STATUS_FILE_PATH = "/tmp/centos2alma.status"
 
 
 def show_status():
@@ -231,7 +231,7 @@ def handle_error(error):
     sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
     sys.stdout.write("Last 100 lines of the log file:\n")
 
-    error_message = f"Distupgrade process has been failed. Error: {error}.\n\n"
+    error_message = f"centos2alma process has been failed. Error: {error}.\n\n"
     for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
         sys.stdout.write(line)
         error_message += line
@@ -247,7 +247,7 @@ def handle_error(error):
         # We don't care about errors to avoid mislead of the user
         pass
 
-    common.log.err(f"Distupgrade process has been failed. Error: {error}")
+    common.log.err(f"centos2alma process has been failed. Error: {error}")
 
 
 def do_convert(options):
@@ -282,7 +282,7 @@ def do_convert(options):
         sys.stdout.write(common.REVET_FINISHED_MESSAGE)
 
 
-HELP_MESSAGE = f"""distupgrader [options]
+HELP_MESSAGE = f"""centos2alma [options]
 
 
 Use this script to convert a CentOS 7 server with Plesk to AlmaLinux 8. The process consists of three stages:
@@ -294,11 +294,11 @@ Use this script to convert a CentOS 7 server with Plesk to AlmaLinux 8. The proc
 
 
 
-The script writes a log to the /var/log/plesk/distupgrader.log file. If there are any issues, you can find more information in the log file.
-For assistance, submit an issue here https://github.com/plesk/distupgrader/issues and attach this log file.
+The script writes a log to the /var/log/plesk/centos2alma.log file. If there are any issues, you can find more information in the log file.
+For assistance, submit an issue here https://github.com/plesk/centos2alma/issues and attach this log file.
 
 
-Distupgrader version is {get_version()}-{get_revision()}.
+centos2alma version is {get_version()}-{get_revision()}.
 """
 
 
@@ -315,7 +315,7 @@ def main():
                     help="Start the conversion stage. This calls the Leapp utility to convert the system "
                          "and reboot into the temporary OS distribution.")
     opts.add_option("-r", "--revert", action="store_const", dest="stage", const=Stages.revert,
-                    help="Revert all changes made by the distupgrader. This option can only take effect "
+                    help="Revert all changes made by the centos2alma. This option can only take effect "
                          "if the server has not yet been rebooted into the temporary OS distribution.")
     opts.add_option("--finish", action="store_const", dest="stage", const=Stages.finish,
                     help="Start the finalization stage. This returns Plesk to normal operation. "
@@ -333,7 +333,7 @@ def main():
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
                     help="Start one of the conversion process' stages. Allowed values: 'prepare', 'start', 'revert', and 'finish'.")
     opts.add_option("-v", "--version", action="store_true", dest="version", default=False,
-                    help="Show the version of the distupgrader utility.")
+                    help="Show the version of the centos2alma utility.")
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 

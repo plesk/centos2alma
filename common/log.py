@@ -1,15 +1,14 @@
 import logging
 
 
-DEFAULT_LOG_FILE = "/var/log/plesk/distupgrader.log"
+DEFAULT_LOG_FILE = "/var/log/plesk/centos2alma.log"
 
 
 class log():
-
-    files_logger = logging.getLogger("distupgrader_files")
+    files_logger = logging.getLogger("centos2alma_files")
 
     is_streams_enabled = False
-    streams_logger = logging.getLogger("distupgrader_streams")
+    streams_logger = logging.getLogger("centos2alma_streams")
 
     @staticmethod
     def init_logger(logfiles, streams, console=False, loglevel=logging.INFO):
