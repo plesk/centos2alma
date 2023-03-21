@@ -35,7 +35,7 @@ class FixSpamassassinConfig(ActiveAction):
         self.name = "fix spamassassin configuration"
 
     def _is_required(self):
-        return common.is_package_installed("psa-spamassassin")
+        return rpm.is_package_installed("psa-spamassassin")
 
     def _prepare_action(self):
         util.logged_check_call(["systemctl", "stop", "spamassassin.service"])
