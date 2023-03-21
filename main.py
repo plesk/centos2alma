@@ -76,6 +76,7 @@ def is_required_conditions_satisfied(options, stage_flag):
             actions.PleskVersionIsActual(),
             actions.PleskInstallerNotInProgress(),
             actions.CheckAvailableSpace(),
+            actions.CheckOutdatedPHP(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())
