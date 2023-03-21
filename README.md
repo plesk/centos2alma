@@ -28,7 +28,7 @@ Do not use the script if any of the following is true:
 ## Requirements
 - Plesk 18.0.43 or later.
 - CentOS 7.9 or later. 
-- At least 10 GB of free disk space.
+- At least 5 GB of free disk space.
 - At least 1 GB of RAM.
 
 ## Using the script
@@ -68,9 +68,9 @@ You can remove this message from the /etc/motd file.
 ```
 
 ### Conversion stages
-The conversion process consists of three stages: "prepare", "start", and "finish". To run stages individually, use the "--prepare", "--start", and "--finish" flags, or the "-s" flag with name of the stage you want to run.
-1. The "prepare" stage must always be called first. It installs and configures ELevate. This stage does not interfere with normal Plesk operation, and can be called safely.
-2. The "start" stage disables Plesk services and runs ELevate. It then stops Plesk services and reboots the server.
+The conversion process consists of three stages: "start", "revert", and "finish". To run stages individually, use the "--start", "--revert", and "--finish" flags, or the "-s" flag with name of the stage you want to run.
+1. The "start" stage installs and configures ELevate, disables Plesk services and runs ELevate. It then stops Plesk services and reboots the server.
+2. The "revert" stage enables Plesk services back. It could be used if something goes wrong on start stage.
 3. The "finish" stage must be called on the first boot of AlmaLinux 8. You can rerun this stage if something goes wrong during the first boot to ensure that the problem is fixed and Plesk is ready to use.
 
 ### Other arguments
@@ -81,7 +81,7 @@ The centos2alma writes its log to the '/var/log/plesk/centos2alma.log' file, as 
 The ELevate writes its log to the '/var/log/leapp/leapp-upgrade.log' file. Reports can be found in the '/var/log/leapp/leapp-report.txt' and the '/var/log/leapp/leapp-report.json' files.
 
 ### Revert
-If the script fails during the "prepare" stage, or the "start" stage before the reboot, you can use the centos2alma script with the '-r' or '--revert' flags to restore Plesk to normal operation. The centos2alma will undo some of the changes it made and restart Plesk services. Once you have resolved the root cause of the failure, you can attempt the conversion again.
+If the script fails during the the "start" stage before the reboot, you can use the centos2alma script with the '-r' or '--revert' flags to restore Plesk to normal operation. The centos2alma will undo some of the changes it made and restart Plesk services. Once you have resolved the root cause of the failure, you can attempt the conversion again.
 Note:
 - You cannot use revert to undo the changes after the first reboot triggered by centos2alma.
 - Revert does not remove Leapp or packages installed by Leapp. Neither does it free persistent storage disk space reserved by Leapp.

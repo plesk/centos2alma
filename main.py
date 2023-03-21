@@ -40,7 +40,6 @@ def merge_dicts_of_lists(dict1, dict2):
 
 
 class Stages(Flag):
-    prepare = auto()
     convert = auto()
     finish = auto()
     revert = auto()
@@ -49,10 +48,7 @@ class Stages(Flag):
 
 
 def convert_string_to_stage(option, opt_str, value, parser):
-    if value == "prepare":
-        parser.values.stage = Stages.prepare
-        return
-    elif value == "start" or value == "convert":
+    if value == "start" or value == "convert":
         parser.values.stage = Stages.convert
         return
     elif value == "finish":
@@ -106,51 +102,45 @@ def construct_actions(options, stage_flag):
     if Stages.test in stage_flag:
         raise Exception("There are no steps in the test stage. You could use this stage to call some actions in development purposes.")
 
-    if Stages.prepare in stage_flag or Stages.finish in stage_flag or Stages.revert in stage_flag:
-        actions_map = merge_dicts_of_lists(actions_map, {
-            1: [
-                actions.LeapInstallation(),
-            ],
-            2: [
-                actions.LeapReposConfiguration(),
-                actions.AvoidMariadbDowngrade(),
-                actions.LeapChoicesConfiguration(),
-                actions.AdoptKolabRepositories(),
-                actions.FixupImunify(),
-                actions.PatchLeappErrorOutput(),
-            ],
-        })
+    actions_map = merge_dicts_of_lists(actions_map, {
+        1: [
+            actions.LeapInstallation(),
+        ],
+        2: [
+            actions.LeapReposConfiguration(),
+            actions.AvoidMariadbDowngrade(),
+            actions.LeapChoicesConfiguration(),
+            actions.AdoptKolabRepositories(),
+            actions.FixupImunify(),
+            actions.PatchLeappErrorOutput(),
+            actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
+            actions.UpdatePlesk(),
+            actions.PostgresReinstallModernPackage(),
+            actions.FixNamedConfig(),
+        ],
+        3: [
+            actions.RemovingPackages(),
+            actions.PostgresDatabasesUpdate(),
+            actions.UpdateMariadbDatabase(),
+            actions.AddMysqlConnector(),
+            actions.ReinstallPleskComponents(),
+            actions.DisableSuspiciousKernelModules(),
+            actions.FixSpamassassinConfig(),
+            actions.RulePleskRelatedServices(),
+            actions.RuleSelinux(),
+        ],
+        4: [
+            actions.DoConvert(),
+            actions.AddInProgressSshLoginMessage(),
+        ],
+    })
 
-    if Stages.convert in stage_flag or Stages.finish in stage_flag or Stages.revert in stage_flag:
+    if options.upgrade_postgres_allowed:
         actions_map = merge_dicts_of_lists(actions_map, {
-            2: [
-                actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
-                actions.UpdatePlesk(),
-                actions.PostgresReinstallModernPackage(),
-                actions.FixNamedConfig(),
-            ],
             3: [
-                actions.RemovingPackages(),
                 actions.PostgresDatabasesUpdate(),
-                actions.UpdateMariadbDatabase(),
-                actions.AddMysqlConnector(),
-                actions.ReinstallPleskComponents(),
-                actions.DisableSuspiciousKernelModules(),
-                actions.FixSpamassassinConfig(),
-                actions.RulePleskRelatedServices(),
-                actions.RuleSelinux(),
-            ],
-            4: [
-                actions.DoConvert(),
-                actions.AddInProgressSshLoginMessage(),
-            ],
+            ]
         })
-        if options.upgrade_postgres_allowed:
-            actions_map = merge_dicts_of_lists(actions_map, {
-                3: [
-                    actions.PostgresDatabasesUpdate(),
-                ]
-            })
 
     if Stages.finish in stage_flag:
         actions_map = merge_dicts_of_lists(actions_map, {
@@ -307,11 +297,7 @@ def main():
     common.log.init_logger([common.DEFAULT_LOG_FILE], [])
 
     opts = OptionParser(usage=HELP_MESSAGE)
-    opts.set_default("stage", Stages.prepare | Stages.convert)
-    opts.add_option("--prepare", action="store_const", dest="stage", const=Stages.prepare,
-                    help="Start the preparation stage. This installs and configures the Leapp utility. "
-                         "This option does not interfere with normal Plesk operation, "
-                         "and can be called safely before any other actions.")
+    opts.set_default("stage", Stages.convert)
     opts.add_option("--start", action="store_const", dest="stage", const=Stages.convert,
                     help="Start the conversion stage. This calls the Leapp utility to convert the system "
                          "and reboot into the temporary OS distribution.")
@@ -323,7 +309,7 @@ def main():
                          "Can be run again if the conversion process failed to finish successfully earlier.")
     opts.add_option("--retry", action="store_true", dest="retry", default=False,
                     help="Retry the most recently started stage. This option can only take effect "
-                         "during the 'prepare' or 'start' stages.")
+                         "during the preparation stage.")
     opts.add_option("--status", action="store_true", dest="status", default=False,
                     help="Show the current status of the conversion process.")
     opts.add_option("--monitor", action="store_true", dest="monitor", default=False,
@@ -332,7 +318,7 @@ def main():
                     help="Upgrade all hosted PostgreSQL databases. To avoid data loss, create backups of all "
                          "hosted PostgreSQL databases before calling this option.")
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
-                    help="Start one of the conversion process' stages. Allowed values: 'prepare', 'start', 'revert', and 'finish'.")
+                    help="Start one of the conversion process' stages. Allowed values: 'start', 'revert', and 'finish'.")
     opts.add_option("-v", "--version", action="store_true", dest="version", default=False,
                     help="Show the version of the centos2alma utility.")
 
