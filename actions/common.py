@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 import common
-from common import util
+from common import util, rpm
 
 
 class FixNamedConfig(ActiveAction):
@@ -35,7 +35,7 @@ class FixSpamassassinConfig(ActiveAction):
         self.name = "fix spamassassin configuration"
 
     def _is_required(self):
-        return common.is_package_installed("psa-spamassassin")
+        return rpm.is_package_installed("psa-spamassassin")
 
     def _prepare_action(self):
         util.logged_check_call(["systemctl", "stop", "spamassassin.service"])
@@ -235,4 +235,29 @@ class CheckAvailableSpace(CheckAction):
             return True
 
         self.description = self.description.format(self._huminize_size(self.required_space), self._huminize_size(available_space))
+        return False
+
+
+class CheckOutdatedPHP(CheckAction):
+    def __init__(self):
+        self.name = "checking outdated PHP"
+        self.description = """Outdated versions of PHP was detected. To proceed the conversion, please remove
+\t'{}' through Plesk installer."""
+
+    def _do_check(self):
+        outdated_php_packages = {
+            "plesk-php52": "PHP 5.2",
+            "plesk-php53": "PHP 5.3",
+            "plesk-php54": "PHP 5.4",
+            "plesk-php55": "PHP 5.5",
+            "plesk-php56": "PHP 5.6",
+            "plesk-php70": "PHP 7.0",
+            "plesk-php71": "PHP 7.1",
+        }
+
+        installed_pkgs = rpm.filter_installed_packages(outdated_php_packages.keys())
+        if len(installed_pkgs) == 0:
+            return True
+
+        self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]))
         return False
