@@ -21,8 +21,10 @@ jobs:
           && sudo dpkg --install buck.deb
     - name: Build our program
       run: buck build :centos2alma
+    - name: Prepare result
+      run: mv buck-out/gen/centos2alma.pex buck-out/gen/centos2alma
     - name: Store result
       uses: actions/upload-artifact@v3
       with:
         name: centos2alma
-        path: ./buck-out/gen/centos2alma.pex
+        path: ./buck-out/gen/centos2alma
