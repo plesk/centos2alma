@@ -181,6 +181,9 @@ def construct_actions(options, stage_flag):
             1: [
                 actions.AddFinishSshLoginMessage(),
             ],
+            2: [
+                actions.RebundleRubyApplications(),
+            ],
             4: [
                 actions.AdoptPleskRepositories(),
                 actions.StartPleskBasicServices(),
