@@ -24,10 +24,17 @@ All changes have been reverted. Plesk should now return to normal operation.
 **************************************************************************************\033[0m
 """
 
-FAIL_MESSAGE = """
+FAIL_MESSAGE_HEAD = """
 \033[91m**************************************************************************************
-The conversion process has failed. See the /var/log/plesk/centos2alma.log file for more information.
-For assistance, submit an issue here https://github.com/plesk/distupgrader/issues and attach this log file.
+The conversion process has failed. There are last 100 lines of the {} file:
+**************************************************************************************\033[0m
+"""
+
+FAIL_MESSAGE_TAIL = """
+\033[91m**************************************************************************************
+The conversion process has failed. See the {} file for more information.
+Last 100 lines of the file are shown above.
+For assistance, call 'centos2alma --prepare-feedback' and follow instructions.
 **************************************************************************************\033[0m
 """
 
@@ -36,5 +43,13 @@ TIME_EXCEEDED_MESSAGE = """
 The conversion process is taking too long. It may be stuck.
 See the /var/log/plesk/centos2alma.log file for more information.
 It is safe to interrupt the process with Ctrl+C and restart it from the same stage.
+**************************************************************************************\033[0m
+"""
+
+FEEDBACK_IS_READY_MESSAGE = """
+\033[92m**************************************************************************************
+Feedback archive is ready. You can find it here: {feedback_archive_path}
+For further investigation create an issue in the GitHub repository - https://github.com/plesk/distupgrader/issues.
+Attach the feedback archive to the issue and describe the problem.
 **************************************************************************************\033[0m
 """

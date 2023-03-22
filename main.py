@@ -6,11 +6,13 @@ import common
 from datetime import datetime
 import json
 import os
+import platform
 import pkg_resources
 import sys
 import subprocess
 import threading
 import time
+import zipfile
 
 from enum import Flag, auto
 from optparse import OptionParser, OptionValueError
@@ -37,6 +39,36 @@ def merge_dicts_of_lists(dict1, dict2):
         else:
             dict1[key] = value
     return dict1
+
+
+def prepare_feedback():
+    feedback_archive = "centos2alma_feedback.zip"
+    versions_file = "versions.txt"
+
+    with open(versions_file, "w") as versions:
+        version_process = subprocess.run(["plesk", "version"], stdout=subprocess.PIPE, universal_newlines=True)
+        for line in version_process.stdout.splitlines():
+            versions.write(line + "\n")
+        versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
+        versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+
+    keep_files = [
+        versions_file,
+        common.DEFAULT_LOG_FILE,
+        "/etc/leapp/files/repomap.csv",
+        "/etc/leapp/files/pes-events.json",
+        "/etc/leapp/files/leapp_upgrade_repositories.repo",
+        "/var/log/leapp/leapp-report.txt",
+        "/var/log/leapp/leapp-preupgrade.log",
+        "/var/log/leapp/leapp-upgrade.log",
+    ]
+    with zipfile.ZipFile(feedback_archive, "w") as zip_file:
+        for file in [file for file in keep_files if os.path.exists(file)]:
+            zip_file.write(file)
+
+    os.unlink(versions_file)
+
+    print(common.FEEDBACK_IS_READY_MESSAGE.format(feedback_archive_path=feedback_archive))
 
 
 class Stages(Flag):
@@ -220,13 +252,14 @@ def monitor_status():
 
 def handle_error(error):
     sys.stdout.write("\n{}\n".format(error))
-    sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
-    sys.stdout.write("Last 100 lines of the log file:\n")
+    sys.stdout.write(common.FAIL_MESSAGE_HEAD.format(common.DEFAULT_LOG_FILE))
 
     error_message = f"centos2alma process has been failed. Error: {error}.\n\n"
     for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
         sys.stdout.write(line)
         error_message += line
+
+    sys.stdout.write(common.FAIL_MESSAGE_TAIL.format(common.DEFAULT_LOG_FILE))
 
     # Todo. For now we works only on RHEL-based distros, so the path
     # to the send-error-report utility will be the same.
@@ -234,7 +267,8 @@ def handle_error(error):
     send_error_path = "/usr/local/psa/admin/bin/send-error-report"
     try:
         if os.path.exists(send_error_path):
-            subprocess.run([send_error_path, "backend"], input=error_message.encode())
+            subprocess.run([send_error_path, "backend"], input=error_message.encode(),
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         # We don't care about errors to avoid mislead of the user
         pass
@@ -322,11 +356,17 @@ def main():
                     help="Start one of the conversion process' stages. Allowed values: 'start', 'revert', and 'finish'.")
     opts.add_option("-v", "--version", action="store_true", dest="version", default=False,
                     help="Show the version of the centos2alma utility.")
+    opts.add_option("-f", "--prepare-feedback", action="store_true", dest="prepare_feedback", default=False,
+                    help="Prepare feedback archive that should be sent to the developers for further failure investigation.")
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 
     if options.version:
         print(get_version() + "-" + get_revision())
+        return 0
+
+    if options.prepare_feedback:
+        prepare_feedback()
         return 0
 
     if options.status:
