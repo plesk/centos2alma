@@ -24,9 +24,16 @@ All changes have been reverted. Plesk should now return to normal operation.
 **************************************************************************************\033[0m
 """
 
-FAIL_MESSAGE = """
+FAIL_MESSAGE_HEAD = """
 \033[91m**************************************************************************************
-The conversion process has failed. See the /var/log/plesk/centos2alma.log file for more information.
+The conversion process has failed. There are last 100 lines of the {} file:
+**************************************************************************************\033[0m
+"""
+
+FAIL_MESSAGE_TAIL = """
+\033[91m**************************************************************************************
+The conversion process has failed. See the {} file for more information.
+Last 100 lines of the file are shown above.
 For assistance, call 'centos2alma --prepare-feedback' and follow instructions.
 **************************************************************************************\033[0m
 """

@@ -252,13 +252,14 @@ def monitor_status():
 
 def handle_error(error):
     sys.stdout.write("\n{}\n".format(error))
-    sys.stdout.write(common.FAIL_MESSAGE.format(common.DEFAULT_LOG_FILE))
-    sys.stdout.write("Last 100 lines of the log file:\n")
+    sys.stdout.write(common.FAIL_MESSAGE_HEAD.format(common.DEFAULT_LOG_FILE))
 
     error_message = f"centos2alma process has been failed. Error: {error}.\n\n"
     for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
         sys.stdout.write(line)
         error_message += line
+
+    sys.stdout.write(common.FAIL_MESSAGE_TAIL.format(common.DEFAULT_LOG_FILE))
 
     # Todo. For now we works only on RHEL-based distros, so the path
     # to the send-error-report utility will be the same.
@@ -266,7 +267,8 @@ def handle_error(error):
     send_error_path = "/usr/local/psa/admin/bin/send-error-report"
     try:
         if os.path.exists(send_error_path):
-            subprocess.run([send_error_path, "backend"], input=error_message.encode())
+            subprocess.run([send_error_path, "backend"], input=error_message.encode(),
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         # We don't care about errors to avoid mislead of the user
         pass
