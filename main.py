@@ -5,6 +5,7 @@ import common
 
 from datetime import datetime
 import json
+import logging
 import os
 import platform
 import pkg_resources
@@ -329,8 +330,6 @@ centos2alma version is {get_version()}-{get_revision()}.
 
 
 def main():
-    common.log.init_logger([common.DEFAULT_LOG_FILE], [])
-
     opts = OptionParser(usage=HELP_MESSAGE)
     opts.set_default("stage", Stages.convert)
     opts.add_option("--start", action="store_const", dest="stage", const=Stages.convert,
@@ -358,8 +357,12 @@ def main():
                     help="Show the version of the centos2alma utility.")
     opts.add_option("-f", "--prepare-feedback", action="store_true", dest="prepare_feedback", default=False,
                     help="Prepare feedback archive that should be sent to the developers for further failure investigation.")
+    opts.add_option("--verbose", action="store_true", dest="verbose", default=False, help="Write verbose logs")
 
     options, _ = opts.parse_args(args=sys.argv[1:])
+
+    common.log.init_logger([common.DEFAULT_LOG_FILE], [],
+                           loglevel=logging.DEBUG if options.verbose else logging.INFO)
 
     if options.version:
         print(get_version() + "-" + get_revision())
@@ -372,7 +375,7 @@ def main():
     if options.status:
         show_status()
         return 0
-    
+
     if options.monitor:
         monitor_status()
         return 0
