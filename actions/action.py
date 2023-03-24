@@ -107,20 +107,21 @@ class ActiveFlow(ActionsFlow):
         for stage_id, actions in stages.items():
             self._pre_stage(stage_id, actions)
             for action in actions:
-                if not self._is_action_required(action):
-                    common.log.info("Skipped: {description!s}".format(description=action))
-                    self._save_action_state(action.name, ActionState.skiped)
-                    continue
-
                 try:
+                    if not self._is_action_required(action):
+                        common.log.info("Skipped: {description!s}".format(description=action))
+                        self._save_action_state(action.name, ActionState.skiped)
+                        continue
+
                     self._invoke_action(action)
+
+                    self._save_action_state(action.name, ActionState.success)
+                    common.log.info("Success: {description!s}".format(description=action))
                 except Exception as ex:
                     self._save_action_state(action.name, ActionState.failed)
                     self.error = Exception("Failed: {description!s}. The reason: {error}".format(description=action, error=ex))
+                    common.log.err("Failed: {description!s}. The reason: {error}".format(description=action, error=ex))
                     return False
-
-                self._save_action_state(action.name, ActionState.success)
-                common.log.info("Success: {description!s}".format(description=action))
 
             self._post_stage(stage_id, actions)
 

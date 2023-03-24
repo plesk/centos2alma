@@ -5,6 +5,7 @@ import common
 
 from datetime import datetime
 import json
+import logging
 import os
 import platform
 import pkg_resources
@@ -15,7 +16,7 @@ import time
 import zipfile
 
 from enum import Flag, auto
-from optparse import OptionParser, OptionValueError
+from optparse import OptionParser, OptionValueError, SUPPRESS_HELP
 
 
 def get_version():
@@ -180,6 +181,9 @@ def construct_actions(options, stage_flag):
             1: [
                 actions.AddFinishSshLoginMessage(),
             ],
+            2: [
+                actions.RebundleRubyApplications(),
+            ],
             4: [
                 actions.AdoptPleskRepositories(),
                 actions.StartPleskBasicServices(),
@@ -294,7 +298,7 @@ def do_convert(options):
 
             return 1
 
-    if Stages.convert in options.stage or Stages.finish in options.stage:
+    if not options.no_reboot and Stages.convert in options.stage or Stages.finish in options.stage:
         common.log.info("Going to reboot the system")
         if Stages.convert in options.stage:
             sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),
@@ -329,8 +333,6 @@ centos2alma version is {get_version()}-{get_revision()}.
 
 
 def main():
-    common.log.init_logger([common.DEFAULT_LOG_FILE], [])
-
     opts = OptionParser(usage=HELP_MESSAGE)
     opts.set_default("stage", Stages.convert)
     opts.add_option("--start", action="store_const", dest="stage", const=Stages.convert,
@@ -358,8 +360,13 @@ def main():
                     help="Show the version of the centos2alma utility.")
     opts.add_option("-f", "--prepare-feedback", action="store_true", dest="prepare_feedback", default=False,
                     help="Prepare feedback archive that should be sent to the developers for further failure investigation.")
+    opts.add_option("--verbose", action="store_true", dest="verbose", default=False, help="Write verbose logs")
+    opts.add_option("--no-reboot", action="store_true", dest="no_reboot", default=False, help=SUPPRESS_HELP)
 
     options, _ = opts.parse_args(args=sys.argv[1:])
+
+    common.log.init_logger([common.DEFAULT_LOG_FILE], [],
+                           loglevel=logging.DEBUG if options.verbose else logging.INFO)
 
     if options.version:
         print(get_version() + "-" + get_revision())
@@ -372,7 +379,7 @@ def main():
     if options.status:
         show_status()
         return 0
-    
+
     if options.monitor:
         monitor_status()
         return 0
