@@ -204,7 +204,10 @@ def get_flow(stage_flag, actions_map):
 
 
 def inform_about_problems():
-    with open("/etc/motd", "a") as motd:
+    MOTD_PATH = "/etc/motd"
+    common.restore_file_from_backup(MOTD_PATH)
+
+    with open(MOTD_PATH, "a") as motd:
         motd.write("""
 ===============================================================================
 Message from Plesk centos2alma tool:
