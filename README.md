@@ -33,6 +33,15 @@ Do not use the script if any of the following is true:
 - At least 1 GB of RAM.
 
 ## Using the script
+To retrieve the latest available version of the tool, please navigate to the "Releases" section. Once there, locate the most recent version of the tool and download the zip archive. The zip archive will contain the centos2alma tool binary.
+
+To prepare the latest version of the tool for use from a command line, please run the following commands:
+```shell
+> wget https://github.com/plesk/distupgrader/releases/download/1.0.0/distupgrader_1_0_0.zip
+> unzip distupgrader_1_0_0.zip
+> chmod 755 centos2alma
+```
+
 To monitor the conversion process, we recommend using the ['screen' utility](https://www.gnu.org/software/screen/) to run the script in the background. To do so, run the following command:
 ```shell
 > screen -S centos2alma
