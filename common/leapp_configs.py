@@ -170,7 +170,7 @@ def adopt_repositories(repofile, ignore=None):
 
             dst.write(repo_format.format(id=id, name=name, url=url))
 
-            for line in [_do_common_replacement(add_line) for add_line in additional_lines]:
+            for line in (_do_common_replacement(add_line) for add_line in additional_lines):
                 dst.write(line)
 
     shutil.move(repofile + ".next", repofile)
@@ -209,7 +209,7 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
 
                 leapp_repos_file.write(repo_format.format(id=new_id, name=name, url=url))
 
-                for line in [_do_common_replacement(add_line) for add_line in additional_lines]:
+                for line in (_do_common_replacement(add_line) for add_line in additional_lines):
                     leapp_repos_file.write(line)
 
                 # Special case for plesk repository. We need to add dist repository to install some of plesk packages

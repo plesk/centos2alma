@@ -11,7 +11,7 @@ class AddMappingTests(unittest.TestCase):
     LEAPP_MAP_FILE = "map.repo"
 
     def tearDown(self):
-        for files in [self.LEAPP_REPO_FILE, self.LEAPP_MAP_FILE]:
+        for files in (self.LEAPP_REPO_FILE, self.LEAPP_MAP_FILE):
             if os.path.exists(files):
                 os.remove(files)
 

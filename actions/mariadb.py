@@ -21,7 +21,7 @@ def _is_version_larger(left, right):
 
 
 def _get_mariadb_utilname():
-    for utility in ["mariadb", "mysql"]:
+    for utility in ("mariadb", "mysql"):
         if subprocess.run(["which", utility], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
             return utility
 

@@ -65,7 +65,7 @@ def prepare_feedback():
         "/var/log/leapp/leapp-upgrade.log",
     ]
     with zipfile.ZipFile(feedback_archive, "w") as zip_file:
-        for file in [file for file in keep_files if os.path.exists(file)]:
+        for file in (file for file in keep_files if os.path.exists(file)):
             zip_file.write(file)
 
     os.unlink(versions_file)
