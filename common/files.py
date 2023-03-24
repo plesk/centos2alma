@@ -45,7 +45,6 @@ def append_strings(filename, strings):
 
 def push_front_strings(filename, strings):
     next_file = filename + ".next"
-    shutil.copy(filename, next_file)
 
     with open(filename, "r") as original, open(next_file, "w") as dst:
         for string in strings:
