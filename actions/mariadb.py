@@ -3,11 +3,8 @@ from .action import ActiveAction
 
 import subprocess
 import os
-# import json
 
-from common import leapp_configs
-from common import log
-from common import util
+from common import leapp_configs, log, util
 
 
 MARIADB_VERSION_ON_ALMA = "10.3.35"
@@ -24,23 +21,23 @@ def _is_version_larger(left, right):
 
 
 def _get_mariadb_utilname():
-    for util in ["mariadb", "mysql"]:
-        if subprocess.run(["which", util], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-            return util
+    for utility in ["mariadb", "mysql"]:
+        if subprocess.run(["which", utility], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            return utility
 
     return None
 
 
 def _is_mariadb_installed():
-    util = _get_mariadb_utilname()
-    if util is None:
+    utility = _get_mariadb_utilname()
+    if utility is None:
         return False
-    elif util == "mariadb":
+    elif utility == "mariadb":
         return True
 
-    process = subprocess.Popen([util, "--version"],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                universal_newlines=True)
+    process = subprocess.Popen([utility, "--version"],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               universal_newlines=True)
     out, _ = process.communicate()
     if process.returncode != 0:
         return False
@@ -49,13 +46,13 @@ def _is_mariadb_installed():
 
 
 def _is_mysql_installed():
-    util = _get_mariadb_utilname()
-    if util is None or util == "mariadb":
+    utility = _get_mariadb_utilname()
+    if utility is None or utility == "mariadb":
         return False
 
-    process = subprocess.Popen([util, "--version"],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                universal_newlines=True)
+    process = subprocess.Popen([utility, "--version"],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               universal_newlines=True)
     out, _ = process.communicate()
     if process.returncode != 0:
         return False
@@ -64,10 +61,10 @@ def _is_mysql_installed():
 
 
 def _get_mariadb_version():
-    util = _get_mariadb_utilname()
-    process = subprocess.Popen([util, "--version"],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                universal_newlines=True)
+    utility = _get_mariadb_utilname()
+    process = subprocess.Popen([utility, "--version"],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               universal_newlines=True)
     out, err = process.communicate()
     if process.returncode != 0:
         raise RuntimeError("Unable to get mariadb version: {}".format(err))

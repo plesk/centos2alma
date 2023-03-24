@@ -2,7 +2,6 @@
 from .action import ActiveAction
 
 import os
-import shutil
 
 from common import leapp_configs, files
 

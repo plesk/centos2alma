@@ -54,7 +54,7 @@ class TestPrepareActionsFlow(unittest.TestCase):
     def test_one_simple_action(self):
         simple_action = SimpleAction()
         simple_action._prepare_action = mock.Mock()
-        with PrepareActionsFlowForTests({ 1: [ simple_action ] }) as flow:
+        with PrepareActionsFlowForTests({1: [simple_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -67,7 +67,7 @@ class TestPrepareActionsFlow(unittest.TestCase):
             simple_action._prepare_action = mock.Mock()
             actions.append(simple_action)
 
-        with PrepareActionsFlowForTests({ 1: actions }) as flow:
+        with PrepareActionsFlowForTests({1: actions}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -80,7 +80,7 @@ class TestPrepareActionsFlow(unittest.TestCase):
         simple_action_step_2 = SimpleAction()
         simple_action_step_2._prepare_action = mock.Mock()
 
-        with PrepareActionsFlowForTests({ 1: [ simple_action_step_1 ], 2: [ simple_action_step_2 ] }) as flow:
+        with PrepareActionsFlowForTests({1: [simple_action_step_1], 2: [simple_action_step_2]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -93,12 +93,13 @@ class TestPrepareActionsFlow(unittest.TestCase):
         skip_action = SkipAction()
         skip_action._prepare_action = mock.Mock()
 
-        with PrepareActionsFlowForTests({ 1: [ simple_action, skip_action ] }) as flow:
+        with PrepareActionsFlowForTests({1: [simple_action, skip_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
         simple_action._prepare_action.assert_called_once()
         skip_action._prepare_action.assert_not_called()
+
 
 class SavedAction(actions.ActiveAction):
     def __init__(self):
@@ -132,7 +133,7 @@ class TestFinishActionsFlow(unittest.TestCase):
     def test_one_simple_action(self):
         simple_action = SimpleAction()
         simple_action._post_action = mock.Mock()
-        with FinishActionsFlowForTests({ 1: [ simple_action ] }) as flow:
+        with FinishActionsFlowForTests({1: [simple_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -145,7 +146,7 @@ class TestFinishActionsFlow(unittest.TestCase):
             simple_action._post_action = mock.Mock()
             actions.append(simple_action)
 
-        with FinishActionsFlowForTests({ 1: actions }) as flow:
+        with FinishActionsFlowForTests({1: actions}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -158,7 +159,7 @@ class TestFinishActionsFlow(unittest.TestCase):
         simple_action_step_2 = SimpleAction()
         simple_action_step_2._post_action = mock.Mock()
 
-        with FinishActionsFlowForTests({ 1: [ simple_action_step_1 ], 2: [ simple_action_step_2 ] }) as flow:
+        with FinishActionsFlowForTests({1: [simple_action_step_1], 2: [simple_action_step_2]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -171,7 +172,7 @@ class TestFinishActionsFlow(unittest.TestCase):
         skip_action = SkipAction()
         skip_action._post_action = mock.Mock()
 
-        with FinishActionsFlowForTests({ 1: [ simple_action, skip_action ] }) as flow:
+        with FinishActionsFlowForTests({1: [simple_action, skip_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -187,7 +188,7 @@ class TestFinishActionsFlow(unittest.TestCase):
         with open("actions.json", "w") as actions_data_file:
             actions_data_file.write("{ \"actions\": [ { \"name\" : \"saved\", \"state\" : \"success\"}] }")
 
-        with FinishActionsFlowForTests({ 1: [ simple_action, saved_action ] }) as flow:
+        with FinishActionsFlowForTests({1: [simple_action, saved_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -203,7 +204,7 @@ class TestFinishActionsFlow(unittest.TestCase):
         with open("actions.json", "w") as actions_data_file:
             actions_data_file.write("{ \"actions\": [ { \"name\" : \"saved\", \"state\" : \"skip\"}] }")
 
-        with FinishActionsFlowForTests({ 1: [ simple_action, saved_action ] }) as flow:
+        with FinishActionsFlowForTests({1: [simple_action, saved_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -219,12 +220,13 @@ class TestFinishActionsFlow(unittest.TestCase):
         with open("actions.json", "w") as actions_data_file:
             actions_data_file.write("{ \"actions\": [ { \"name\" : \"saved\", \"state\" : \"failed\"}] }")
 
-        with FinishActionsFlowForTests({ 1: [ simple_action, saved_action ] }) as flow:
+        with FinishActionsFlowForTests({1: [simple_action, saved_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
         simple_action._post_action.assert_called_once()
         saved_action._post_action.assert_not_called()
+
 
 class RevertActionsFlowForTests(actions.RevertActionsFlow):
     PATH_TO_ACTIONS_DATA = "./actions.json"
@@ -243,7 +245,7 @@ class TestRevertActionsFlow(unittest.TestCase):
     def test_one_simple_action(self):
         simple_action = SimpleAction()
         simple_action._revert_action = mock.Mock()
-        with RevertActionsFlowForTests({ 1: [ simple_action ] }) as flow:
+        with RevertActionsFlowForTests({1: [simple_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -256,7 +258,7 @@ class TestRevertActionsFlow(unittest.TestCase):
             simple_action._revert_action = mock.Mock()
             actions.append(simple_action)
 
-        with RevertActionsFlowForTests({ 1: actions }) as flow:
+        with RevertActionsFlowForTests({1: actions}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -269,7 +271,7 @@ class TestRevertActionsFlow(unittest.TestCase):
         simple_action_step_2 = SimpleAction()
         simple_action_step_2._revert_action = mock.Mock()
 
-        with RevertActionsFlowForTests({ 1: [ simple_action_step_1 ], 2: [ simple_action_step_2 ] }) as flow:
+        with RevertActionsFlowForTests({1: [simple_action_step_1], 2: [simple_action_step_2]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -282,7 +284,7 @@ class TestRevertActionsFlow(unittest.TestCase):
         skip_action = SkipAction()
         skip_action._revert_action = mock.Mock()
 
-        with RevertActionsFlowForTests({ 1: [ simple_action, skip_action ] }) as flow:
+        with RevertActionsFlowForTests({1: [simple_action, skip_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -298,7 +300,7 @@ class TestRevertActionsFlow(unittest.TestCase):
         with open("actions.json", "w") as actions_data_file:
             actions_data_file.write("{ \"actions\": [ { \"name\" : \"saved\", \"state\" : \"success\"}] }")
 
-        with RevertActionsFlowForTests({ 1: [ simple_action, saved_action ] }) as flow:
+        with RevertActionsFlowForTests({1: [simple_action, saved_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -314,7 +316,7 @@ class TestRevertActionsFlow(unittest.TestCase):
         with open("actions.json", "w") as actions_data_file:
             actions_data_file.write("{ \"actions\": [ { \"name\" : \"saved\", \"state\" : \"skip\"}] }")
 
-        with RevertActionsFlowForTests({ 1: [ simple_action, saved_action ] }) as flow:
+        with RevertActionsFlowForTests({1: [simple_action, saved_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -330,7 +332,7 @@ class TestRevertActionsFlow(unittest.TestCase):
         with open("actions.json", "w") as actions_data_file:
             actions_data_file.write("{ \"actions\": [ { \"name\" : \"saved\", \"state\" : \"failed\"}] }")
 
-        with RevertActionsFlowForTests({ 1: [ simple_action, saved_action ] }) as flow:
+        with RevertActionsFlowForTests({1: [simple_action, saved_action]}) as flow:
             flow.validate_actions()
             flow.pass_actions()
 
@@ -359,7 +361,7 @@ class FalseCheckAction(actions.CheckAction):
 class TestCheckFlow(unittest.TestCase):
     def test_true_check(self):
         check_action = TrueCheckAction()
-        with actions.CheckFlow([ check_action ]) as flow:
+        with actions.CheckFlow([check_action]) as flow:
             flow.validate_actions()
             res = flow.make_checks()
             self.assertEqual(len(res), 0)

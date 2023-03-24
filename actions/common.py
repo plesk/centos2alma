@@ -159,7 +159,8 @@ class PleskInstallerNotInProgress(CheckAction):
         self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer stop' to abort it."
 
     def _do_check(self):
-        installer_check = subprocess.run(["plesk", "installer", "--query-status", "--enable-xml-output"], stdout=subprocess.PIPE, universal_newlines=True)
+        installer_check = subprocess.run(["plesk", "installer", "--query-status", "--enable-xml-output"],
+                                         stdout=subprocess.PIPE, universal_newlines=True)
         if "query_ok" in installer_check.stdout:
             return True
         return False

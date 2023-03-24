@@ -203,8 +203,8 @@ PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,all,all,x8
 """
 
         self._perform_test({"plesk_repos.repo": plesk_like_repos},
-                            expected_leapp_repos, expected_leapp_mapping,
-                            ignore=["PLESK_18_0_XX-PHP-5.5"])
+                           expected_leapp_repos, expected_leapp_mapping,
+                           ignore=["PLESK_18_0_XX-PHP-5.5"])
 
 
 class SetPackageRepositoryTests(unittest.TestCase):
