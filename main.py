@@ -16,7 +16,7 @@ import time
 import zipfile
 
 from enum import Flag, auto
-from optparse import OptionParser, OptionValueError
+from optparse import OptionParser, OptionValueError, SUPPRESS_HELP
 
 
 def get_version():
@@ -295,7 +295,7 @@ def do_convert(options):
 
             return 1
 
-    if Stages.convert in options.stage or Stages.finish in options.stage:
+    if not options.no_reboot and Stages.convert in options.stage or Stages.finish in options.stage:
         common.log.info("Going to reboot the system")
         if Stages.convert in options.stage:
             sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),
@@ -358,6 +358,7 @@ def main():
     opts.add_option("-f", "--prepare-feedback", action="store_true", dest="prepare_feedback", default=False,
                     help="Prepare feedback archive that should be sent to the developers for further failure investigation.")
     opts.add_option("--verbose", action="store_true", dest="verbose", default=False, help="Write verbose logs")
+    opts.add_option("--no-reboot", action="store_true", dest="no_reboot", default=False, help=SUPPRESS_HELP)
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 
