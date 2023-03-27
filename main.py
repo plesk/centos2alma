@@ -48,11 +48,14 @@ def prepare_feedback():
     versions_file = "versions.txt"
 
     with open(versions_file, "w") as versions:
-        version_process = subprocess.run(["plesk", "version"], stdout=subprocess.PIPE, universal_newlines=True)
-        for line in version_process.stdout.splitlines():
-            versions.write(line + "\n")
-        versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
-        versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+        try:
+            version_info = subprocess.check_output(["plesk", "version"], universal_newlines=True).splitlines()
+            for line in version_info:
+                versions.write(line + "\n")
+            versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
+            versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+        except subprocess.CalledProcessError:
+            versions.write("Plesk version is not available\n")
 
     keep_files = [
         versions_file,
@@ -65,7 +68,7 @@ def prepare_feedback():
         "/var/log/leapp/leapp-upgrade.log",
     ]
     with zipfile.ZipFile(feedback_archive, "w") as zip_file:
-        for file in [file for file in keep_files if os.path.exists(file)]:
+        for file in (file for file in keep_files if os.path.exists(file)):
             zip_file.write(file)
 
     os.unlink(versions_file)
@@ -204,7 +207,10 @@ def get_flow(stage_flag, actions_map):
 
 
 def inform_about_problems():
-    with open("/etc/motd", "a") as motd:
+    MOTD_PATH = "/etc/motd"
+    common.restore_file_from_backup(MOTD_PATH)
+
+    with open(MOTD_PATH, "a") as motd:
         motd.write("""
 ===============================================================================
 Message from Plesk centos2alma tool:

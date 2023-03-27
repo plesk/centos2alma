@@ -32,6 +32,30 @@ def replace_string(filename, original_substring, new_substring):
     shutil.move(filename + ".next", filename)
 
 
+def append_strings(filename, strings):
+    next_file = filename + ".next"
+    shutil.copy(filename, next_file)
+
+    with open(next_file, "a") as dst:
+        for string in strings:
+            dst.write(string)
+
+    shutil.move(next_file, filename)
+
+
+def push_front_strings(filename, strings):
+    next_file = filename + ".next"
+
+    with open(filename, "r") as original, open(next_file, "w") as dst:
+        for string in strings:
+            dst.write(string)
+
+        for line in original.readlines():
+            dst.write(line)
+
+    shutil.move(next_file, filename)
+
+
 def rewrite_json_file(filename, jobj):
     if filename is None or jobj is None:
         return

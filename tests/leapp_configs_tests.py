@@ -11,7 +11,7 @@ class AddMappingTests(unittest.TestCase):
     LEAPP_MAP_FILE = "map.repo"
 
     def tearDown(self):
-        for files in [self.LEAPP_REPO_FILE, self.LEAPP_MAP_FILE]:
+        for files in (self.LEAPP_REPO_FILE, self.LEAPP_MAP_FILE):
             if os.path.exists(files):
                 os.remove(files)
 
@@ -203,8 +203,8 @@ PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,all,all,x8
 """
 
         self._perform_test({"plesk_repos.repo": plesk_like_repos},
-                            expected_leapp_repos, expected_leapp_mapping,
-                            ignore=["PLESK_18_0_XX-PHP-5.5"])
+                           expected_leapp_repos, expected_leapp_mapping,
+                           ignore=["PLESK_18_0_XX-PHP-5.5"])
 
 
 class SetPackageRepositoryTests(unittest.TestCase):

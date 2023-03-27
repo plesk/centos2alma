@@ -4,7 +4,6 @@ import json
 import math
 import time
 import shutil
-import sys
 
 from enum import Enum
 
@@ -99,7 +98,7 @@ class ActiveFlow(ActionsFlow):
         for _, actions in self.stages.items():
             for action in actions:
                 if not isinstance(action, ActiveAction):
-                    raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(action.name))
+                    raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(name=action.name))
 
     def pass_actions(self):
         stages = self._get_flow()

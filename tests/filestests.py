@@ -48,6 +48,68 @@ This is the file where we want to replace some string. This is the string to rep
             self.assertEqual(line, "<--- hhhh --->")
 
 
+class AppendStringsTests(unittest.TestCase):
+    ORIGINAL_FILE_NAME = "original.txt"
+
+    def setUp(self):
+        with open(self.ORIGINAL_FILE_NAME, "w") as f:
+            f.write("")
+
+    def tearDown(self):
+        if os.path.exists(self.ORIGINAL_FILE_NAME):
+            os.remove(self.ORIGINAL_FILE_NAME)
+
+    def test_add_to_empty(self):
+        files.append_strings(self.ORIGINAL_FILE_NAME, ['aaaa\n', 'bbbb\n'])
+        with open(self.ORIGINAL_FILE_NAME) as f:
+            self.assertEqual([line.rstrip() for line in f.readlines()], ['aaaa', 'bbbb'])
+
+    def test_add_to_non_empty(self):
+        with open(self.ORIGINAL_FILE_NAME, "w") as f:
+            f.write("aaaa\n")
+        files.append_strings(self.ORIGINAL_FILE_NAME, ["bbbb\n", "cccc\n"])
+        with open(self.ORIGINAL_FILE_NAME) as f:
+            self.assertEqual([line.rstrip() for line in f.readlines()], ["aaaa", "bbbb", "cccc"])
+
+    def test_add_nothing(self):
+        with open(self.ORIGINAL_FILE_NAME, "w") as f:
+            f.write("aaaa\n")
+        files.append_strings(self.ORIGINAL_FILE_NAME, [])
+        with open(self.ORIGINAL_FILE_NAME) as f:
+            self.assertEqual([line.rstrip() for line in f.readlines()], ["aaaa"])
+
+
+class PushFrontStringsTests(unittest.TestCase):
+    ORIGINAL_FILE_NAME = "original.txt"
+
+    def setUp(self):
+        with open(self.ORIGINAL_FILE_NAME, "w") as f:
+            f.write("")
+
+    def tearDown(self):
+        if os.path.exists(self.ORIGINAL_FILE_NAME):
+            os.remove(self.ORIGINAL_FILE_NAME)
+
+    def test_add_to_empty(self):
+        files.push_front_strings(self.ORIGINAL_FILE_NAME, ["aaaa\n", "bbbb\n"])
+        with open(self.ORIGINAL_FILE_NAME) as f:
+            self.assertEqual([line.rstrip() for line in f.readlines()], ["aaaa", "bbbb"])
+
+    def test_add_to_non_empty(self):
+        with open(self.ORIGINAL_FILE_NAME, "w") as f:
+            f.write("aaaa\n")
+        files.push_front_strings(self.ORIGINAL_FILE_NAME, ["bbbb\n", "cccc\n"])
+        with open(self.ORIGINAL_FILE_NAME) as f:
+            self.assertEqual([line.rstrip() for line in f.readlines()], ["bbbb", "cccc", "aaaa"])
+
+    def test_add_nothing(self):
+        with open(self.ORIGINAL_FILE_NAME, "w") as f:
+            f.write("aaaa\n")
+        files.push_front_strings(self.ORIGINAL_FILE_NAME, [])
+        with open(self.ORIGINAL_FILE_NAME) as f:
+            self.assertEqual([line.rstrip() for line in f.readlines()], ["aaaa"])
+
+
 class RewriteJsonTests(unittest.TestCase):
     OriginalJson = {
         "key1": "value1",

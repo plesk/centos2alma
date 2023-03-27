@@ -1,10 +1,10 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 from .action import ActiveAction
 
-import subprocess
 import os
 
 from common import util
+
 
 def _is_service_exists(service):
     return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))

@@ -3,10 +3,8 @@ from .action import ActiveAction, CheckAction
 
 import os
 import subprocess
-import shutil
 
-from common import leapp_configs
-from common import util
+from common import files, leapp_configs, util
 
 _PATH_TO_PGSQL = '/var/lib/pgsql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
@@ -70,21 +68,12 @@ class PostgresDatabasesUpdate(ActiveAction):
 
         old_config_path = os.path.join(_PATH_TO_OLD_DATA, 'pg_hba.conf')
         new_config_path = os.path.join(_PATH_TO_DATA, 'pg_hba.conf')
-        next_config_path = os.path.join(_PATH_TO_DATA, 'pg_hba.conf.next')
 
         plesk_customizations = []
         with open(old_config_path, 'r') as old_config:
-            plesk_customizations = [line for line in old_config.readlines() if '#Added by Plesk']
+            plesk_customizations = [line for line in old_config.readlines() if '#Added by Plesk' in line]
 
-        with open(next_config_path, "w") as dst:
-            for customization in plesk_customizations:
-                dst.write(customization)
-
-            with open(new_config_path, "r") as original:
-                for line in original.readlines():
-                    dst.write(line)
-
-        shutil.move(next_config_path, new_config_path)
+        files.push_front_strings(new_config_path, plesk_customizations)
 
         util.logged_check_call(['dnf', 'remove', '-y', 'postgresql-upgrade'])
 
