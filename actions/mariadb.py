@@ -35,14 +35,7 @@ def _is_mariadb_installed():
     elif utility == "mariadb":
         return True
 
-    process = subprocess.Popen([utility, "--version"],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               universal_newlines=True)
-    out, _ = process.communicate()
-    if process.returncode != 0:
-        return False
-
-    return "MariaDB" in out
+    return "MariaDB" in subprocess.check_output([utility, "--version"], universal_newlines=True)
 
 
 def _is_mysql_installed():
@@ -50,24 +43,13 @@ def _is_mysql_installed():
     if utility is None or utility == "mariadb":
         return False
 
-    process = subprocess.Popen([utility, "--version"],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               universal_newlines=True)
-    out, _ = process.communicate()
-    if process.returncode != 0:
-        return False
-
-    return "MariaDB" not in out
+    return "MariaDB" not in subprocess.check_output([utility, "--version"], universal_newlines=True)
 
 
 def _get_mariadb_version():
     utility = _get_mariadb_utilname()
-    process = subprocess.Popen([utility, "--version"],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               universal_newlines=True)
-    out, err = process.communicate()
-    if process.returncode != 0:
-        raise RuntimeError("Unable to get mariadb version: {}".format(err))
+
+    out = subprocess.check_output([utility, "--version"], universal_newlines=True)
 
     log.debug("Detected mariadb version is: {version}".format(version=out.split("Distrib ")[1].split(",")[0].split("-")[0]))
 

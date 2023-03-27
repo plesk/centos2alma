@@ -48,11 +48,14 @@ def prepare_feedback():
     versions_file = "versions.txt"
 
     with open(versions_file, "w") as versions:
-        version_process = subprocess.run(["plesk", "version"], stdout=subprocess.PIPE, universal_newlines=True)
-        for line in version_process.stdout.splitlines():
-            versions.write(line + "\n")
-        versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
-        versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+        try:
+            version_info = subprocess.check_output(["plesk", "version"], universal_newlines=True).splitlines()
+            for line in version_info:
+                versions.write(line + "\n")
+            versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
+            versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+        except subprocess.CalledProcessError:
+            versions.write("Plesk version is not available\n")
 
     keep_files = [
         versions_file,

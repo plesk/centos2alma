@@ -62,8 +62,8 @@ class DisableSuspiciousKernelModules(ActiveAction):
 
     def _get_enabled_modules(self, lookup_modules):
         modules = []
-        process = subprocess.run(["lsmod"], stdout=subprocess.PIPE, universal_newlines=True)
-        for line in process.stdout.splitlines():
+        modules_list = subprocess.check_output(["lsmod"], universal_newlines=True).splitlines()
+        for line in modules_list:
             module_name = line[:line.find(' ')]
             if module_name in lookup_modules:
                 modules.append(module_name)
@@ -159,9 +159,9 @@ class PleskInstallerNotInProgress(CheckAction):
         self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer stop' to abort it."
 
     def _do_check(self):
-        installer_check = subprocess.run(["plesk", "installer", "--query-status", "--enable-xml-output"],
-                                         stdout=subprocess.PIPE, universal_newlines=True)
-        if "query_ok" in installer_check.stdout:
+        installer_status = subprocess.check_output(["plesk", "installer", "--query-status", "--enable-xml-output"],
+                                                   universal_newlines=True)
+        if "query_ok" in installer_status:
             return True
         return False
 
@@ -200,8 +200,8 @@ class PleskVersionIsActual(CheckAction):
         self.description = "Plesk version should be 18.0.43 or later. Please update Plesk to solve the problem."
 
     def _do_check(self):
-        version_process = subprocess.run(["plesk", "version"], stdout=subprocess.PIPE, universal_newlines=True)
-        for line in version_process.stdout.splitlines():
+        version_info = subprocess.check_output(["plesk", "version"], universal_newlines=True).splitlines()
+        for line in version_info:
             if line.startswith("Product version"):
                 version = line.split()[-1]
                 major, _, iter, _ = version.split(".")
