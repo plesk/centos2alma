@@ -49,7 +49,7 @@ It is safe to interrupt the process with Ctrl+C and restart it from the same sta
 FEEDBACK_IS_READY_MESSAGE = """
 \033[92m**************************************************************************************
 Feedback archive is ready. You can find it here: {feedback_archive_path}
-For further investigation create an issue in the GitHub repository - https://github.com/plesk/distupgrader/issues.
+For further investigation create an issue in the GitHub repository - https://github.com/plesk/centos2alma/issues.
 Attach the feedback archive to the issue and describe the problem.
 **************************************************************************************\033[0m
 """
