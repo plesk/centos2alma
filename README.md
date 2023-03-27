@@ -22,9 +22,7 @@ The conversion process should run between 30 and 60 minutes. **Plesk services, h
 Do not use the script if any of the following is true:
 - **You are running an OS other than CentOS 7.9**. The script was not tested on other Red Hat Enterprise Linux 7-based distributions. The conversion process may have unexpected results if started on a server not running CentOS 7.9. So we add checks to avoid any actions on such kinds of servers.
 - **Plesk version is 18.0.42 or earier**. The script only supports Plesk 18.0.43 and later.
-- **The Ruby extension is installed**. Ruby applications (such as radmine) could be broken after the conversion.
-### Limitations
-- PHP 7.1 and earlier are not supported in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. We strongly recommend using the latest PHP versions.
+- **PHP 7.1 and earlier are not supported** in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. So we force to remove this versions before the conversion.
 
 ## Requirements
 - Plesk 18.0.43 or later.
@@ -77,11 +75,10 @@ You can remove this message from the /etc/motd file.
 ===============================================================================
 ```
 
-### Conversion stages
-The conversion process consists of three stages: "start", "revert", and "finish". To run stages individually, use the "--start", "--revert", and "--finish" flags, or the "-s" flag with name of the stage you want to run.
+### Conversion stage options
+The conversion process consists of three stage options: "start", and "finish". To run stages individually, use the "--start", and "--finish" flags, or the "-s" flag with name of the stage you want to run.
 1. The "start" stage installs and configures ELevate, disables Plesk services and runs ELevate. It then stops Plesk services and reboots the server.
-2. The "revert" stage enables Plesk services back. It could be used if something goes wrong on start stage.
-3. The "finish" stage must be called on the first boot of AlmaLinux 8. You can rerun this stage if something goes wrong during the first boot to ensure that the problem is fixed and Plesk is ready to use.
+2. The "finish" stage must be called on the first boot of AlmaLinux 8. You can rerun this stage if something goes wrong during the first boot to ensure that the problem is fixed and Plesk is ready to use.
 
 ### Other arguments
 
@@ -108,8 +105,7 @@ To monitor the progress of the conversion process in real time, The conversion p
 ( stage 3 / action re-installing plesk components  ) 02:26 / 06:18
 ```
 
-## Known issues
-
+## Issue handling
 ### Leapp unable to handle packages
 Leapp may not be able to handle certain installed packages, especially those installed from custom repositories. In this case, the centos2alma will fail while running leapp preupgrade or leapp upgrade. The easiest way to fix this issue is to remove the package(s), and then reinstall them once the conversion is complete.
 ### Temporary OS distribution hangs
@@ -126,3 +122,9 @@ You can remove this message from the /etc/motd file.
 ===============================================================================
 ```
 You can read the centos2alma log to troubleshoot the issue. If the centos2alma finish stage fails for any reason, once you have resolved the root cause of the failure, you can retry by running 'centos2alma -s finish'.
+### Send feedback
+If you got any error, please [create an issue on github](https://github.com/plesk/centos2alma/issues). To do generate feedback archive by calling the tool with '-f' or '--prepare-feedback' flags.
+```shell
+./centos2alma --prepare-feedback
+```
+Describe your problem and attach the feedback archive to the issue.
