@@ -169,7 +169,7 @@ class PleskInstallerNotInProgress(CheckAction):
 class DistroIsCentos79(CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
-        self.description = """Your distributive is not CentOS 7.9. Unfortunately we are not supporting non CentOS 7.9 distributives yet.
+        self.description = """Your distributive is not CentOS 7.9. Unfortunately we are support only CentOS 7.9 for now.
 \tIf you use any other version of Centos 7 please update it to Centos 7.9.
 """
 

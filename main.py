@@ -60,6 +60,7 @@ def prepare_feedback():
     keep_files = [
         versions_file,
         common.DEFAULT_LOG_FILE,
+        actions.ActiveFlow.PATH_TO_ACTIONS_DATA,
         "/etc/leapp/files/repomap.csv",
         "/etc/leapp/files/pes-events.json",
         "/etc/leapp/files/leapp_upgrade_repositories.repo",
