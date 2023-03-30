@@ -9,7 +9,7 @@ To avoid downtime and data loss, make sure you have read and understood the foll
 1. Back up all your databases and have the means to restore them. The script uses standard MariaDB and PostgreSQL tools to upgrade the databases, but this does not guarantee that the process will be free of issues.
 2. Ensure that you have a way to restart the server without a direct SSH connection. The conversion process may get stuck once the server boots into the temporary OS distribution that does not start any network interfaces. You can use a serial port connection to the server to monitor the status of the conversion process in real time, and to reboot the server if necessary.
 3. We strongly recommend that you create a snapshot you can use as a recovery point in case the conversion process fails.
-4. Read the [Known problems](#known-problems) section below for the list of known issues.
+4. Read the [Known issues](#known-issues) section below for the list of known issues.
 
 ## Timing
 The conversion process should run between 30 and 60 minutes. **Plesk services, hosted websites, and emails will be unavailable during the entirety of the conversion process**. The conversion process itself consists of three stages:
