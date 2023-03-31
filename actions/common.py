@@ -15,10 +15,14 @@ class FixNamedConfig(ActiveAction):
     def __init__(self):
         self.name = "fix named configuration"
         self.user_options_path = "/etc/named-user-options.conf"
+        self.chrooted_file_path = "/var/named/chroot/etc/named-user-options.conf"
+
+    def _is_required(self):
+        return os.path.exists(self.chrooted_file_path)
 
     def _prepare_action(self):
         if not os.path.exists(self.user_options_path):
-            os.symlink("/var/named/chroot/etc/named-user-options.conf", self.user_options_path)
+            os.symlink(self.chrooted_file_path, self.user_options_path)
 
     def _post_action(self):
         if os.path.exists(self.user_options_path):
