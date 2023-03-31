@@ -91,6 +91,9 @@ class RuleSelinux(ActiveAction):
         self.name = "rule selinux status"
         self.selinux_config = "/etc/selinux/config"
 
+    def _is_required(self):
+        return os.path.exists(self.selinux_config)
+
     def _prepare_action(self):
         common.replace_string(self.selinux_config, "SELINUX=enforcing", "SELINUX=permissive")
 
