@@ -270,3 +270,14 @@ class CheckOutdatedPHP(CheckAction):
 
         self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]))
         return False
+
+
+class CheckGrubInstalled(CheckAction):
+    def __init__(self):
+        self.name = "checking if grub is installed"
+        self.description = """It seems like grub is not installed because the /etc/default/grub file is missing.
+\tPlease install it to proceed the conversion.
+"""
+
+    def _do_check(self):
+        return os.path.exists("/etc/default/grub")
