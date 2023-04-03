@@ -130,3 +130,26 @@ class CheckGrubInstalled(CheckAction):
 
     def _do_check(self):
         return os.path.exists("/etc/default/grub")
+
+
+class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
+    def __init__(self):
+        self.name = "checking if there is more than one NIC interface using ketnel-name"
+        self.description = """The system has more then one network interface cards (NICs) using kernel-names (ethX).
+\tleapp unable to guarantee interfaces names stability during the conversion.
+\tPlease rename all NICs to use persistent names (enpXsY) to proceed the conversion.
+\tIntarfeces: {}
+"""
+
+    def _do_check(self):
+        # We can't use this method th get interfaces names, so just skip the check
+        if not os.path.exists("/sys/class/net"):
+            return True
+
+        interfaces = os.listdir('/sys/class/net')
+        suspicious_interfaces = [interface for interface in interfaces if interface.startswith("eth") and interface[3:].isdigit()]
+        if len(suspicious_interfaces) > 1:
+            self.description = self.description.format(", ".join(suspicious_interfaces))
+            return False
+
+        return True
