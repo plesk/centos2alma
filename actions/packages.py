@@ -1,10 +1,8 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 from .action import ActiveAction
 
-import os
-
 import common
-from common import leapp_configs, util
+from common import files, util
 
 
 class RemovingPackages(ActiveAction):
@@ -95,11 +93,8 @@ class AdoptPleskRepositories(ActiveAction):
         pass
 
     def _post_action(self):
-        for file in os.scandir("/etc/yum.repos.d"):
-            if not file.name.startswith("plesk") or file.name[-5:] != ".repo":
-                continue
-
-            common.remove_repositories(file.path, [
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
+            common.remove_repositories(file, [
                 "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",
                 "PLESK_17_PHP55", "PLESK_17_PHP56", "PLESK_17_PHP70",
             ])

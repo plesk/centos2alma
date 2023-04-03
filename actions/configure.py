@@ -12,13 +12,7 @@ class LeapReposConfiguration(ActiveAction):
         self.name = "map plesk repositories for leapp"
 
     def _prepare_action(self):
-        repofiles = []
-        for file in os.scandir("/etc/yum.repos.d"):
-            if file.name == "epel.repo":
-                repofiles.append(file.path)
-
-            if file.name.startswith("plesk") and file.name[-5:] == ".repo":
-                repofiles.append(file.path)
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo", "epel.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles, ignore=[
             "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",

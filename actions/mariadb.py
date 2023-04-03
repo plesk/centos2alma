@@ -4,7 +4,7 @@ from .action import ActiveAction
 import subprocess
 import os
 
-from common import leapp_configs, log, util
+from common import leapp_configs, files, log, util
 
 
 MARIADB_VERSION_ON_ALMA = "10.3.35"
@@ -60,16 +60,16 @@ class AvoidMariadbDowngrade(ActiveAction):
     def __init__(self):
         self.name = "avoid mariadb downgrade"
         self.mariadb_version_on_alma = "10.3.35"
-        self.mariadb_repofile = "/etc/yum.repos.d/mariadb.repo"
 
     def _is_required(self):
         return _is_mariadb_installed() and not _is_version_larger(MARIADB_VERSION_ON_ALMA, _get_mariadb_version())
 
     def _prepare_action(self):
-        if not os.path.exists(self.mariadb_repofile):
-            raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format(self.mariadb_repofile))
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
+        if len(repofiles):
+            raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format("/etc/yum.repos.d/mariadb.repo"))
 
-        leapp_configs.add_repositories_mapping([self.mariadb_repofile])
+        leapp_configs.add_repositories_mapping(repofiles)
         leapp_configs.set_package_repository("mariadb", "alma-maridb")
 
     def _post_action(self):
