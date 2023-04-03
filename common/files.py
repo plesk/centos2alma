@@ -1,7 +1,9 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-import os
-import shutil
+import fnmatch
 import json
+import os
+import re
+import shutil
 
 import common
 
@@ -83,3 +85,25 @@ def restore_file_from_backup(filename):
         shutil.move(filename + ".bak", filename)
     else:
         os.remove(filename)
+
+
+def find_files_case_insensitive(path, regexps_strings):
+    # Todo. We should add typing for our functions
+    if not isinstance(regexps_strings, list) and not isinstance(regexps_strings, str):
+        raise TypeError("find_files_case_insensitive argument regexps_strings must be a list")
+    # But string is a common mistake and we can handle it simply
+    if isinstance(regexps_strings, str):
+        regexps_strings = [regexps_strings]
+
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return []
+
+    result = []
+    regexps = [re.compile(fnmatch.translate(r), re.IGNORECASE) for r in regexps_strings]
+
+    for file in os.listdir(path):
+        for regexp in regexps:
+            if regexp.match(file):
+                result.append(os.path.join(path, file))
+
+    return result

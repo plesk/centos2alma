@@ -1,6 +1,8 @@
 import unittest
 import os
 import json
+import tempfile
+import shutil
 
 from common import files
 
@@ -255,3 +257,101 @@ gpgcheck=0
         files.remove_repositories(self.REPO_FILE_NAME, ["repo3"])
         with open(self.REPO_FILE_NAME) as file:
             self.assertEqual(file.read(), expected_content)
+
+
+class FindFilesCaseInsensativeTests(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_find_file(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["file.txt"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["file.txt"])
+
+    def test_find_file_with_different_case(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["FILE.txt"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["file.txt"])
+
+    def test_find_several_files_by_extension(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "file2.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "file.md"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["*.txt"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["file.txt", "file2.txt"])
+
+    def test_find_different_case_files(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "FILE.txt"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["file.txt"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["FILE.txt", "file.txt"])
+
+    def test_find_different_case_files_by_extension(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "FILE.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "file.md"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["f*.txt"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["FILE.txt", "file.txt"])
+
+    def test_empty_directory(self):
+        self.assertEqual(files.find_files_case_insensitive(self.temp_dir, ["file.txt"]), [])
+
+    def test_find_no_files_by_extension(self):
+        self.assertEqual(files.find_files_case_insensitive(self.temp_dir, ["*.txt"]), [])
+
+    def test_find_no_files(self):
+        with open(os.path.join(self.temp_dir, "file.md"), "w") as f:
+            f.write("")
+
+        self.assertEqual(files.find_files_case_insensitive(self.temp_dir, ["file.txt"]), [])
+
+    def test_no_such_directory(self):
+        self.assertEqual(files.find_files_case_insensitive(os.path.join(self.temp_dir, "no_such_dir"), ["file.txt"]), [])
+
+    def test_several_regexps(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "file2.txt"), "w") as f:
+            f.write("")
+        with open(os.path.join(self.temp_dir, "file.md"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["file.txt", "*.md"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["file.md", "file.txt"])
+
+    def test_repo_example(self):
+        file_names = ["almalinux-ha.repo", "almalinux-powertools.repo", "almalinux-rt.repo",
+                      "ELevate.repo", "epel-testing-modular.repo", "imunify360-testing.repo",
+                      "kolab-16-testing-candidate.repo", "plesk-ext-ruby.repo", "almalinux-nfv.repo",
+                      "almalinux.repo", "almalinux-saphana.repo", "epel-modular.repo",
+                      "epel-testing.repo", "imunify-rollout.repo", "kolab-16-testing.repo",
+                      "plesk.repo", "almalinux-plus.repo", "almalinux-resilientstorage.repo",
+                      "almalinux-sap.repo", "epel.repo", "imunify360.repo",
+                      "kolab-16.repo", "plesk-ext-panel-migrator.repo",
+                      ]
+
+        for file_name in file_names:
+            with open(os.path.join(self.temp_dir, file_name), "w") as f:
+                f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["plesk*.repo"]))
+        self.assertEqual([os.path.basename(file) for file in result], ["plesk-ext-panel-migrator.repo", "plesk-ext-ruby.repo", "plesk.repo"])
