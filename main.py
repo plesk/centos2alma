@@ -117,6 +117,7 @@ def is_required_conditions_satisfied(options, stage_flag):
             actions.CheckOutdatedPHP(),
             actions.CheckGrubInstalled(),
             actions.CheckNoMoreThenOneKernelNamedNIC(),
+            actions.CheckIsInContainer(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())

@@ -153,3 +153,21 @@ class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
             return False
 
         return True
+
+
+class CheckIsInContainer(CheckAction):
+    def __init__(self):
+        self.name = "checking if the system not in a container"
+        self.description = "The system is running in a container-like environment. The conversion is not supported for such systems."
+
+    def _is_docker(self):
+        return os.path.exists("/.dockerenv")
+
+    def _is_podman(self):
+        return os.path.exists("/run/.containerenv")
+
+    def _is_vz_like(self):
+        return os.path.exists("/proc/vz")
+
+    def _do_check(self):
+        return not (self._is_docker() or self._is_podman() or self._is_vz_like())
