@@ -5,7 +5,7 @@ import os
 import pwd
 import shutil
 
-from common import util, log, leapp_configs
+from common import util, log, leapp_configs, files
 
 
 # We should do rebundling of ruby applications after the conversion
@@ -17,8 +17,8 @@ class RebundleRubyApplications(ActiveAction):
         self.description = "rebundling ruby applications"
 
     def _find_file_in_domain(self, domain, file):
-        for root, _, files in os.walk(domain):
-            for subfile in files:
+        for root, _, domain_files in os.walk(domain):
+            for subfile in domain_files:
                 if os.path.basename(subfile) == file:
                     return os.path.join(root, file)
         return None
@@ -73,13 +73,10 @@ class FixupImunify(ActiveAction):
         self.name = "fixing up imunify360"
 
     def _is_required(self):
-        return os.path.exists("/etc/yum.repos.d/imunify360.repo")
+        return len(files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify360.repo"])) > 0
 
     def _prepare_action(self):
-        repofiles = []
-        for file in os.scandir("/etc/yum.repos.d"):
-            if file.name.startswith("imunify") and file.name[-5:] == ".repo":
-                repofiles.append(file.path)
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify*.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles)
 
@@ -99,29 +96,18 @@ class AdoptKolabRepositories(ActiveAction):
         self.name = "adopting kolab repositories"
 
     def _is_required(self):
-        for file in os.scandir("/etc/yum.repos.d"):
-            if file.name.startswith("kolab") and file.name[-5:] == ".repo":
-                return True
-
-        return False
+        return len(files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"])) > 0
 
     def _prepare_action(self):
-        repofiles = []
-
-        for file in os.scandir("/etc/yum.repos.d"):
-            if file.name.startswith("kolab") and file.name[-5:] == ".repo":
-                repofiles.append(file.path)
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles, ignore=["kolab-16-source",
                                                                   "kolab-16-testing-source",
                                                                   "kolab-16-testing-candidate-source"])
 
     def _post_action(self):
-        for file in os.scandir("/etc/yum.repos.d"):
-            if not file.name.startswith("kolab") or file.name[-5:] != ".repo":
-                continue
-
-            leapp_configs.adopt_repositories(file.path)
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"]):
+            leapp_configs.adopt_repositories(file)
 
         util.logged_check_call(["dnf", "-y", "update"])
 

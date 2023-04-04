@@ -1,10 +1,7 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 from .action import ActiveAction
 
-import os
-
-import common
-from common import leapp_configs, util
+from common import files, leapp_configs, log, rpm, util
 
 
 class RemovingPackages(ActiveAction):
@@ -19,13 +16,13 @@ class RemovingPackages(ActiveAction):
         ]
 
     def _prepare_action(self):
-        common.remove_packages(common.filter_installed_packages(self.conflict_pkgs))
+        rpm.remove_packages(rpm.filter_installed_packages(self.conflict_pkgs))
 
     def _post_action(self):
         pass
 
     def _revert_action(self):
-        common.install_packages(self.conflict_pkgs)
+        rpm.install_packages(self.conflict_pkgs)
 
     def estimate_prepare_time(self):
         return 2
@@ -44,14 +41,14 @@ class ReinstallPleskComponents(ActiveAction):
             "psa-phpmyadmin",
         ]
 
-        common.remove_packages(common.filter_installed_packages(components_pkgs))
+        rpm.remove_packages(rpm.filter_installed_packages(components_pkgs))
 
     def _post_action(self):
         # We should reinstall psa-phpmyadmin over plesk installer to make sure every trigger
         # will be called. It's because triggers that creates phpmyadmin configuration files
         # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
-        common.remove_packages(["psa-phpmyadmin"])
+        rpm.remove_packages(["psa-phpmyadmin"])
         util.logged_check_call(["plesk", "installer", "update"])
 
         util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
@@ -95,15 +92,12 @@ class AdoptPleskRepositories(ActiveAction):
         pass
 
     def _post_action(self):
-        for file in os.scandir("/etc/yum.repos.d"):
-            if not file.name.startswith("plesk") or file.name[-5:] != ".repo":
-                continue
-
-            common.remove_repositories(file.path, [
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
+            files.remove_repositories(file, [
                 "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",
                 "PLESK_17_PHP55", "PLESK_17_PHP56", "PLESK_17_PHP70",
             ])
-            common.adopt_repositories(file.path)
+            leapp_configs.adopt_repositories(file)
 
         util.logged_check_call(["dnf", "-y", "update"])
 
