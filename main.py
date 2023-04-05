@@ -166,6 +166,7 @@ def construct_actions(options, stage_flag):
             actions.UpdateMariadbDatabase(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
+            actions.ReinstallConflictEpelPackages(),
             actions.DisableSuspiciousKernelModules(),
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),

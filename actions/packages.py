@@ -3,6 +3,8 @@ from .action import ActiveAction
 
 from common import files, leapp_configs, log, rpm, util
 
+import os
+
 
 class RemovingPackages(ActiveAction):
 
@@ -65,6 +67,61 @@ class ReinstallPleskComponents(ActiveAction):
 
     def estimate_revert_time(self):
         return 2 * 60
+
+
+class ReinstallConflictEpelPackages(ActiveAction):
+    def __init__(self):
+        self.name = "re-installing conflict epel packages"
+        self.removed_packages_file = "/usr/local/psa/tmp/removed_packages.txt"
+        self.conflict_pkgs_map = {
+            "python36-six": "python3-six",
+            "python36-urllib3": "python3-urllib3",
+            "python36-requests": "python3-requests",
+            "python36-idna": "python3-idna",
+            "python36-chardet": "python3-chardet",
+        }
+
+    def _is_required(self):
+        return len(rpm.filter_installed_packages(self.conflict_pkgs_map.keys())) > 0
+
+    def _prepare_action(self):
+        packages_to_remove = rpm.filter_installed_packages(self.conflict_pkgs_map.keys())
+
+        rpm.remove_packages(packages_to_remove)
+
+        with open(self.removed_packages_file, "w") as f:
+            f.write("\n".join(packages_to_remove))
+
+    def _post_action(self):
+        if not os.path.exists(self.removed_packages_file):
+            log.warn("File with removed packages list is not exists. While the action itself was not skipped. Skip reinstalling packages.")
+            return
+
+        with open(self.removed_packages_file, "r") as f:
+            packages_to_install = [self.conflict_pkgs_map[pkg] for pkg in f.read().splitlines()]
+            rpm.install_packages(packages_to_install)
+
+        os.unlink(self.removed_packages_file)
+
+    def _revert_action(self):
+        if not os.path.exists(self.removed_packages_file):
+            log.warn("File with removed packages list is not exists. While the action itself was not skipped. Skip reinstalling packages.")
+            return
+
+        with open(self.removed_packages_file, "r") as f:
+            packages_to_install = f.read().splitlines()
+            rpm.install_packages(packages_to_install)
+
+        os.unlink(self.removed_packages_file)
+
+    def estimate_prepare_time(self):
+        return 10
+
+    def estimate_post_time(self):
+        return 60
+
+    def estimate_revert_time(self):
+        return 60
 
 
 class UpdatePlesk(ActiveAction):
