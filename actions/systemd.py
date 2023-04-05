@@ -94,13 +94,16 @@ WantedBy=multi-user.target
         util.logged_check_call(["systemctl", "enable", self.service_name])
 
     def _post_action(self):
-        util.logged_check_call(["systemctl", "disable", self.service_name])
-
         if os.path.exists(self.service_file_path):
+            util.logged_check_call(["systemctl", "disable", self.service_name])
+
             os.remove(self.service_file_path)
 
     def _revert_action(self):
-        util.logged_check_call(["systemctl", "disable", self.service_name])
+        if os.path.exists(self.service_file_path):
+            util.logged_check_call(["systemctl", "disable", self.service_name])
+
+            os.remove(self.service_file_path)
 
 
 class StartPleskBasicServices(ActiveAction):
