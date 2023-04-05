@@ -162,7 +162,6 @@ def construct_actions(options, stage_flag):
         ],
         3: [
             actions.RemovingPackages(),
-            actions.PostgresDatabasesUpdate(),
             actions.UpdateMariadbDatabase(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
