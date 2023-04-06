@@ -49,7 +49,7 @@ def prepare_feedback():
 
     with open(versions_file, "w") as versions:
         try:
-            version_info = subprocess.check_output(["plesk", "version"], universal_newlines=True).splitlines()
+            version_info = subprocess.check_output(["/usr/sbin/plesk", "version"], universal_newlines=True).splitlines()
             for line in version_info:
                 versions.write(line + "\n")
             versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
@@ -320,7 +320,7 @@ def do_convert(options):
         elif Stages.finish in options.stage:
             sys.stdout.write(common.FINISH_RESTART_MESSAGE)
 
-        subprocess.call(["systemctl", "reboot"])
+        subprocess.call(["/usr/bin/systemctl", "reboot"])
 
     if Stages.revert in options.stage:
         sys.stdout.write(common.REVET_FINISHED_MESSAGE)

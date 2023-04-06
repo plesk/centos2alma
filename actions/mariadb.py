@@ -91,11 +91,11 @@ class UpdateMariadbDatabase(ActiveAction):
 
     def _post_action(self):
         # We should be sure mariadb is started, otherwise restore woulden't work
-        util.logged_check_call(["systemctl", "start", "mariadb"])
+        util.logged_check_call(["/usr/bin/systemctl", "start", "mariadb"])
 
         with open('/etc/psa/.psa.shadow', 'r') as shadowfile:
             shadowdata = shadowfile.readline().rstrip()
-            util.logged_check_call(["mysql_upgrade", "-uadmin", "-p" + shadowdata])
+            util.logged_check_call(["/usr/bin/mysql_upgrade", "-uadmin", "-p" + shadowdata])
         # Also find a way to drop cookies, because it will ruin your day
         # We have to delete it once again, because leapp going to install it in scope of conversation process,
         # but without right configs
@@ -118,7 +118,7 @@ class AddMysqlConnector(ActiveAction):
         pass
 
     def _post_action(self):
-        subprocess.check_call(["dnf", "install", "-y", "mariadb-connector-c"])
+        subprocess.check_call(["/usr/bin/dnf", "install", "-y", "mariadb-connector-c"])
 
     def _revert_action(self):
         pass

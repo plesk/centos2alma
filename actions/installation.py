@@ -20,9 +20,9 @@ class LeapInstallation(ActiveAction):
 
     def _prepare_action(self):
         if not rpm.is_package_installed("elevate-release"):
-            util.logged_check_call(["yum", "install", "-y", "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
+            util.logged_check_call(["/usr/bin/yum", "install", "-y", "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
 
-        util.logged_check_call(["yum", "install", "-y"] + self.pkgs_to_install)
+        util.logged_check_call(["/usr/bin/yum", "install", "-y"] + self.pkgs_to_install)
 
     def _post_action(self):
         rpm.remove_packages(rpm.filter_installed_packages(self.pkgs_to_install + ["elevate-release"]))

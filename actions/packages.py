@@ -51,13 +51,13 @@ class ReinstallPleskComponents(ActiveAction):
         # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
         rpm.remove_packages(["psa-phpmyadmin"])
-        util.logged_check_call(["plesk", "installer", "update"])
+        util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
 
-        util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
+        util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "roundcube"])
 
     def _revert_action(self):
-        util.logged_check_call(["plesk", "installer", "update"])
-        util.logged_check_call(["plesk", "installer", "add", "--components", "roundcube"])
+        util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
+        util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "roundcube"])
 
     def estimate_prepare_time(self):
         return 10
@@ -129,7 +129,7 @@ class UpdatePlesk(ActiveAction):
         self.name = "updating plesk"
 
     def _prepare_action(self):
-        util.logged_check_call(["plesk", "installer", "update"])
+        util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
 
     def _post_action(self):
         pass
@@ -156,7 +156,7 @@ class AdoptPleskRepositories(ActiveAction):
             ])
             leapp_configs.adopt_repositories(file)
 
-        util.logged_check_call(["dnf", "-y", "update"])
+        util.logged_check_call(["/usr/bin/dnf", "-y", "update"])
 
     def _revert_action(self):
         pass
