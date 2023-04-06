@@ -41,19 +41,19 @@ class FixSpamassassinConfig(ActiveAction):
         return rpm.is_package_installed("psa-spamassassin")
 
     def _prepare_action(self):
-        util.logged_check_call(["systemctl", "stop", "spamassassin.service"])
-        util.logged_check_call(["systemctl", "disable", "spamassassin.service"])
+        util.logged_check_call(["/usr/bin/systemctl", "stop", "spamassassin.service"])
+        util.logged_check_call(["/usr/bin/systemctl", "disable", "spamassassin.service"])
 
     def _post_action(self):
-        util.logged_check_call(["plesk", "sbin", "spammng", "--enable"])
-        util.logged_check_call(["plesk", "sbin", "spammng", "--update", "--enable-server-configs", "--enable-user-configs"])
+        util.logged_check_call(["/usr/sbin/plesk", "sbin", "spammng", "--enable"])
+        util.logged_check_call(["/usr/sbin/plesk", "sbin", "spammng", "--update", "--enable-server-configs", "--enable-user-configs"])
 
-        util.logged_check_call(["systemctl", "daemon-reload"])
-        util.logged_check_call(["systemctl", "enable", "spamassassin.service"])
+        util.logged_check_call(["/usr/bin/systemctl", "daemon-reload"])
+        util.logged_check_call(["/usr/bin/systemctl", "enable", "spamassassin.service"])
 
     def _revert_action(self):
-        util.logged_check_call(["systemctl", "enable", "spamassassin.service"])
-        util.logged_check_call(["systemctl", "start", "spamassassin.service"])
+        util.logged_check_call(["/usr/bin/systemctl", "enable", "spamassassin.service"])
+        util.logged_check_call(["/usr/bin/systemctl", "start", "spamassassin.service"])
 
 
 class DisableSuspiciousKernelModules(ActiveAction):
@@ -64,7 +64,7 @@ class DisableSuspiciousKernelModules(ActiveAction):
 
     def _get_enabled_modules(self, lookup_modules):
         modules = []
-        modules_list = subprocess.check_output(["lsmod"], universal_newlines=True).splitlines()
+        modules_list = subprocess.check_output(["/usr/sbin/lsmod"], universal_newlines=True).splitlines()
         for line in modules_list:
             module_name = line[:line.find(' ')]
             if module_name in lookup_modules:
@@ -77,7 +77,7 @@ class DisableSuspiciousKernelModules(ActiveAction):
                 kern_mods_config.write("blacklist {module}\n".format(module=suspicious_module))
 
         for enabled_modules in self._get_enabled_modules(self.suspicious_modules):
-            util.logged_check_call(["rmmod", enabled_modules])
+            util.logged_check_call(["/usr/sbin/rmmod", enabled_modules])
 
     def _post_action(self):
         for module in self.suspicious_modules:

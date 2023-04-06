@@ -15,7 +15,7 @@ class PleskInstallerNotInProgress(CheckAction):
         self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer stop' to abort it."
 
     def _do_check(self):
-        installer_status = subprocess.check_output(["plesk", "installer", "--query-status", "--enable-xml-output"],
+        installer_status = subprocess.check_output(["/usr/sbin/plesk", "installer", "--query-status", "--enable-xml-output"],
                                                    universal_newlines=True)
         if "query_ok" in installer_status:
             return True
@@ -56,7 +56,7 @@ class PleskVersionIsActual(CheckAction):
         self.description = "Plesk version should be 18.0.43 or later. Please update Plesk to solve the problem."
 
     def _do_check(self):
-        version_info = subprocess.check_output(["plesk", "version"], universal_newlines=True).splitlines()
+        version_info = subprocess.check_output(["/usr/sbin/plesk", "version"], universal_newlines=True).splitlines()
         for line in version_info:
             if line.startswith("Product version"):
                 version = line.split()[-1]

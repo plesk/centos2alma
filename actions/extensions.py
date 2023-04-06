@@ -59,7 +59,7 @@ class RebundleRubyApplications(ActiveAction):
             log.debug("Boundle: {}. App directory: {}. Username: {}".format(boundle, app_directory, username))
 
             shutil.rmtree(boundle)
-            util.logged_check_call(["plesk", "sbin", "rubymng", "run-bundler", username, app_directory])
+            util.logged_check_call(["/usr/sbin/plesk", "sbin", "rubymng", "run-bundler", username, app_directory])
 
     def _revert_action(self):
         pass
@@ -109,7 +109,7 @@ class AdoptKolabRepositories(ActiveAction):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"]):
             leapp_configs.adopt_repositories(file)
 
-        util.logged_check_call(["dnf", "-y", "update"])
+        util.logged_check_call(["/usr/bin/dnf", "-y", "update"])
 
     def _revert_action(self):
         pass
