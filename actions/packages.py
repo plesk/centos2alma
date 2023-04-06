@@ -6,7 +6,7 @@ from common import files, leapp_configs, log, rpm, util
 import os
 
 
-class RemovingPackages(ActiveAction):
+class RemovingPleskConflictPackages(ActiveAction):
 
     def __init__(self):
         self.name = "remove conflict packages"
@@ -69,9 +69,9 @@ class ReinstallPleskComponents(ActiveAction):
         return 2 * 60
 
 
-class ReinstallConflictEpelPackages(ActiveAction):
+class ReinstallConflictPackages(ActiveAction):
     def __init__(self):
-        self.name = "re-installing conflict epel packages"
+        self.name = "re-installing conflict packages"
         self.removed_packages_file = "/usr/local/psa/tmp/removed_packages.txt"
         self.conflict_pkgs_map = {
             "python36-six": "python3-six",
@@ -79,6 +79,7 @@ class ReinstallConflictEpelPackages(ActiveAction):
             "python36-requests": "python3-requests",
             "python36-idna": "python3-idna",
             "python36-chardet": "python3-chardet",
+            "libpcap": "libpcap",
         }
 
     def _is_required(self):
