@@ -118,6 +118,7 @@ def is_required_conditions_satisfied(options, stage_flag):
             actions.CheckGrubInstalled(),
             actions.CheckNoMoreThenOneKernelNamedNIC(),
             actions.CheckIsInContainer(),
+            actions.CheckLastInstalledKernelInUse(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())
@@ -161,11 +162,11 @@ def construct_actions(options, stage_flag):
             actions.FixNamedConfig(),
         ],
         3: [
-            actions.RemovingPackages(),
+            actions.RemovingPleskConflictPackages(),
             actions.UpdateMariadbDatabase(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
-            actions.ReinstallConflictEpelPackages(),
+            actions.ReinstallConflictPackages(),
             actions.DisableSuspiciousKernelModules(),
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),
