@@ -161,11 +161,11 @@ def construct_actions(options, stage_flag):
             actions.FixNamedConfig(),
         ],
         3: [
-            actions.RemovingPackages(),
+            actions.RemovingPleskConflictPackages(),
             actions.UpdateMariadbDatabase(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
-            actions.ReinstallConflictEpelPackages(),
+            actions.ReinstallConflictPackages(),
             actions.DisableSuspiciousKernelModules(),
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),
