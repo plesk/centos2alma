@@ -9,8 +9,8 @@ class DoConvert(ActiveAction):
         self.name = "making the conversation"
 
     def _prepare_action(self):
-        util.logged_check_call(["leapp", "preupgrade"])
-        util.logged_check_call(["leapp", "upgrade"])
+        util.logged_check_call(["/usr/bin/leapp", "preupgrade"])
+        util.logged_check_call(["/usr/bin/leapp", "upgrade"])
 
     def _post_action(self):
         pass
