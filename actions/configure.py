@@ -31,14 +31,19 @@ class LeapChoicesConfiguration(ActiveAction):
 
     def __init__(self):
         self.name = "configure leapp user choices"
+        self.answer_file_path = "/var/log/leapp/answerfile.userchoices"
 
     def _prepare_action(self):
-        with open('/var/log/leapp/answerfile.userchoices', 'w') as usercoise:
-            usercoise.write("[remove_pam_pkcs11_module_check]\nconfirm = True\n")
+        try:
+            with open(self.answer_file_path, 'w') as usercoise:
+                usercoise.write("[remove_pam_pkcs11_module_check]\nconfirm = True\n")
+        except FileNotFoundError:
+            raise RuntimeError("Unable to create the leapp user answer file '{}'. Likely the script does not have "
+                               "sufficient permissions to write in this directory. Please run the script as root "
+                               "and use `setenforce 0` to disable selinux".format(self.answer_file_path))
 
     def _post_action(self):
-        # Since only leap related files should be changed, there is no to do after a conversation
-        pass
+        os.unlink('/var/log/leapp/answerfile.userchoices')
 
     def _revert_action(self):
         pass
