@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 import common
-from common import util, rpm
+from common import log, util, rpm
 
 
 class FixNamedConfig(ActiveAction):
@@ -122,10 +122,14 @@ You can remove this message from the /etc/motd file.
         pass
 
     def _post_action(self):
-        common.restore_file_from_backup(self.motd_path)
+        try:
+            common.restore_file_from_backup(self.motd_path)
 
-        with open(self.motd_path, "a") as motd:
-            motd.write(self.finish_message)
+            with open(self.motd_path, "a") as motd:
+                motd.write(self.finish_message)
+        except FileNotFoundError:
+            common.log.warn("File /etc/motd can't be changed or created. Likely there is no rights to do it.")
+            pass
 
     def _revert_action(self):
         pass
@@ -146,10 +150,14 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
 """
 
     def _prepare_action(self):
-        common.backup_file(self.motd_path)
+        try:
+            common.backup_file(self.motd_path)
 
-        with open(self.motd_path, "a") as motd:
-            motd.write(self.in_progress_message)
+            with open(self.motd_path, "a") as motd:
+                motd.write(self.in_progress_message)
+        except FileNotFoundError:
+            log.warn("File /etc/motd can't be changed or created. Likely there is no rights to do it.")
+            pass
 
     def _post_action(self):
         pass

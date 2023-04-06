@@ -162,10 +162,10 @@ def construct_actions(options, stage_flag):
         ],
         3: [
             actions.RemovingPackages(),
-            actions.PostgresDatabasesUpdate(),
             actions.UpdateMariadbDatabase(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
+            actions.ReinstallConflictEpelPackages(),
             actions.DisableSuspiciousKernelModules(),
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),
@@ -212,10 +212,11 @@ def get_flow(stage_flag, actions_map):
 
 def inform_about_problems():
     MOTD_PATH = "/etc/motd"
-    common.restore_file_from_backup(MOTD_PATH)
+    try:
+        common.restore_file_from_backup(MOTD_PATH)
 
-    with open(MOTD_PATH, "a") as motd:
-        motd.write("""
+        with open(MOTD_PATH, "a") as motd:
+            motd.write("""
 ===============================================================================
 Message from Plesk centos2alma tool:
 Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
@@ -223,7 +224,9 @@ See the /var/log/plesk/centos2alma.log file for more information.
 You can remove this message from the /etc/motd file.
 ===============================================================================
 """)
-
+    except FileNotFoundError:
+        common.log.warn("File /etc/motd can't be changed or created. Likely there is no rights to do it.")
+        pass
 
 def start_flow(flow):
     with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
