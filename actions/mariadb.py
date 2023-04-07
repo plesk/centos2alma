@@ -66,7 +66,7 @@ class AvoidMariadbDowngrade(ActiveAction):
 
     def _prepare_action(self):
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
-        if len(repofiles):
+        if len(repofiles) == 0:
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format("/etc/yum.repos.d/mariadb.repo"))
 
         leapp_configs.add_repositories_mapping(repofiles)

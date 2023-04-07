@@ -68,6 +68,7 @@ def _do_url_replacement(url):
         lambda to_change: to_change.replace("epel-source-7", "epel-source-8"),
         lambda to_change: to_change.replace("centos7", "centos8"),
         lambda to_change: to_change.replace("centos/7", "centos/8"),
+        lambda to_change: to_change.replace("rhel/7", "rhel/8"),
         lambda to_change: to_change.replace("CentOS_7", "CentOS_8"),
         lambda to_change: to_change.replace("rhel-$releasever", "rhel-8"),
         lambda to_change: to_change.replace("$releasever", "8"),
