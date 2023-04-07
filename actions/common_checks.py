@@ -181,14 +181,14 @@ class CheckLastInstalledKernelInUse(CheckAction):
 \tPlease reboot the system to use the last installed kernel."""
 
     def _get_kernel_vesion__in_use(self):
-        return subprocess.check_output(["uname", "-r"], universal_newlines=True).strip()
+        return subprocess.check_output(["/usr/bin/uname", "-r"], universal_newlines=True).strip()
 
     def _get_last_installed_kernel_version(self):
-        versions = subprocess.check_output(["rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
+        versions = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
         return max(versions).split("-", 1)[-1]
 
     def _is_realtime_installed(self):
-        return len(subprocess.check_output(["rpm", "-q", "-a", "kernel-rt"], universal_newlines=True).splitlines()) > 0
+        return len(subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel-rt"], universal_newlines=True).splitlines()) > 0
 
     def _do_check(self):
         # For now skip checking realtime kernels. leapp will check it on it's side
