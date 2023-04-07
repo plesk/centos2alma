@@ -71,6 +71,8 @@ def _do_url_replacement(url):
         lambda to_change: to_change.replace("CentOS_7", "CentOS_8"),
         lambda to_change: to_change.replace("rhel-$releasever", "rhel-8"),
         lambda to_change: to_change.replace("$releasever", "8"),
+        lambda to_change: to_change.replace("autoinstall.plesk.com/PMM_0.1.10", "autoinstall.plesk.com/PMM_0.1.11"),
+        lambda to_change: to_change.replace("autoinstall.plesk.com/PMM0", "autoinstall.plesk.com/PMM_0.1.11"),
     ])
 
 
