@@ -171,3 +171,35 @@ class CheckIsInContainer(CheckAction):
 
     def _do_check(self):
         return not (self._is_docker() or self._is_podman() or self._is_vz_like())
+
+
+class CheckLastInstalledKernelInUse(CheckAction):
+    def __init__(self):
+        self.name = "checking if the last installed kernel is in use"
+        self.description = """The last installed kernel is not in use.
+\tUsed kernel version is '{}'. Last installed version is '{}'.
+\tPlease reboot the system to use the last installed kernel."""
+
+    def _get_kernel_vesion__in_use(self):
+        return subprocess.check_output(["uname", "-r"], universal_newlines=True).strip()
+
+    def _get_last_installed_kernel_version(self):
+        versions = subprocess.check_output(["rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
+        return max(versions).split("-", 1)[-1]
+
+    def _is_realtime_installed(self):
+        return len(subprocess.check_output(["rpm", "-q", "-a", "kernel-rt"], universal_newlines=True).splitlines()) > 0
+
+    def _do_check(self):
+        # For now skip checking realtime kernels. leapp will check it on it's side
+        # I believe we have no much installation with realtime kernel
+        if self._is_realtime_installed():
+            return True
+
+        last_installed_kernel_version = self._get_last_installed_kernel_version()
+        used_kernel_version = self._get_kernel_vesion__in_use()
+        if used_kernel_version != last_installed_kernel_version:
+            self.description = self.description.format(used_kernel_version, last_installed_kernel_version)
+            return False
+
+        return True
