@@ -99,8 +99,15 @@ class CheckAvailableSpace(CheckAction):
 class CheckOutdatedPHP(CheckAction):
     def __init__(self):
         self.name = "checking outdated PHP"
-        self.description = """Outdated versions of PHP was detected. To proceed the conversion, please remove
-\t'{}' through Plesk installer."""
+        self.description = """Outdated versions of PHP was detected: '{}'. To proceed the conversion:
+\t1. Swtich PHP versions to PHP 7.2 or higher for following domains:
+\t- {}
+
+\tIt can be done by running the following command:
+\t> plesk bin domain -u [domain] -php_handler_id plesk-php80-fastcgi
+
+\t2. Remove outdated PHP packages through Plesk installer.
+"""
 
     def _do_check(self):
         outdated_php_packages = {
@@ -117,7 +124,25 @@ class CheckOutdatedPHP(CheckAction):
         if len(installed_pkgs) == 0:
             return True
 
-        self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]))
+        php_hanlers = {"'{}-fastcgi'", "'{}-fpm'", "'{}-fpm-dedicated'"}
+        outdated_php_handlers = []
+        for installed in installed_pkgs:
+            outdated_php_handlers += [handler.format(installed) for handler in php_hanlers]
+
+        try:
+            looking_for_domains_sql_request = """
+                SELECT d.name FROM domains d JOIN hosting h ON d.id = h.dom_id WHERE h.php_handler_id in ({});
+            """.format(", ".join(outdated_php_handlers))
+            outdated_php_domains = subprocess.check_output(["/usr/sbin/plesk", "db", looking_for_domains_sql_request],
+                                                           universal_newlines=True)
+            outdated_php_domains = [domain[2:-2] for domain in outdated_php_domains.splitlines()
+                                    if domain.startswith("|") and not domain.startswith("| name ")]
+            outdated_php_domains = "\n\t- ".join(outdated_php_domains)
+        except Exception:
+            outdated_php_domains = "Unable to get domains list. Please check it manually."
+
+        self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]),
+                                                   outdated_php_domains)
         return False
 
 
