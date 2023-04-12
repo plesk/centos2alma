@@ -9,7 +9,7 @@ import os
 class RemovingPleskConflictPackages(ActiveAction):
 
     def __init__(self):
-        self.name = "remove conflict packages"
+        self.name = "remove plesk conflict packages"
         self.conflict_pkgs = [
             "openssl11-libs",
             "python36-PyYAML",
@@ -71,14 +71,33 @@ class ReinstallPleskComponents(ActiveAction):
 
 class ReinstallConflictPackages(ActiveAction):
     def __init__(self):
-        self.name = "re-installing conflict packages"
+        self.name = "re-installing common conflict packages"
         self.removed_packages_file = "/usr/local/psa/tmp/removed_packages.txt"
         self.conflict_pkgs_map = {
+            "python36-cffi": "python3-cffi",
+            "python36-chardet": "python3-chardet",
+            "python36-cryptography": "python3-cryptography",
+            "python36-pycurl": "python3-pycurl",
+            "python36-dateutil": "python3-dateutil",
+            "python36-dbus": "python3-dbus",
+            "python36-decorator": "python3-decorator",
+            "python36-gobject-base": "python3-gobject-base",
+            "python36-idna": "python3-idna",
+            "python36-jinja2": "python3-jinja2",
+            "python36-jsonschema": "python3-jsonschema",
+            "python36-jwt": "python3-jwt",
+            "python36-lxml": "python3-lxml",
+            "python36-markupsafe": "python3-markupsafe",
+            "python36-pyOpenSSL": "python3-pyOpenSSL",
+            "python36-ply": "python3-ply",
+            "python36-prettytable": "python3-prettytable",
+            "python36-pycparser": "python3-pycparser",
+            "python36-pyparsing": "python3-pyparsing",
+            "python36-pyserial": "python3-pyserial",
+            "python36-pytz": "python3-pytz",
+            "python36-requests": "python3-requests",
             "python36-six": "python3-six",
             "python36-urllib3": "python3-urllib3",
-            "python36-requests": "python3-requests",
-            "python36-idna": "python3-idna",
-            "python36-chardet": "python3-chardet",
             "libpcap": "libpcap",
         }
 
@@ -119,10 +138,18 @@ class ReinstallConflictPackages(ActiveAction):
         return 10
 
     def estimate_post_time(self):
-        return 60
+        pkgs_number = 0
+        if os.path.exists(self.removed_packages_file):
+            with open(self.removed_packages_file, "r") as f:
+                pkgs_number = len(f.read().splitlines())
+        return 60 + 10 * pkgs_number
 
     def estimate_revert_time(self):
-        return 60
+        pkgs_number = 0
+        if os.path.exists(self.removed_packages_file):
+            with open(self.removed_packages_file, "r") as f:
+                pkgs_number = len(f.read().splitlines())
+        return 60 + 10 * pkgs_number
 
 
 class UpdatePlesk(ActiveAction):
