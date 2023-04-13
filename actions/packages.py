@@ -74,6 +74,7 @@ class ReinstallConflictPackages(ActiveAction):
         self.name = "re-installing common conflict packages"
         self.removed_packages_file = "/usr/local/psa/tmp/removed_packages.txt"
         self.conflict_pkgs_map = {
+            "galera": "galera",
             "python36-cffi": "python3-cffi",
             "python36-chardet": "python3-chardet",
             "python36-cryptography": "python3-cryptography",
