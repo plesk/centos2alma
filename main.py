@@ -157,7 +157,7 @@ def construct_actions(options, stage_flag):
             actions.AdoptKolabRepositories(),
             actions.FixupImunify(),
             actions.PatchLeappErrorOutput(),
-            actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0])),
+            actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
             actions.UpdatePlesk(),
             actions.PostgresReinstallModernPackage(),
             actions.FixNamedConfig(),
