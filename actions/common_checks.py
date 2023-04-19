@@ -6,7 +6,7 @@ import platform
 import shutil
 import subprocess
 
-from common import rpm
+from common import rpm, files
 
 
 class PleskInstallerNotInProgress(CheckAction):
@@ -228,3 +228,31 @@ class CheckLastInstalledKernelInUse(CheckAction):
             return False
 
         return True
+
+
+class CheckIsLocalRepositoryNotPresent(CheckAction):
+    def __init__(self):
+        self.name = "checking if the local repository is present"
+        self.description = """There are rpm repository with local storage present. Leapp is not support such kind of repositories.
+\tPlease remove the local repositories to proceed the conversion. Files where locally stored repositories are defined:
+\t- {}
+"""
+
+    def _is_repo_contains_local_storage(self, repo_file):
+        with open(repo_file) as f:
+            repository_content = f.read()
+            return ("baseurl=file:" in repository_content or "baseurl = file:" in repository_content or
+                    "metalink=file:" in repository_content or "metalink = file:" in repository_content or
+                    "mirrorlist=file:" in repository_content or "mirrorlist = file:" in repository_content)
+
+    def _do_check(self):
+        # CentOS-Media.repo is a special file which is created by default on CentOS 7. It contains a local repository
+        # but leapp allows it anyway. So we could skip it.
+        local_repositories_files = [file for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
+                                    if os.path.basename(file) != "CentOS-Media.repo" and self._is_repo_contains_local_storage(file)]
+
+        if len(local_repositories_files) == 0:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(local_repositories_files))
+        return False
