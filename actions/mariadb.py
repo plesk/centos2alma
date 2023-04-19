@@ -61,7 +61,7 @@ class AvoidMariadbDowngrade(ActiveAction):
         self.name = "avoid mariadb downgrade"
 
     def _is_required(self):
-        return _is_mariadb_installed() and not _is_version_larger(MARIADB_VERSION_ON_ALMA, _get_mariadb_version())
+        return _is_mariadb_installed() and _is_version_larger(_get_mariadb_version(), MARIADB_VERSION_ON_ALMA)
 
     def _prepare_action(self):
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
@@ -83,16 +83,25 @@ class UpdateMariadbDatabase(ActiveAction):
         self.name = "updating mariadb databases"
 
     def _is_required(self):
-        return _is_mariadb_installed() and _is_version_larger(MARIADB_VERSION_ON_ALMA, _get_mariadb_version())
+        return _is_mariadb_installed() and not _is_version_larger(_get_mariadb_version(), MARIADB_VERSION_ON_ALMA)
 
     def _prepare_action(self):
         pass
 
     def _post_action(self):
-        # Leapp is not remove non-standart MariaDB-client package. But since we have updated
-        # mariadb to 10.3.35 old client is not relevant anymore. So we have to switch to new client
-        rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client", "MariaDB-common", "MariaDB-shared"]))
-        rpm.install_packages(["mariadb"])
+        # Leapp is not remove non-standard MariaDB-client package. But since we have updated
+        # mariadb to 10.3.35 old client is not relevant anymore. So we have to switch to new client.
+        # On the other hand we want to be sure AlmaLinux mariadb-server installed as well
+        for repofile in files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"]):
+            files.backup_file(repofile)
+            os.unlink(repofile)
+
+        rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
+                                                           "MariaDB-compat",
+                                                           "MariaDB-common",
+                                                           "MariaDB-server",
+                                                           "MariaDB-shared"]))
+        rpm.install_packages(["mariadb", "mariadb-server"])
 
         # We should be sure mariadb is started, otherwise restore woulden't work
         util.logged_check_call(["/usr/bin/systemctl", "start", "mariadb"])
