@@ -1,8 +1,10 @@
 # Сonvert a CentOS 7 server with Plesk to AlmaLinux 8
 
-CentOS 7 to AlmaLinux 8 conversion tool
+CentOS 7 to AlmaLinux 8 conversion tool **beta**
 ## Introduction
 This script is the official tool for converting a CentOS 7 server with Plesk to AlmaLinux 8. It uses the [AlmaLinux ELevate tool](https://wiki.almalinux.org/elevate/ELevate-quickstart-guide.html), which is based on the [leapp modernization framework](https://leapp.readthedocs.io/en/latest/). The script includes additional repository and configuration support provided by Plesk.
+
+**Please be aware that the tool is currently in public beta. We advise caution when using it on production servers as we cannot guarantee that the conversion process will proceed without any issues. As the process involves updating databases, there is a possibility that your data may become corrupted. Therefore, it is essential to ensure that you have backups of your data before proceeding with the conversion process.**
 
 ## Preparation
 To avoid downtime and data loss, make sure you have read and understood the following information before using the script:
