@@ -29,8 +29,12 @@ def is_package_installed(pkg):
 
 
 def install_packages(pkgs):
+    if len(pkgs) == 0:
+        return
     util.logged_check_call(["/usr/bin/yum", "install", "-y"] + pkgs)
 
 
 def remove_packages(pkgs):
+    if len(pkgs) == 0:
+        return
     util.logged_check_call(["/usr/bin/rpm", "-e", "--nodeps"] + pkgs)

@@ -67,9 +67,17 @@ class RulePleskRelatedServices(ActiveAction):
 
 class AddUpgradeSystemdService(ActiveAction):
 
-    def __init__(self, script_path):
+    def __init__(self, script_path, options):
         self.name = "adding centos2alma resume service"
+
         self.script_path = script_path
+        # ToDo. It's pretty simple to forget to add argument here, so maybe we should find another way
+        self.options = [
+            (" --upgrade-postgres", options.upgrade_postgres_allowed),
+            (" --verbose", options.verbose),
+            (" --no-reboot", options.no_reboot),
+        ]
+
         self.service_name = 'plesk-centos2alma.service'
         self.service_file_path = os.path.join('/etc/systemd/system', self.service_name)
         self.service_content = '''
@@ -81,15 +89,20 @@ After=network.target network-online.target
 Type=simple
 # want to run it once per boot time
 RemainAfterExit=yes
-ExecStart={script_path} -s finish
+ExecStart={script_path} -s finish {arguments}
 
 [Install]
 WantedBy=multi-user.target
 '''
 
     def _prepare_action(self):
+        arguments = ""
+        for argument, enabled in self.options:
+            if enabled:
+                arguments += argument
+
         with open(self.service_file_path, "w") as dst:
-            dst.write(self.service_content.format(script_path=self.script_path))
+            dst.write(self.service_content.format(script_path=self.script_path, arguments=arguments))
 
         util.logged_check_call(["/usr/bin/systemctl", "enable", self.service_name])
 
