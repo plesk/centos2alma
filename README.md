@@ -72,7 +72,7 @@ Once the process is complete, the centos2alma script will reboot the server one 
 On the next SSH login, you will be greeted with the following message:
 ```
 ===============================================================================
-Message from Plesk centos2alma tool:
+Message from the Plesk centos2alma tool:
 The server has been converted to AlmaLinux 8.
 You can remove this message from the /etc/motd file.
 ===============================================================================

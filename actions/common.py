@@ -128,7 +128,7 @@ You can remove this message from the /etc/motd file.
             with open(self.motd_path, "a") as motd:
                 motd.write(self.finish_message)
         except FileNotFoundError:
-            common.log.warn("File /etc/motd can't be changed or created. Likely there is no rights to do it.")
+            common.log.warn("The /etc/motd file cannot be changed or created. The script may be lacking the permissions to do so.")
             pass
 
     def _revert_action(self):
@@ -142,7 +142,7 @@ class AddInProgressSshLoginMessage(ActiveAction):
         path_to_script = os.path.abspath(sys.argv[0])
         self.in_progress_message = f"""
 ===============================================================================
-Message from Plesk centos2alma tool:
+Message from the Plesk centos2alma tool:
 The server is being converted to AlmaLinux 8. Please wait.
 To see the current conversion status, run the '{path_to_script} --status' command.
 To monitor the conversion progress in real time, run the '{path_to_script} --monitor' command.
@@ -156,7 +156,7 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
             with open(self.motd_path, "a") as motd:
                 motd.write(self.in_progress_message)
         except FileNotFoundError:
-            log.warn("File /etc/motd can't be changed or created. Likely there is no rights to do it.")
+            log.warn("The /etc/motd file cannot be changed or created. The script may be lacking the permissions to do so.")
             pass
 
     def _post_action(self):

@@ -26,15 +26,15 @@ All changes have been reverted. Plesk should now return to normal operation.
 
 FAIL_MESSAGE_HEAD = """
 \033[91m**************************************************************************************
-The conversion process has failed. There are last 100 lines of the {} file:
+The conversion process has failed. Here are the last 100 lines of the {} file:
 **************************************************************************************\033[0m
 """
 
 FAIL_MESSAGE_TAIL = """
 \033[91m**************************************************************************************
 The conversion process has failed. See the {} file for more information.
-Last 100 lines of the file are shown above.
-For assistance, call 'centos2alma --prepare-feedback' and follow instructions.
+The last 100 lines of the file are shown above.
+For assistance, call 'centos2alma --prepare-feedback' and follow the instructions.
 **************************************************************************************\033[0m
 """
 
@@ -48,8 +48,8 @@ It is safe to interrupt the process with Ctrl+C and restart it from the same sta
 
 FEEDBACK_IS_READY_MESSAGE = """
 \033[92m**************************************************************************************
-Feedback archive is ready. You can find it here: {feedback_archive_path}
-For further investigation create an issue in the GitHub repository - https://github.com/plesk/centos2alma/issues.
-Attach the feedback archive to the issue and describe the problem.
+The feedback archive is ready. You can find it here: {feedback_archive_path}
+For further assistance, create an issue in our GitHub repository - https://github.com/plesk/centos2alma/issues.
+Please attach the feedback archive to the created issue and provide as much information about the problem as you can.
 **************************************************************************************\033[0m
 """
