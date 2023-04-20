@@ -314,7 +314,7 @@ def do_convert(options):
 
             return 1
 
-    if not options.no_reboot and Stages.convert in options.stage or Stages.finish in options.stage:
+    if not options.no_reboot and (Stages.convert in options.stage or Stages.finish in options.stage):
         common.log.info("Going to reboot the system")
         if Stages.convert in options.stage:
             sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),
