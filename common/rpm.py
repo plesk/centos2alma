@@ -13,10 +13,16 @@ def is_package_installed(pkg):
     return res.returncode == 0
 
 
-def install_packages(pkgs):
+def install_packages(pkgs, repository=None):
     if len(pkgs) == 0:
         return
-    util.logged_check_call(["/usr/bin/yum", "install", "-y"] + pkgs)
+
+    command = ["/usr/bin/yum", "install"]
+    if repository is not None:
+        command += ["--repo", repository]
+    command += ["-y"] + pkgs
+
+    util.logged_check_call(command)
 
 
 def remove_packages(pkgs):
