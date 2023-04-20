@@ -12,7 +12,9 @@ from common import rpm, files
 class PleskInstallerNotInProgress(CheckAction):
     def __init__(self):
         self.name = "checking if Plesk installer is in progress"
-        self.description = "Plesk installer is in progress. Please wait until it is finished. Or use 'plesk installer stop' to abort it."
+        self.description = """The conversion process cannot continue because Plesk Installer is working.
+\tPlease wait until it finishes or call 'plesk installer stop' to abort it.
+"""
 
     def _do_check(self):
         installer_status = subprocess.check_output(["/usr/sbin/plesk", "installer", "--query-status", "--enable-xml-output"],
@@ -25,8 +27,8 @@ class PleskInstallerNotInProgress(CheckAction):
 class DistroIsCentos79(CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
-        self.description = """Your distributive is not CentOS 7.9. Unfortunately we are support only CentOS 7.9 for now.
-\tIf you use any other version of Centos 7 please update it to Centos 7.9.
+        self.description = """You are running a distributive other than CentOS 7.9. At the moment, only CentOS 7.9 is supported.
+\tIf you are running an earlier Centos 7 release, update to Centos 7.9 and try again.
 """
 
     def _do_check(self):
@@ -40,7 +42,7 @@ class DistroIsCentos79(CheckAction):
 class DistroIsAlmalinux8(CheckAction):
     def __init__(self):
         self.name = "checking if distro is AlmaLinux8"
-        self.description = "Your distributive is not AlmaLinux8. Finish stage can be started only on AlmaLinux8."
+        self.description = "You are running a distributive other than AlmaLinux 8. The finalization stage can only be started on AlmaLinux 8."
 
     def _do_check(self):
         distro = platform.linux_distribution()
@@ -53,7 +55,7 @@ class DistroIsAlmalinux8(CheckAction):
 class PleskVersionIsActual(CheckAction):
     def __init__(self):
         self.name = "checking if Plesk version is actual"
-        self.description = "Plesk version should be 18.0.43 or later. Please update Plesk to solve the problem."
+        self.description = "Only Plesk Obsidian 18.0.43 or later is supported. Update Plesk to version 18.0.43 or later and try again."
 
     def _do_check(self):
         version_info = subprocess.check_output(["/usr/sbin/plesk", "version"], universal_newlines=True).splitlines()
@@ -74,7 +76,7 @@ class CheckAvailableSpace(CheckAction):
         self.required_space = 5 * 1024 * 1024 * 1024  # 5GB
         self.description = """There is insufficient disk space available. Leapp requires a minimum of {} of free space
 \ton the disk where the '/var/lib' directory is located. Available space: {}. 
-\tPlease free up space and try again.
+\tFree up enough disk space and try again.
 """
 
     def _huminize_size(self, size):
@@ -99,14 +101,14 @@ class CheckAvailableSpace(CheckAction):
 class CheckOutdatedPHP(CheckAction):
     def __init__(self):
         self.name = "checking outdated PHP"
-        self.description = """Outdated versions of PHP was detected: '{}'. To proceed the conversion:
-\t1. Swtich PHP versions to PHP 7.2 or higher for following domains:
+        self.description = """Outdated PHP versions were detected: '{}'. To proceed with the conversion:
+\t1.  Switch the following domains to PHP 7.2 or later:
 \t- {}
 
-\tIt can be done by running the following command:
+\tYou can do so by running the following command:
 \t> plesk bin domain -u [domain] -php_handler_id plesk-php80-fastcgi
 
-\t2. Remove outdated PHP packages through Plesk installer.
+\t2. Remove outdated PHP packages via Plesk Installer.
 """
 
     def _do_check(self):
@@ -149,8 +151,8 @@ class CheckOutdatedPHP(CheckAction):
 class CheckGrubInstalled(CheckAction):
     def __init__(self):
         self.name = "checking if grub is installed"
-        self.description = """It seems like grub is not installed because the /etc/default/grub file is missing.
-\tPlease install it to proceed the conversion.
+        self.description = """The /etc/default/grub file is missing. GRUB may not be installed.
+\tMake sure that GRUB is installed and try again.
 """
 
     def _do_check(self):
@@ -160,9 +162,9 @@ class CheckGrubInstalled(CheckAction):
 class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
     def __init__(self):
         self.name = "checking if there is more than one NIC interface using ketnel-name"
-        self.description = """The system has more then one network interface cards (NICs) using kernel-names (ethX).
-\tleapp unable to guarantee interfaces names stability during the conversion.
-\tPlease rename all NICs to use persistent names (enpXsY) to proceed the conversion.
+        self.description = """The system has one or more network interface cards (NICs) using kernel-names (ethX).
+\tLeapp cannot guarantee the interface names' stability during the conversion.
+\tGive those NICs persistent names (enpXsY) to proceed with the conversion.
 \tIntarfeces: {}
 """
 
@@ -202,8 +204,9 @@ class CheckLastInstalledKernelInUse(CheckAction):
     def __init__(self):
         self.name = "checking if the last installed kernel is in use"
         self.description = """The last installed kernel is not in use.
-\tUsed kernel version is '{}'. Last installed version is '{}'.
-\tPlease reboot the system to use the last installed kernel."""
+\tThe kernel version in use is '{}'. The last installed kernel version is '{}'.
+\tReboot the system to use the last installed kernel.
+"""
 
     def _get_kernel_vesion__in_use(self):
         return subprocess.check_output(["/usr/bin/uname", "-r"], universal_newlines=True).strip()

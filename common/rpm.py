@@ -5,22 +5,7 @@ from common import util
 
 
 def filter_installed_packages(lookup_pkgs):
-    pkgs = []
-    process = subprocess.run(["/usr/bin/rpm", "-q", "-a"], stdout=subprocess.PIPE, universal_newlines=True)
-    for line in process.stdout.splitlines():
-        end_of_name = 0
-        while end_of_name != -1:
-            end_of_name = line.find("-", end_of_name + 1)
-            if line[end_of_name + 1].isnumeric():
-                break
-
-        if end_of_name == -1:
-            continue
-
-        pkg_name = line[:end_of_name]
-        if pkg_name in lookup_pkgs:
-            pkgs.append(pkg_name)
-    return pkgs
+    return [pkg for pkg in lookup_pkgs if is_package_installed(pkg)]
 
 
 def is_package_installed(pkg):
@@ -28,10 +13,16 @@ def is_package_installed(pkg):
     return res.returncode == 0
 
 
-def install_packages(pkgs):
+def install_packages(pkgs, repository=None):
     if len(pkgs) == 0:
         return
-    util.logged_check_call(["/usr/bin/yum", "install", "-y"] + pkgs)
+
+    command = ["/usr/bin/yum", "install"]
+    if repository is not None:
+        command += ["--repo", repository]
+    command += ["-y"] + pkgs
+
+    util.logged_check_call(command)
 
 
 def remove_packages(pkgs):

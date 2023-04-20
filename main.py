@@ -152,7 +152,6 @@ def construct_actions(options, stage_flag):
         ],
         2: [
             actions.LeapReposConfiguration(),
-            actions.AvoidMariadbDowngrade(),
             actions.LeapChoicesConfiguration(),
             actions.AdoptKolabRepositories(),
             actions.FixupImunify(),
@@ -165,6 +164,7 @@ def construct_actions(options, stage_flag):
         3: [
             actions.RemovingPleskConflictPackages(),
             actions.UpdateMariadbDatabase(),
+            actions.UpdateModernMariadb(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
             actions.ReinstallConflictPackages(),
@@ -220,14 +220,14 @@ def inform_about_problems():
         with open(MOTD_PATH, "a") as motd:
             motd.write("""
 ===============================================================================
-Message from Plesk centos2alma tool:
+Message from the Plesk centos2alma tool:
 Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
 See the /var/log/plesk/centos2alma.log file for more information.
 You can remove this message from the /etc/motd file.
 ===============================================================================
 """)
     except FileNotFoundError:
-        common.log.warn("File /etc/motd can't be changed or created. Likely there is no rights to do it.")
+        common.log.warn("The /etc/motd file cannot be changed or created. The script may be lacking the permissions to do so.")
         pass
 
 def start_flow(flow):
@@ -314,7 +314,7 @@ def do_convert(options):
 
             return 1
 
-    if not options.no_reboot and Stages.convert in options.stage or Stages.finish in options.stage:
+    if not options.no_reboot and (Stages.convert in options.stage or Stages.finish in options.stage):
         common.log.info("Going to reboot the system")
         if Stages.convert in options.stage:
             sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),

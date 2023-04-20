@@ -56,9 +56,9 @@ def _get_mariadb_version():
     return out.split("Distrib ")[1].split(",")[0].split("-")[0]
 
 
-class AvoidMariadbDowngrade(ActiveAction):
+class UpdateModernMariadb(ActiveAction):
     def __init__(self):
-        self.name = "avoid mariadb downgrade"
+        self.name = "update modern mariadb"
 
     def _is_required(self):
         return _is_mariadb_installed() and _is_version_larger(_get_mariadb_version(), MARIADB_VERSION_ON_ALMA)
@@ -72,10 +72,28 @@ class AvoidMariadbDowngrade(ActiveAction):
         leapp_configs.set_package_repository("mariadb", "alma-maridb")
 
     def _post_action(self):
-        pass
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
+        if len(repofiles) == 0:
+            return 0
+
+        for repofile in repofiles:
+            leapp_configs.adopt_repositories(repofile)
+
+        rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
+                                                           "MariaDB-compat",
+                                                           "MariaDB-common",
+                                                           "MariaDB-server",
+                                                           "MariaDB-shared"]))
+        rpm.install_packages(["MariaDB-client", "MariaDB-server"], repository="alma-mariadb")
 
     def _revert_action(self):
         pass
+
+    def estimate_prepare_time(self):
+        return 30
+
+    def estimate_post_time(self):
+        return 60
 
 
 class UpdateMariadbDatabase(ActiveAction):
