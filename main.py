@@ -152,7 +152,6 @@ def construct_actions(options, stage_flag):
         ],
         2: [
             actions.LeapReposConfiguration(),
-            actions.AvoidMariadbDowngrade(),
             actions.LeapChoicesConfiguration(),
             actions.AdoptKolabRepositories(),
             actions.FixupImunify(),
@@ -165,6 +164,7 @@ def construct_actions(options, stage_flag):
         3: [
             actions.RemovingPleskConflictPackages(),
             actions.UpdateMariadbDatabase(),
+            actions.UpdateModernMariadb(),
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
             actions.ReinstallConflictPackages(),
