@@ -149,6 +149,7 @@ def construct_actions(options, stage_flag):
     actions_map = merge_dicts_of_lists(actions_map, {
         1: [
             actions.LeapInstallation(),
+            actions.AddInProgressSshLoginMessage(),
         ],
         2: [
             actions.LeapReposConfiguration(),
@@ -175,7 +176,6 @@ def construct_actions(options, stage_flag):
         ],
         4: [
             actions.DoConvert(),
-            actions.AddInProgressSshLoginMessage(),
         ],
     })
 

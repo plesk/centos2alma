@@ -84,6 +84,9 @@ class DisableSuspiciousKernelModules(ActiveAction):
             common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
     def _revert_action(self):
+        if not os.path.exists(self.modules_konfig_path):
+            return
+
         for module in self.suspicious_modules:
             common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
