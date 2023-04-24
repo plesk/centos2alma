@@ -1,6 +1,7 @@
-# Сonvert a CentOS 7 server with Plesk to AlmaLinux 8
+# Convert a CentOS 7 server with Plesk to AlmaLinux 8
 
 CentOS 7 to AlmaLinux 8 conversion tool **beta**
+
 ## Introduction
 This script is the official tool for converting a CentOS 7 server with Plesk to AlmaLinux 8. It uses the [AlmaLinux ELevate tool](https://wiki.almalinux.org/elevate/ELevate-quickstart-guide.html), which is based on the [leapp modernization framework](https://leapp.readthedocs.io/en/latest/). The script includes additional repository and configuration support provided by Plesk.
 
@@ -115,6 +116,7 @@ To monitor the progress of the conversion process in real time, The conversion p
 ## Issue handling
 ### Leapp unable to handle packages
 Leapp may not be able to handle certain installed packages, especially those installed from custom repositories. In this case, the centos2alma will fail while running leapp preupgrade or leapp upgrade. The easiest way to fix this issue is to remove the package(s), and then reinstall them once the conversion is complete.
+
 ### Temporary OS distribution hangs
 This issue may occur, for example, if there is a custom python installation on the server. The conversion process will fail while upgrading the temporary OS distribution, and the temporary OS will hang with no notification. To identify the issue, connect to the server using a serial port console and check the status of the conversion process. To fix the issue, reboot the server. Note that an unfinished installation process may result in missing packages and other issues.
 
@@ -129,6 +131,7 @@ You can remove this message from the /etc/motd file.
 ===============================================================================
 ```
 You can read the centos2alma log to troubleshoot the issue. If the centos2alma finish stage fails for any reason, once you have resolved the root cause of the failure, you can retry by running 'centos2alma -s finish'.
+
 ### Send feedback
 If you got any error, please [create an issue on github](https://github.com/plesk/centos2alma/issues). To do generate feedback archive by calling the tool with '-f' or '--prepare-feedback' flags.
 ```shell
