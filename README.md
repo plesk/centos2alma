@@ -28,7 +28,7 @@ Do not use the script if any of the following is true:
 - **You are running an OS other than CentOS 7.9**. The script was not tested on other Red Hat Enterprise Linux 7-based distributions. The conversion process may have unexpected results if started on a server not running CentOS 7.9. So we add checks to avoid any actions on such kinds of servers.
 - **Plesk version is 18.0.42 or earier**. The script only supports Plesk 18.0.43 and later.
 - **PHP 7.1 and earlier are not supported** in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. So we force to remove this versions before the conversion.
-- **Conversion inside containers are not supported**. 
+- **Conversion inside containers (like Virtuozzo containers, Docker Containers, etc) are not supported**. 
 - **More than one kernel named interfaces (like ethX) are not supported**. Stability of such names are not guaranteed, so leapp prevent the conversion in such cases.
 
 ## Requirements

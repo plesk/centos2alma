@@ -185,7 +185,7 @@ class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
 class CheckIsInContainer(CheckAction):
     def __init__(self):
         self.name = "checking if the system not in a container"
-        self.description = "The system is running in a container-like environment. The conversion is not supported for such systems."
+        self.description = "The system is running in a container-like environment ({}). The conversion is not supported for such systems."
 
     def _is_docker(self):
         return os.path.exists("/.dockerenv")
@@ -197,7 +197,17 @@ class CheckIsInContainer(CheckAction):
         return os.path.exists("/proc/vz")
 
     def _do_check(self):
-        return not (self._is_docker() or self._is_podman() or self._is_vz_like())
+        if self._is_docker():
+            self.description = self.description.format("Docker container")
+            return False
+        elif self._is_podman():
+            self.description = self.description.format("Podman container")
+            return False
+        elif self._is_vz_like():
+            self.description = self.description.format("Virtuozzo container")
+            return False
+
+        return True
 
 
 class CheckLastInstalledKernelInUse(CheckAction):
