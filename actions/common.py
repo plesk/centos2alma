@@ -167,3 +167,20 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
 
     def _revert_action(self):
         common.restore_file_from_backup(self.motd_path)
+
+
+class DisablePleskSshBanner(ActiveAction):
+    def __init__(self):
+        self.name = "disable plesk ssh banner"
+        self.banner_command_path = "/root/.plesk_banner"
+
+    def _prepare_action(self):
+        if os.path.exists(self.banner_command_path):
+            common.backup_file(self.banner_command_path)
+            os.unlink(self.banner_command_path)
+
+    def _post_action(self):
+        common.restore_file_from_backup(self.banner_command_path)
+
+    def _revert_action(self):
+        common.restore_file_from_backup(self.banner_command_path)

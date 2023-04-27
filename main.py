@@ -164,6 +164,7 @@ def construct_actions(options, stage_flag):
             actions.FixNamedConfig(),
         ],
         3: [
+            actions.DisablePleskSshBanner(),
             actions.RemovingPleskConflictPackages(),
             actions.UpdateMariadbDatabase(),
             actions.UpdateModernMariadb(),
