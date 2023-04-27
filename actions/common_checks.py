@@ -1,6 +1,7 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 from .action import CheckAction
 
+import collections
 import os
 import platform
 import shutil
@@ -268,4 +269,31 @@ class CheckIsLocalRepositoryNotPresent(CheckAction):
             return True
 
         self.description = self.description.format("\n\t- ".join(local_repositories_files))
+        return False
+
+
+class CheckRepositoryDuplicates(CheckAction):
+    def __init__(self):
+        self.name = "checking if there are duplicate repositories"
+        self.description = """There are duplicate repositories present:
+\t- {}
+
+\tPlease remove the duplicate to proceed the conversion.
+"""
+
+    def _do_check(self):
+        repositories = []
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
+        for repofile in repofiles:            
+            with open(repofile, "r") as f:
+                for line in f.readlines():
+                    line = line.strip()
+                    if line.startswith("[") and line.endswith("]"):
+                        repositories.append(line)
+
+        duplicates = [repository for repository, count in collections.Counter(repositories).items() if count > 1]
+        if len(duplicates) == 0:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(duplicates))
         return False
