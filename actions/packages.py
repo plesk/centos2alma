@@ -75,8 +75,10 @@ class ReinstallConflictPackages(ActiveAction):
         self.removed_packages_file = "/usr/local/psa/tmp/removed_packages.txt"
         self.conflict_pkgs_map = {
             "galera": "galera",
+            "python36-argcomplete": "python3-argcomplete",
             "python36-cffi": "python3-cffi",
             "python36-chardet": "python3-chardet",
+            "python36-colorama": "python3-colorama",
             "python36-cryptography": "python3-cryptography",
             "python36-pycurl": "python3-pycurl",
             "python36-dateutil": "python3-dateutil",
