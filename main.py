@@ -120,6 +120,7 @@ def is_required_conditions_satisfied(options, stage_flag):
             actions.CheckIsInContainer(),
             actions.CheckLastInstalledKernelInUse(),
             actions.CheckIsLocalRepositoryNotPresent(),
+            actions.CheckRepositoryDuplicates(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())
