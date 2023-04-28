@@ -5,7 +5,7 @@ import shutil
 
 from enum import IntEnum
 
-import common
+from common import files, log
 
 
 PATH_TO_CONFIGFILES = "/etc/leapp/files"
@@ -105,7 +105,7 @@ def _extract_repodata(repofile):
                 metalink = None
                 additional = []
 
-            common.log.debug("Repository file line: {line}".format(line=line.rstrip()))
+            log.debug("Repository file line: {line}".format(line=line.rstrip()))
             if line.startswith("["):
                 id = line[1:-2]
                 continue
@@ -131,11 +131,11 @@ def _extract_repodata(repofile):
 
 def is_repo_ok(id, name, url, metalink):
     if name is None:
-        common.log.warn("Repository info for '[{id}]' has no a name".format(id=id))
+        log.warn("Repository info for '[{id}]' has no a name".format(id=id))
         return False
 
     if url is None and metalink is None:
-        common.log.warn("Repository info for '{id}' has no baseurl and metalink".format(id=id))
+        log.warn("Repository info for '{id}' has no baseurl and metalink".format(id=id))
         return False
 
     return True
@@ -145,10 +145,10 @@ def adopt_repositories(repofile, ignore=None):
     if ignore is None:
         ignore = []
 
-    common.log.debug("Adopt repofile '{filename}' for AlmaLinux 8".format(filename=repofile))
+    log.debug("Adopt repofile '{filename}' for AlmaLinux 8".format(filename=repofile))
 
     if not os.path.exists(repofile):
-        common.log.warn("The repository adapter has tried to open an unexistent file: {filename}".format(filename=repofile))
+        log.warn("The repository adapter has tried to open an unexistent file: {filename}".format(filename=repofile))
         return
 
     with open(repofile + ".next", "a") as dst:
@@ -157,10 +157,10 @@ def adopt_repositories(repofile, ignore=None):
                 continue
 
             if id in ignore:
-                common.log.debug("Skip repository '{id}' adaptation since it is in ignore list.".format(id=id))
+                log.debug("Skip repository '{id}' adaptation since it is in ignore list.".format(id=id))
                 continue
 
-            common.log.debug("Adopt repository with id '{id}' is extracted.".format(id=id))
+            log.debug("Adopt repository with id '{id}' is extracted.".format(id=id))
 
             id = _do_id_replacement(id)
             name = _do_name_replacement(name)
@@ -185,10 +185,10 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
 
     with open(leapp_repos_file_path, "a") as leapp_repos_file, open(mapfile_path, "a") as map_file:
         for file in repofiles:
-            common.log.debug("Processing repofile '{filename}' into leapp configuration".format(filename=file))
+            log.debug("Processing repofile '{filename}' into leapp configuration".format(filename=file))
 
             if not os.path.exists(file):
-                common.log.warn("The repository mapper has tried to open an unexistent file: {filename}".format(filename=file))
+                log.warn("The repository mapper has tried to open an unexistent file: {filename}".format(filename=file))
                 continue
 
             for id, name, url, metalink, additional_lines in _extract_repodata(file):
@@ -196,10 +196,10 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
                     continue
 
                 if id in ignore:
-                    common.log.debug("Skip repository '{id}' since it is in ignore list.".format(id=id))
+                    log.debug("Skip repository '{id}' since it is in ignore list.".format(id=id))
                     continue
 
-                common.log.debug("Repository entry with id '{id}' is extracted.".format(id=id))
+                log.debug("Repository entry with id '{id}' is extracted.".format(id=id))
 
                 new_id = _do_id_replacement(id)
                 name = _do_name_replacement(name)
@@ -241,7 +241,7 @@ def set_package_repository(package, repository, leapp_pkgs_conf_path=LEAPP_PKGS_
                 if outpkg["name"] == package:
                     outpkg["repository"] = repository
 
-    common.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
+    files.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
 
 
 # The following types are defined in the leapp-repository repository and can be used
@@ -266,4 +266,4 @@ def set_package_action(package, type, leapp_pkgs_conf_path=LEAPP_PKGS_CONF_PATH)
                 if inpackage["name"] == package:
                     info["action"] = type
 
-    common.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
+    files.rewrite_json_file(leapp_pkgs_conf_path, pkg_mapping)
