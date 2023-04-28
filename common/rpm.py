@@ -6,6 +6,16 @@ import subprocess
 
 from common import util, log
 
+REPO_HEAD_WITH_URL = """[{id}]
+name={name}
+baseurl={url}
+"""
+
+REPO_HEAD_WITH_METALINK = """[{id}]
+name={name}
+metalink={url}
+"""
+
 
 def extract_repodata(repofile):
     id = None
@@ -50,21 +60,33 @@ def extract_repodata(repofile):
     yield (id, name, url, metalink, additional)
 
 
-def remove_repositories(repofile, repositories):
-    with open(repofile, "r") as original, open(repofile + ".next", "w") as dst:
-        inRepo = False
-        for line in original.readlines():
-            line = line.strip()
-            if line.startswith("[") and line.endswith("]"):
-                if line[1:-1] in repositories:
-                    inRepo = True
-                else:
-                    inRepo = False
+def write_repodata(repofile, id, name, url, metalink, additional):
+    repo_format = REPO_HEAD_WITH_URL
+    if url is None:
+        url = metalink
+        repo_format = REPO_HEAD_WITH_METALINK
 
-            if not inRepo:
-                dst.write(line + "\n")
+    with open(repofile, "a") as dst:
+        dst.write(repo_format.format(id=id, name=name, url=url))
+        for line in additional:
+            dst.write(line)
 
-    shutil.move(repofile + ".next", repofile)
+
+def remove_repositories(repofile, conditions):
+    for id, name, url, metalink, additional_lines in extract_repodata(repofile):
+        remove = False
+        for condition in conditions:
+            if condition(id, name, url, metalink):
+                remove = True
+                break
+
+        if not remove:
+            write_repodata(repofile + ".next", id, name, url, metalink, additional_lines)
+
+    if os.path.exists(repofile + ".next"):
+        shutil.move(repofile + ".next", repofile)
+    else:
+        os.remove(repofile)
 
 
 def filter_installed_packages(lookup_pkgs):
