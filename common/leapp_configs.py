@@ -5,7 +5,7 @@ import shutil
 
 from enum import IntEnum
 
-from common import files, log
+from common import files, log, rpm
 
 
 PATH_TO_CONFIGFILES = "/etc/leapp/files"
@@ -86,49 +86,6 @@ def _do_common_replacement(line):
     ])
 
 
-def _extract_repodata(repofile):
-    id = None
-    name = None
-    url = None
-    metalink = None
-    additional = []
-
-    with open(repofile, "r") as repo:
-        for line in repo.readlines():
-            if line.startswith("["):
-                if id is not None:
-                    yield (id, name, url, metalink, additional)
-
-                id = None
-                name = None
-                url = None
-                metalink = None
-                additional = []
-
-            log.debug("Repository file line: {line}".format(line=line.rstrip()))
-            if line.startswith("["):
-                id = line[1:-2]
-                continue
-
-            if "=" not in line:
-                additional.append(line)
-                continue
-
-            field, val = line.split("=", 1)
-            field = field.strip().rstrip()
-            val = val.strip().rstrip()
-            if field == "name":
-                name = val
-            elif field == "baseurl":
-                url = val
-            elif field == "metalink":
-                metalink = val
-            else:
-                additional.append(line)
-
-    yield (id, name, url, metalink, additional)
-
-
 def is_repo_ok(id, name, url, metalink):
     if name is None:
         log.warn("Repository info for '[{id}]' has no a name".format(id=id))
@@ -152,7 +109,7 @@ def adopt_repositories(repofile, ignore=None):
         return
 
     with open(repofile + ".next", "a") as dst:
-        for id, name, url, metalink, additional_lines in _extract_repodata(repofile):
+        for id, name, url, metalink, additional_lines in rpm.extract_repodata(repofile):
             if not is_repo_ok(id, name, url, metalink):
                 continue
 
@@ -191,7 +148,7 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
                 log.warn("The repository mapper has tried to open an unexistent file: {filename}".format(filename=file))
                 continue
 
-            for id, name, url, metalink, additional_lines in _extract_repodata(file):
+            for id, name, url, metalink, additional_lines in rpm.extract_repodata(file):
                 if not is_repo_ok(id, name, url, metalink):
                     continue
 

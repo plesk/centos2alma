@@ -3,7 +3,50 @@ import itertools
 import os
 import subprocess
 
-from common import util
+from common import util, log
+
+
+def extract_repodata(repofile):
+    id = None
+    name = None
+    url = None
+    metalink = None
+    additional = []
+
+    with open(repofile, "r") as repo:
+        for line in repo.readlines():
+            if line.startswith("["):
+                if id is not None:
+                    yield (id, name, url, metalink, additional)
+
+                id = None
+                name = None
+                url = None
+                metalink = None
+                additional = []
+
+            log.debug("Repository file line: {line}".format(line=line.rstrip()))
+            if line.startswith("["):
+                id = line[1:-2]
+                continue
+
+            if "=" not in line:
+                additional.append(line)
+                continue
+
+            field, val = line.split("=", 1)
+            field = field.strip().rstrip()
+            val = val.strip().rstrip()
+            if field == "name":
+                name = val
+            elif field == "baseurl":
+                url = val
+            elif field == "metalink":
+                metalink = val
+            else:
+                additional.append(line)
+
+    yield (id, name, url, metalink, additional)
 
 
 def filter_installed_packages(lookup_pkgs):
