@@ -181,7 +181,7 @@ class AdoptPleskRepositories(ActiveAction):
 
     def _post_action(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
-            files.remove_repositories(file, [
+            rpm.remove_repositories(file, [
                 "PLESK_17_PHP52", "PLESK_17_PHP53", "PLESK_17_PHP54",
                 "PLESK_17_PHP55", "PLESK_17_PHP56", "PLESK_17_PHP70",
             ])

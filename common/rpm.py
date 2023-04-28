@@ -1,6 +1,7 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import itertools
 import os
+import shutil
 import subprocess
 
 from common import util, log
@@ -47,6 +48,23 @@ def extract_repodata(repofile):
                 additional.append(line)
 
     yield (id, name, url, metalink, additional)
+
+
+def remove_repositories(repofile, repositories):
+    with open(repofile, "r") as original, open(repofile + ".next", "w") as dst:
+        inRepo = False
+        for line in original.readlines():
+            line = line.strip()
+            if line.startswith("[") and line.endswith("]"):
+                if line[1:-1] in repositories:
+                    inRepo = True
+                else:
+                    inRepo = False
+
+            if not inRepo:
+                dst.write(line + "\n")
+
+    shutil.move(repofile + ".next", repofile)
 
 
 def filter_installed_packages(lookup_pkgs):
