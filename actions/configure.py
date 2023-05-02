@@ -6,6 +6,29 @@ import os
 from common import leapp_configs, files
 
 
+class PrepareLeappConfigurationBackup(ActiveAction):
+    def __init__(self):
+        self.name = "prepare leapp configuration backup"
+        self.leapp_configs = ["/etc/leapp/files/leapp_upgrade_repositories.repo",
+                              "/etc/leapp/files/repomap.csv",
+                              "/etc/leapp/files/pes-events.json"]
+
+    def _prepare_action(self):
+        for file in self.leapp_configs:
+            if os.path.exists(file):
+                files.backup_file(file)
+
+    def _post_action(self):
+        for file in self.leapp_configs:
+            if os.path.exists(file):
+                files.remove_backup(file)
+
+    def _revert_action(self):
+        for file in self.leapp_configs:
+            if os.path.exists(file):
+                files.restore_file_from_backup(file)
+
+
 class LeapReposConfiguration(ActiveAction):
 
     def __init__(self):
