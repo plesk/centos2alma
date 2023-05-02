@@ -126,7 +126,7 @@ You can remove this message from the /etc/motd file.
 
     def _post_action(self):
         try:
-            common.restore_file_from_backup(self.motd_path)
+            common.restore_file_from_backup(self.motd_path, remove_if_no_backup=True)
 
             with open(self.motd_path, "a") as motd:
                 motd.write(self.finish_message)
@@ -166,7 +166,7 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
         pass
 
     def _revert_action(self):
-        common.restore_file_from_backup(self.motd_path)
+        common.restore_file_from_backup(self.motd_path, remove_if_no_backup=True)
 
 
 class DisablePleskSshBanner(ActiveAction):

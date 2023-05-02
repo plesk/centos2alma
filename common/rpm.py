@@ -1,9 +1,92 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import itertools
 import os
+import shutil
 import subprocess
 
-from common import util
+from common import util, log
+
+REPO_HEAD_WITH_URL = """[{id}]
+name={name}
+baseurl={url}
+"""
+
+REPO_HEAD_WITH_METALINK = """[{id}]
+name={name}
+metalink={url}
+"""
+
+
+def extract_repodata(repofile):
+    id = None
+    name = None
+    url = None
+    metalink = None
+    additional = []
+
+    with open(repofile, "r") as repo:
+        for line in repo.readlines():
+            if line.startswith("["):
+                if id is not None:
+                    yield (id, name, url, metalink, additional)
+
+                id = None
+                name = None
+                url = None
+                metalink = None
+                additional = []
+
+            log.debug("Repository file line: {line}".format(line=line.rstrip()))
+            if line.startswith("["):
+                id = line[1:-2]
+                continue
+
+            if "=" not in line:
+                additional.append(line)
+                continue
+
+            field, val = line.split("=", 1)
+            field = field.strip().rstrip()
+            val = val.strip().rstrip()
+            if field == "name":
+                name = val
+            elif field == "baseurl":
+                url = val
+            elif field == "metalink":
+                metalink = val
+            else:
+                additional.append(line)
+
+    yield (id, name, url, metalink, additional)
+
+
+def write_repodata(repofile, id, name, url, metalink, additional):
+    repo_format = REPO_HEAD_WITH_URL
+    if url is None:
+        url = metalink
+        repo_format = REPO_HEAD_WITH_METALINK
+
+    with open(repofile, "a") as dst:
+        dst.write(repo_format.format(id=id, name=name, url=url))
+        for line in additional:
+            dst.write(line)
+
+
+def remove_repositories(repofile, conditions):
+    for id, name, url, metalink, additional_lines in extract_repodata(repofile):
+        remove = False
+        for condition in conditions:
+            if condition(id, name, url, metalink):
+                remove = True
+                break
+
+        if not remove:
+            write_repodata(repofile + ".next", id, name, url, metalink, additional_lines)
+
+    if os.path.exists(repofile + ".next"):
+        shutil.move(repofile + ".next", repofile)
+    else:
+        os.remove(repofile)
 
 
 def filter_installed_packages(lookup_pkgs):

@@ -8,23 +8,6 @@ import shutil
 import common
 
 
-def remove_repositories(repofile, repositories):
-    with open(repofile, "r") as original, open(repofile + ".next", "w") as dst:
-        inRepo = False
-        for line in original.readlines():
-            line = line.strip()
-            if line.startswith("[") and line.endswith("]"):
-                if line[1:-1] in repositories:
-                    inRepo = True
-                else:
-                    inRepo = False
-
-            if not inRepo:
-                dst.write(line + "\n")
-
-    shutil.move(repofile + ".next", repofile)
-
-
 def replace_string(filename, original_substring, new_substring):
     with open(filename, "r") as original, open(filename + ".next", "w") as dst:
         for line in original.readlines():
@@ -80,11 +63,16 @@ def backup_file(filename):
         shutil.copy(filename, filename + ".bak")
 
 
-def restore_file_from_backup(filename):
+def restore_file_from_backup(filename, remove_if_no_backup=False):
     if os.path.exists(filename + ".bak"):
         shutil.move(filename + ".bak", filename)
-    else:
+    elif remove_if_no_backup and os.path.exists(filename):
         os.remove(filename)
+
+
+def remove_backup(filename):
+    if os.path.exists(filename + ".bak"):
+        os.remove(filename + ".bak")
 
 
 def find_files_case_insensitive(path, regexps_strings):
