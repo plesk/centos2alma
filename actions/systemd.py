@@ -25,7 +25,6 @@ class RulePleskRelatedServices(ActiveAction):
             "mysqld.service",
             "named-chroot.service",
             "plesk-ext-monitoring-hcd.service",
-            "plesk-ip-remapping.service",
             "plesk-ssh-terminal.service",
             "plesk-task-manager.service",
             "plesk-web-socket.service",
@@ -36,6 +35,11 @@ class RulePleskRelatedServices(ActiveAction):
         ]
         self.plesk_systemd_services = [service for service in plesk_known_systemd_services if _is_service_exists(service)]
 
+        # Oneshot services are special, so they shouldn't be started on revert or after conversion, just enabled
+        self.oneshot_services = [
+            "plesk-ip-remapping.service",
+        ]
+
         # We don't remove postfix service when remove it during qmail installation
         # so we should choose the right smtp service, otherwise they will conflict
         if _is_service_exists("qmail.service"):
@@ -45,14 +49,14 @@ class RulePleskRelatedServices(ActiveAction):
 
     def _prepare_action(self):
         util.logged_check_call(["/usr/bin/systemctl", "stop"] + self.plesk_systemd_services)
-        util.logged_check_call(["/usr/bin/systemctl", "disable"] + self.plesk_systemd_services)
+        util.logged_check_call(["/usr/bin/systemctl", "disable"] + self.plesk_systemd_services + self.oneshot_services)
 
     def _post_action(self):
-        util.logged_check_call(["/usr/bin/systemctl", "enable"] + self.plesk_systemd_services)
+        util.logged_check_call(["/usr/bin/systemctl", "enable"] + self.plesk_systemd_services + self.oneshot_services)
         # Don't do startup because the services will be started up after reboot at the end of the script anyway.
 
     def _revert_action(self):
-        util.logged_check_call(["/usr/bin/systemctl", "enable"] + self.plesk_systemd_services)
+        util.logged_check_call(["/usr/bin/systemctl", "enable"] + self.plesk_systemd_services + self.oneshot_services)
         util.logged_check_call(["/usr/bin/systemctl", "start"] + self.plesk_systemd_services)
 
     def estimate_prepare_time(self):
