@@ -185,6 +185,7 @@ class AdoptPleskRepositories(ActiveAction):
                 lambda id, _1, _2, _3: id in ["PLESK_17_PHP52", "PLESK_17_PHP53",
                                               "PLESK_17_PHP54", "PLESK_17_PHP55",
                                               "PLESK_17_PHP56", "PLESK_17_PHP70"],
+                lambda _1, _2, baseurl, _3: "PMM_0.1.10/thirdparty-rpm" in baseurl,
             ])
             leapp_configs.adopt_repositories(file)
 
