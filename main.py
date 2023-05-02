@@ -153,6 +153,7 @@ def construct_actions(options, stage_flag):
             actions.AddInProgressSshLoginMessage(),
         ],
         2: [
+            actions.RemoveOldMigratorThirparty(),
             actions.LeapReposConfiguration(),
             actions.LeapChoicesConfiguration(),
             actions.AdoptKolabRepositories(),

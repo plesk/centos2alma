@@ -70,6 +70,11 @@ def restore_file_from_backup(filename):
         os.remove(filename)
 
 
+def remove_backup(filename):
+    if os.path.exists(filename + ".bak"):
+        os.remove(filename + ".bak")
+
+
 def find_files_case_insensitive(path, regexps_strings):
     # Todo. We should add typing for our functions
     if not isinstance(regexps_strings, list) and not isinstance(regexps_strings, str):
