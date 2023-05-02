@@ -218,7 +218,7 @@ def get_flow(stage_flag, actions_map):
 def inform_about_problems():
     MOTD_PATH = "/etc/motd"
     try:
-        common.restore_file_from_backup(MOTD_PATH)
+        common.restore_file_from_backup(MOTD_PATH, remove_if_no_backup=True)
 
         with open(MOTD_PATH, "a") as motd:
             motd.write("""
