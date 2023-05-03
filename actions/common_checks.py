@@ -297,3 +297,14 @@ class CheckRepositoryDuplicates(CheckAction):
 
         self.description = self.description.format("\n\t- ".join(duplicates))
         return False
+
+
+class CheckPackagesUpToDate(CheckAction):
+    def __init__(self):
+        self.name = "checking if all packages are up to date"
+        self.description = "There are packages which are not up to date. Call `yum update` to update the packages.\n"
+
+    def _do_check(self):
+        subprocess.check_call(["/usr/bin/yum", "clean", "all"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        checker = subprocess.run(["/usr/bin/yum", "check-update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return checker.returncode == 0
