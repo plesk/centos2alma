@@ -59,9 +59,17 @@ def _fixup_old_php_urls(to_change):
     return to_change
 
 
+def _fix_rackspace_repository(to_change):
+    if "mirror.rackspace.com" in to_change:
+        return to_change.replace("centos7-amd64", "rhel8-amd64")
+
+    return to_change
+
+
 def _do_url_replacement(url):
     return _do_replacement(url, [
         _fixup_old_php_urls,
+        _fix_rackspace_repository,
         lambda to_change: to_change.replace("rpm-CentOS-7", "rpm-RedHat-el8"),
         lambda to_change: to_change.replace("epel-7", "epel-8"),
         lambda to_change: to_change.replace("epel-debug-7", "epel-debug-8"),
