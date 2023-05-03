@@ -68,6 +68,10 @@ def prepare_feedback():
         "/var/log/leapp/leapp-preupgrade.log",
         "/var/log/leapp/leapp-upgrade.log",
     ]
+
+    for repofile in common.files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo*"]):
+        keep_files.append(repofile)
+
     with zipfile.ZipFile(feedback_archive, "w") as zip_file:
         for file in (file for file in keep_files if os.path.exists(file)):
             zip_file.write(file)
