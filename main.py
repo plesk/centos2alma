@@ -125,16 +125,19 @@ def is_required_conditions_satisfied(options, stage_flag):
             actions.CheckLastInstalledKernelInUse(),
             actions.CheckIsLocalRepositoryNotPresent(),
             actions.CheckRepositoryDuplicates(),
+            actions.CheckPackagesUpToDate(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())
 
     try:
-        with actions.CheckFlow(checks) as check_flow:
+        with actions.CheckFlow(checks) as check_flow, common.writer.StdoutWriter() as writer:
+            writer.write("Do preparation checks...")
             check_flow.validate_actions()
             failed_checks = check_flow.make_checks()
+            writer.write("\r")
             for check in failed_checks:
-                sys.stdout.write(check)
+                writer.write(check)
                 common.log.err(check)
 
             if failed_checks:
