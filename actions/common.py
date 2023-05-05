@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 import common
-from common import log, util, rpm
+from common import motd, util, rpm
 
 
 class FixNamedConfig(ActiveAction):
@@ -112,27 +112,16 @@ class RuleSelinux(ActiveAction):
 class AddFinishSshLoginMessage(ActiveAction):
     def __init__(self):
         self.name = "add finish ssh login message"
-        self.motd_path = "/etc/motd"
         self.finish_message = """
-===============================================================================
-Message from Plesk centos2alma tool:
 The server has been converted to AlmaLinux 8.
-You can remove this message from the /etc/motd file.
-===============================================================================
 """
 
     def _prepare_action(self):
         pass
 
     def _post_action(self):
-        try:
-            common.restore_file_from_backup(self.motd_path, remove_if_no_backup=True)
-
-            with open(self.motd_path, "a") as motd:
-                motd.write(self.finish_message)
-        except FileNotFoundError:
-            common.log.warn("The /etc/motd file cannot be changed or created. The script may be lacking the permissions to do so.")
-            pass
+        motd.add_finish_ssh_login_message(self.finish_message)
+        motd.publish_finish_ssh_login_message()
 
     def _revert_action(self):
         pass
@@ -141,7 +130,6 @@ You can remove this message from the /etc/motd file.
 class AddInProgressSshLoginMessage(ActiveAction):
     def __init__(self):
         self.name = "add in progress ssh login message"
-        self.motd_path = "/etc/motd"
         path_to_script = os.path.abspath(sys.argv[0])
         self.in_progress_message = f"""
 ===============================================================================
@@ -153,20 +141,13 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
 """
 
     def _prepare_action(self):
-        try:
-            common.backup_file(self.motd_path)
-
-            with open(self.motd_path, "a") as motd:
-                motd.write(self.in_progress_message)
-        except FileNotFoundError:
-            log.warn("The /etc/motd file cannot be changed or created. The script may be lacking the permissions to do so.")
-            pass
+        motd.add_inprogress_ssh_login_message(self.in_progress_message)
 
     def _post_action(self):
         pass
 
     def _revert_action(self):
-        common.restore_file_from_backup(self.motd_path, remove_if_no_backup=True)
+        motd.restore_ssh_login_message()
 
 
 class DisablePleskSshBanner(ActiveAction):
