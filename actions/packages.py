@@ -1,7 +1,7 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 from .action import ActiveAction
 
-from common import files, leapp_configs, log, rpm, util
+from common import files, leapp_configs, log, motd, rpm, util
 
 import os
 import shutil
@@ -173,6 +173,12 @@ class UpdatePlesk(ActiveAction):
         return 3 * 60
 
 
+CHANGED_REPOS_MSG_FMT = """During the conversion, some of customized .repo files were updated. You can find the old
+files with the .rpmsave extension. Below is a list of the changed files:
+\t{changed_files}
+"""
+
+
 class AdoptRepositories(ActiveAction):
     def __init__(self):
         self.name = "adopting repositories"
@@ -184,12 +190,17 @@ class AdoptRepositories(ActiveAction):
         # The problem is about changed repofiles, that leapp tring to install form packages.
         # For example, when epel.repo file was changed, dnf will save the new one as epel.repo.rpmnew. 
         # I beleive there could be other files with the same problem, so lets iterate every .rpmnew file in /etc/yum.repos.d
+        fixed_list = []
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.rpmnew"]):
             original_file = file[:-len(".rpmnew")]
             if os.path.exists(original_file):
                 shutil.move(original_file, original_file + ".rpmsave")
+                fixed_list.append(original_file)
 
             shutil.move(file, original_file)
+
+        if len(fixed_list) > 0:
+            motd.add_finish_ssh_login_message(CHANGED_REPOS_MSG_FMT.format(changed_files="\n\t".join(fixed_list)))
 
     def _adopt_plesk_repositories(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
