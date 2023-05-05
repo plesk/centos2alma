@@ -206,7 +206,7 @@ def construct_actions(options, stage_flag):
                 actions.RebundleRubyApplications(),
             ],
             4: [
-                actions.AdoptPleskRepositories(),
+                actions.AdoptRepositories(),
                 actions.StartPleskBasicServices(),
             ],
         })
