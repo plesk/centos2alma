@@ -206,7 +206,7 @@ def construct_actions(options, stage_flag):
                 actions.RebundleRubyApplications(),
             ],
             4: [
-                actions.AdoptPleskRepositories(),
+                actions.AdoptRepositories(),
                 actions.StartPleskBasicServices(),
             ],
         })
@@ -224,22 +224,12 @@ def get_flow(stage_flag, actions_map):
 
 
 def inform_about_problems():
-    MOTD_PATH = "/etc/motd"
-    try:
-        common.restore_file_from_backup(MOTD_PATH, remove_if_no_backup=True)
-
-        with open(MOTD_PATH, "a") as motd:
-            motd.write("""
-===============================================================================
-Message from the Plesk centos2alma tool:
+    common.motd.add_finish_ssh_login_message("""
 Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
 See the /var/log/plesk/centos2alma.log file for more information.
-You can remove this message from the /etc/motd file.
-===============================================================================
 """)
-    except FileNotFoundError:
-        common.log.warn("The /etc/motd file cannot be changed or created. The script may be lacking the permissions to do so.")
-        pass
+    common.motd.publish_finish_ssh_login_message()
+
 
 def start_flow(flow):
     with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
