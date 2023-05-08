@@ -53,3 +53,10 @@ For further assistance, create an issue in our GitHub repository - https://githu
 Please attach the feedback archive to the created issue and provide as much information about the problem as you can.
 **************************************************************************************\033[0m
 """
+
+REBOOT_WARN_MESSAGE = """\r\033[93m****************************** WARNING ***********************************************
+\033[92mThe conversion is ready to begin. The server will be rebooted in {delay} seconds.
+The conversion process will take approximately 25 minutes. If you wish to prevent the reboot, simply
+terminate the centos2alma process. Please note that Plesk functionality is currently unavailable.
+\033[93m**************************************************************************************\033[0m
+"""

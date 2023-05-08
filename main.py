@@ -188,6 +188,9 @@ def construct_actions(options, stage_flag):
         4: [
             actions.DoConvert(),
         ],
+        5: [
+            actions.PreRebootPause(),
+        ]
     })
 
     if options.upgrade_postgres_allowed:
