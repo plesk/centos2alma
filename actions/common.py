@@ -4,9 +4,10 @@ from .action import ActiveAction
 import os
 import subprocess
 import sys
+import time
 
 import common
-from common import motd, util, rpm
+from common import messages, motd, util, rpm
 
 
 class FixNamedConfig(ActiveAction):
@@ -165,3 +166,20 @@ class DisablePleskSshBanner(ActiveAction):
 
     def _revert_action(self):
         common.restore_file_from_backup(self.banner_command_path)
+
+
+class PreRebootPause(ActiveAction):
+    def __init__(self):
+        self.name = "pause before reboot"
+        self.pause_time = 45
+        self.message = messages.REBOOT_WARN_MESSAGE.format(delay=self.pause_time)
+
+    def _prepare_action(self):
+        print(self.message)
+        time.sleep(self.pause_time)
+
+    def _post_action(self):
+        pass
+
+    def _revert_action(self):
+        pass
