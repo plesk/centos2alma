@@ -96,9 +96,13 @@ class RuleSelinux(ActiveAction):
     def __init__(self):
         self.name = "rule selinux status"
         self.selinux_config = "/etc/selinux/config"
+        self.getenforce_cmd = "/usr/sbin/getenforce"
 
     def _is_required(self):
-        return os.path.exists(self.selinux_config)
+        if not os.path.exists(self.selinux_config) or not os.path.exists(self.getenforce_cmd):
+            return False
+
+        return subprocess.check_output([self.getenforce_cmd], universal_newlines=True).strip() == "Enforcing"
 
     def _prepare_action(self):
         common.replace_string(self.selinux_config, "SELINUX=enforcing", "SELINUX=permissive")
