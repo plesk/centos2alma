@@ -183,3 +183,6 @@ class PreRebootPause(ActiveAction):
 
     def _revert_action(self):
         pass
+
+    def estimate_prepare_time(self):
+        return 45
