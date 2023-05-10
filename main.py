@@ -129,6 +129,8 @@ def is_required_conditions_satisfied(options, stage_flag):
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())
+        if not options.remove_unknown_perl_modules:
+            checks.append(actions.CheckUnknownPerlCpanModules())
 
     try:
         with actions.CheckFlow(checks) as check_flow, common.writer.StdoutWriter() as writer:
@@ -180,6 +182,7 @@ def construct_actions(options, stage_flag):
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
             actions.ReinstallConflictPackages(),
+            actions.ReinstallPerlCpanModules(),
             actions.DisableSuspiciousKernelModules(),
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),
@@ -374,6 +377,9 @@ def main():
     opts.add_option("--upgrade-postgres", action="store_true", dest="upgrade_postgres_allowed", default=False,
                     help="Upgrade all hosted PostgreSQL databases. To avoid data loss, create backups of all "
                          "hosted PostgreSQL databases before calling this option.")
+    opts.add_option("--remove-unknown-perl-modules", action="store_true", dest="remove_unknown_perl_modules", default=False,
+                    help="Allow to remove unknown perl modules installed from cpan. In this case all modules installed "
+                         "by cpan will be removed. Note that it could lead to some issues with perl scripts")
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
                     help="Start one of the conversion process' stages. Allowed values: 'start', 'revert', and 'finish'.")
     opts.add_option("-v", "--version", action="store_true", dest="version", default=False,
