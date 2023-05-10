@@ -292,3 +292,20 @@ class FindFilesCaseInsensativeTests(unittest.TestCase):
 
         result = sorted(files.find_files_case_insensitive(self.temp_dir, ["subdir/file.txt"], recursive=True))
         self.assertEqual([os.path.relpath(file, self.temp_dir) for file in result], [])
+
+
+class CheckDirectoryIsEmpty(unittest.TestCase):
+    
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_empty_directory(self):
+        self.assertTrue(files.is_directory_empty(self.temp_dir))
+
+    def test_directory_with_file(self):
+        with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
+            f.write("")
+        self.assertFalse(files.is_directory_empty(self.temp_dir))

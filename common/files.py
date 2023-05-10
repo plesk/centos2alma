@@ -102,3 +102,7 @@ def find_files_case_insensitive(path, regexps_strings, recursive=False):
                 result.append(os.path.join(path, file))
 
     return result
+
+
+def is_directory_empty(path):
+    return len(os.listdir(path)) == 0
