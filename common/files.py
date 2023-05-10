@@ -75,7 +75,13 @@ def remove_backup(filename):
         os.remove(filename + ".bak")
 
 
-def find_files_case_insensitive(path, regexps_strings):
+def __get_files_recursive(path):
+    for root, _, files in os.walk(path):
+        for file in files:
+            yield os.path.relpath(os.path.join(root, file), path)
+
+
+def find_files_case_insensitive(path, regexps_strings, recursive=False):
     # Todo. We should add typing for our functions
     if not isinstance(regexps_strings, list) and not isinstance(regexps_strings, str):
         raise TypeError("find_files_case_insensitive argument regexps_strings must be a list")
@@ -88,10 +94,11 @@ def find_files_case_insensitive(path, regexps_strings):
 
     result = []
     regexps = [re.compile(fnmatch.translate(r), re.IGNORECASE) for r in regexps_strings]
+    files_list = __get_files_recursive(path) if recursive else os.listdir(path)
 
-    for file in os.listdir(path):
+    for file in files_list:
         for regexp in regexps:
-            if regexp.match(file):
+            if regexp.match(os.path.basename(file)):
                 result.append(os.path.join(path, file))
 
     return result

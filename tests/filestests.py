@@ -264,3 +264,31 @@ class FindFilesCaseInsensativeTests(unittest.TestCase):
 
         result = sorted(files.find_files_case_insensitive(self.temp_dir, ["plesk*.repo"]))
         self.assertEqual([os.path.basename(file) for file in result], ["plesk-ext-panel-migrator.repo", "plesk-ext-ruby.repo", "plesk.repo"])
+
+    def test_recursive_simple(self):
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        with open(os.path.join(self.temp_dir, "subdir", "file.txt"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["file.txt"], recursive=True))
+        self.assertEqual([os.path.relpath(file, self.temp_dir) for file in result], ["subdir/file.txt"])
+
+    def test_recursive_in_dir_and_subdir(self):
+        with open(os.path.join(self.temp_dir, "file1.txt"), "w") as f:
+            f.write("")
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        with open(os.path.join(self.temp_dir, "subdir", "file2.txt"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["*.txt"], recursive=True))
+        self.assertEqual([os.path.relpath(file, self.temp_dir) for file in result], ["file1.txt", "subdir/file2.txt"])
+
+    def test_subdir_search_is_not_supported(self):
+        # Just to show that we don't support seraching with subdir included
+        # in regexp. We can search only by filenames for now.
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        with open(os.path.join(self.temp_dir, "subdir", "file.txt"), "w") as f:
+            f.write("")
+
+        result = sorted(files.find_files_case_insensitive(self.temp_dir, ["subdir/file.txt"], recursive=True))
+        self.assertEqual([os.path.relpath(file, self.temp_dir) for file in result], [])
