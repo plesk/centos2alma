@@ -1,4 +1,4 @@
-from .action import ActiveAction
+from .action import ActiveAction, CheckAction
 
 import os
 import shutil
@@ -22,7 +22,45 @@ CPAN_MODULES_RPM_MAPPING = {
     "version/vpp.pm": "perl-version",
     "version/vxs.pm": "perl-version",
     "Cwd.pm": "perl-PathTools",
+    "File/Spec.pm": "perl-PathTools",
+    "File/Spec/OS2.pm": "perl-PathTools",
+    "File/Spec/Mac.pm": "perl-PathTools",
+    "File/Spec/VMS.pm": "perl-PathTools",
+    "File/Spec/Functions.pm": "perl-PathTools",
+    "File/Spec/Cygwin.pm": "perl-PathTools",
+    "File/Spec/Epoc.pm": "perl-PathTools",
+    "File/Spec/Unix.pm": "perl-PathTools",
+    "File/Spec/Win32.pm": "perl-PathTools",
+    "File/Spec/AmigaOS.pm": "perl-PathTools",
 }
+
+
+class CheckUnknownPerlCpanModules(CheckAction):
+    def __init__(self):
+        self.name = "checking if there are unknown perl cpan modules"
+        self.description = """There are Perl modules installed by CPAN without known RPM package analogues are found.
+\tPlease remove following modules manually from "{directory}" and reinstall them after the conversion:
+\t- {modules_list}
+
+\tThe centos2alma tool is unable to handle these modules automatically as it does not have information about the RPM package analogues for them.
+\tIf you know the RPM analogues for these modules, please contact us at https://github.com/plesk/centos2alma/issues.
+
+\tYou can use the flag --remove-unknown-perl-modules to remove all of these modules automatically and force the conversion.
+\tPlease note that removing these modules may cause issues with Perl scripts.
+"""
+
+    def _do_check(self):
+        unknown_modules = []
+        for module in files.find_files_case_insensitive(CPAN_MODULES_DIRECTORY, ["*.pm"], recursive=True):
+            module = os.path.relpath(module, CPAN_MODULES_DIRECTORY)
+            if module not in CPAN_MODULES_RPM_MAPPING.keys():
+                unknown_modules.append(module)
+
+        if not unknown_modules:
+            return True
+
+        self.description = self.description.format(directory=CPAN_MODULES_DIRECTORY, modules_list="\n\t- ".join(unknown_modules))
+        return False
 
 
 class ReinstallPerlCpanModules(ActiveAction):
