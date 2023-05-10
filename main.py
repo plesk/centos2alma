@@ -180,6 +180,7 @@ def construct_actions(options, stage_flag):
             actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
             actions.ReinstallConflictPackages(),
+            actions.ReinstallPerlCpanModules(),
             actions.DisableSuspiciousKernelModules(),
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),

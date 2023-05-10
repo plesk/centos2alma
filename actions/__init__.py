@@ -8,5 +8,6 @@ from .extensions import *
 from .installation import *
 from .mariadb import *
 from .packages import *
+from .perl import *
 from .postgres import *
 from .systemd import *

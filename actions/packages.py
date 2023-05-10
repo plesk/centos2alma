@@ -250,4 +250,3 @@ class RemoveOldMigratorThirparty(ActiveAction):
     def _revert_action(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             files.restore_file_from_backup(file)
-
