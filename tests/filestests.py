@@ -309,3 +309,6 @@ class CheckDirectoryIsEmpty(unittest.TestCase):
         with open(os.path.join(self.temp_dir, "file.txt"), "w") as f:
             f.write("")
         self.assertFalse(files.is_directory_empty(self.temp_dir))
+
+    def test_no_such_directory(self):
+        self.assertTrue(files.is_directory_empty(os.path.join(self.temp_dir, "no_such_dir")))
