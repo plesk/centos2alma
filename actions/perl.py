@@ -37,7 +37,7 @@ CPAN_MODULES_RPM_MAPPING = {
 
 class CheckUnknownPerlCpanModules(CheckAction):
     def __init__(self):
-        self.name = "checking if there are unknown perl cpan modules"
+        self.name = "checking if there are no unknown perl cpan modules"
         self.description = """There are Perl modules installed by CPAN without known RPM package analogues are found.
 \tPlease remove following modules manually from "{directory}" and reinstall them after the conversion:
 \t- {modules_list}
@@ -50,6 +50,9 @@ class CheckUnknownPerlCpanModules(CheckAction):
 """
 
     def _do_check(self):
+        if not os.path.exists(CPAN_MODULES_DIRECTORY):
+            return True
+
         unknown_modules = []
         for module in files.find_files_case_insensitive(CPAN_MODULES_DIRECTORY, ["*.pm"], recursive=True):
             module = os.path.relpath(module, CPAN_MODULES_DIRECTORY)
