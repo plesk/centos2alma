@@ -113,6 +113,25 @@ To monitor the progress of the conversion process in real time, The conversion p
 ( stage 3 / action re-installing plesk components  ) 02:26 / 06:18
 ```
 
+### Special cases
+
+#### Postgresql database before version 10 is installed
+By default, the tool does not allow conversion when a PostgreSQL database version prior to 10 is installed. This restriction is in place to warn about the potential loss of data during the PostgreSQL upgrade that will be performed as part of the conversion process.
+
+In such cases, you have two options:
+
+1. Upgrade PostgreSQL to version 10 manually before initiating the conversion.
+2. Create a complete backup of the database and force the conversion using the '--upgrade-postgres' flag.
+
+#### Perl modules installed by CPAN
+During the conversion process, if the tool detects Perl modules that were installed via CPAN and cannot determine their corresponding RPM packages, it will fail with a warning. This restriction is in place because such modules will not be available after the conversion. This issue often arises because CPAN-installed modules are specifically built for a particular version of Perl. Consequently, when Perl is updated during the conversion process, these module libraries may encounter errors related to undefined symbols.
+
+To prevent this issue, there are steps you can check for RPM package analogues for the modules, remove the CPAN modules, and then reinstall them after the conversion is complete. It is recommended to use RPM packages for reinstallation, although reinstalling the modules via CPAN is also an option.
+
+The centos2alma tool includes a list of RPM mappings for certain modules and can automatically reinstall them. The warning will only raise for modules that mapping to rpm package is unknown by the tool.
+
+If you are confident that you no longer require the modules installed via CPAN, you can forcefully remove them by running the tool with the '--remove-unknown-perl-modules' flag.
+
 ## Issue handling
 ### Leapp unable to handle packages
 Leapp may not be able to handle certain installed packages, especially those installed from custom repositories. In this case, the centos2alma will fail while running leapp preupgrade or leapp upgrade. The easiest way to fix this issue is to remove the package(s), and then reinstall them once the conversion is complete.
