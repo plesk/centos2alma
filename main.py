@@ -281,7 +281,7 @@ def handle_error(error):
     sys.stdout.write("\n{}\n".format(error))
     sys.stdout.write(common.FAIL_MESSAGE_HEAD.format(common.DEFAULT_LOG_FILE))
 
-    error_message = f"centos2alma process has been failed. Error: {error}.\n\n"
+    error_message = f"centos2alma (version {get_version()}-{get_revision()}) process has been failed. Error: {error}.\n\n"
     for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
         sys.stdout.write(line)
         error_message += line
