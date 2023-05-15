@@ -229,14 +229,6 @@ def get_flow(stage_flag, actions_map):
         return actions.PrepareActionsFlow(actions_map)
 
 
-def inform_about_problems():
-    common.motd.add_finish_ssh_login_message("""
-Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
-See the /var/log/plesk/centos2alma.log file for more information.
-""")
-    common.motd.publish_finish_ssh_login_message()
-
-
 def start_flow(flow):
     with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
         progressbar = actions.FlowProgressbar(flow, [stdout_writer, status_writer])
@@ -277,6 +269,14 @@ def monitor_status():
             time.sleep(1)
 
 
+def show_fail_motd():
+    common.motd.add_finish_ssh_login_message("""
+Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
+See the /var/log/plesk/centos2alma.log file for more information.
+""")
+    common.motd.publish_finish_ssh_login_message()
+
+
 def handle_error(error):
     sys.stdout.write("\n{}\n".format(error))
     sys.stdout.write(common.FAIL_MESSAGE_HEAD.format(common.DEFAULT_LOG_FILE))
@@ -301,6 +301,7 @@ def handle_error(error):
         pass
 
     common.log.err(f"centos2alma process has been failed. Error: {error}")
+    show_fail_motd()
 
 
 def do_convert(options):
@@ -315,10 +316,6 @@ def do_convert(options):
         start_flow(flow)
         if flow.is_failed():
             handle_error(flow.get_error())
-
-            if options.stage == Stages.finish:
-                inform_about_problems()
-
             return 1
 
     if not options.no_reboot and (Stages.convert in options.stage or Stages.finish in options.stage):
