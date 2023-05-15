@@ -31,7 +31,8 @@ class LeapInstallation(ActiveAction):
             "/root/tmp_leapp_py3/leapp",
         ]
         for file in leapp_related_files:
-            os.unlink(file)
+            if os.path.exists(file):
+                os.unlink(file)
 
         leapp_related_directories = [
             "/etc/leapp",
