@@ -288,17 +288,7 @@ def handle_error(error):
 
     sys.stdout.write(common.FAIL_MESSAGE_TAIL.format(common.DEFAULT_LOG_FILE))
 
-    # Todo. For now we works only on RHEL-based distros, so the path
-    # to the send-error-report utility will be the same.
-    # But if we will support Debian-based we should choose path carefully
-    send_error_path = "/usr/local/psa/admin/bin/send-error-report"
-    try:
-        if os.path.exists(send_error_path):
-            subprocess.run([send_error_path, "backend"], input=error_message.encode(),
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        # We don't care about errors to avoid mislead of the user
-        pass
+    common.plesk.send_error_report(error_message)
 
     common.log.err(f"centos2alma process has been failed. Error: {error}")
     show_fail_motd()
