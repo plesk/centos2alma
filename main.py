@@ -158,6 +158,7 @@ def construct_actions(options, stage_flag):
 
     actions_map = merge_dicts_of_lists(actions_map, {
         1: [
+            actions.HandleConversionStatus(),
             actions.LeapInstallation(),
             actions.AddInProgressSshLoginMessage(),
         ],
@@ -289,6 +290,7 @@ def handle_error(error):
     sys.stdout.write(common.FAIL_MESSAGE_TAIL.format(common.DEFAULT_LOG_FILE))
 
     common.plesk.send_error_report(error_message)
+    common.plesk.send_conversion_status(True)
 
     common.log.err(f"centos2alma process has been failed. Error: {error}")
     show_fail_motd()

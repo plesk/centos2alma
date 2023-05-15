@@ -7,7 +7,7 @@ import platform
 import shutil
 import subprocess
 
-from common import rpm, files
+from common import files, log, plesk, rpm
 
 
 class PleskInstallerNotInProgress(CheckAction):
@@ -59,14 +59,11 @@ class PleskVersionIsActual(CheckAction):
         self.description = "Only Plesk Obsidian 18.0.43 or later is supported. Update Plesk to version 18.0.43 or later and try again."
 
     def _do_check(self):
-        version_info = subprocess.check_output(["/usr/sbin/plesk", "version"], universal_newlines=True).splitlines()
-        for line in version_info:
-            if line.startswith("Product version"):
-                version = line.split()[-1]
-                major, _, iter, _ = version.split(".")
-                if int(major) >= 18 and int(iter) >= 43:
-                    return True
-                break
+        try:
+            major, _, iter, _ = plesk.get_plesk_version()
+            return int(major) >= 18 and int(iter) >= 43
+        except Exception as ex:
+            log.warn("Checking plesk version is failed with error: {}".format(ex))
 
         return False
 
