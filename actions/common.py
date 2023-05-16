@@ -7,7 +7,7 @@ import sys
 import time
 
 import common
-from common import messages, motd, util, rpm
+from common import messages, motd, plesk, util, rpm
 
 
 class FixNamedConfig(ActiveAction):
@@ -187,3 +187,17 @@ class PreRebootPause(ActiveAction):
 
     def _revert_action(self):
         pass
+
+
+class HandleConversionStatus(ActiveAction):
+    def __init__(self):
+        self.name = "prepare and send conversion status"
+
+    def _prepare_action(self):
+        plesk.prepare_conversion_flag()
+
+    def _post_action(self):
+        plesk.send_conversion_status(True)
+
+    def _revert_action(self):
+        plesk.remove_conversion_flag()

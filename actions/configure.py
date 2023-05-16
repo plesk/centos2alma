@@ -66,7 +66,8 @@ class LeapChoicesConfiguration(ActiveAction):
                                "and use `setenforce 0` to disable selinux".format(self.answer_file_path))
 
     def _post_action(self):
-        os.unlink('/var/log/leapp/answerfile.userchoices')
+        if os.path.exists(self.answer_file_path):
+            os.unlink(self.answer_file_path)
 
     def _revert_action(self):
         pass
