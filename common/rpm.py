@@ -125,3 +125,19 @@ def remove_packages(pkgs: str) -> None:
                     pkgs.remove(pkg)
 
     util.logged_check_call(["/usr/bin/rpm", "-e", "--nodeps"] + pkgs)
+
+
+def handle_rpmnew(original_path: str) -> bool:
+    if not os.path.exists(original_path + ".rpmnew"):
+        return False
+
+    if os.path.exists(original_path):
+        log.debug("The '{path}' file has a '.rpmnew' analogue file. Going to replace the file with this rpmnew file. "
+                  "The file itself will be saved as .rpmsave".format(path=original_path))
+        shutil.move(original_path, original_path + ".rpmsave")
+    else:
+        log.debug("The '{path}' file is missing, but has '.rpmnew' analogue file. Going to use it".format(path=original_path))
+
+    shutil.move(original_path + ".rpmnew", original_path)
+
+    return True
