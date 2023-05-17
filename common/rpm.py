@@ -3,6 +3,7 @@ import itertools
 import os
 import shutil
 import subprocess
+import typing
 
 from common import util, log
 
@@ -17,7 +18,7 @@ metalink={url}
 """
 
 
-def extract_repodata(repofile):
+def extract_repodata(repofile: str) -> typing.Iterable[typing.Tuple[str, str, str, str, typing.List[str]]]:
     id = None
     name = None
     url = None
@@ -60,7 +61,7 @@ def extract_repodata(repofile):
     yield (id, name, url, metalink, additional)
 
 
-def write_repodata(repofile, id, name, url, metalink, additional):
+def write_repodata(repofile: str, id: str, name: str, url: str, metalink: str, additional: typing.List[str]) -> None:
     repo_format = REPO_HEAD_WITH_URL
     if url is None:
         url = metalink
@@ -72,7 +73,7 @@ def write_repodata(repofile, id, name, url, metalink, additional):
             dst.write(line)
 
 
-def remove_repositories(repofile, conditions):
+def remove_repositories(repofile: str, conditions: typing.Callable[[str, str, str, str], bool]) -> None:
     for id, name, url, metalink, additional_lines in extract_repodata(repofile):
         remove = False
         for condition in conditions:
@@ -89,16 +90,16 @@ def remove_repositories(repofile, conditions):
         os.remove(repofile)
 
 
-def filter_installed_packages(lookup_pkgs):
+def filter_installed_packages(lookup_pkgs: typing.List[str]) -> typing.List[str]:
     return [pkg for pkg in lookup_pkgs if is_package_installed(pkg)]
 
 
-def is_package_installed(pkg):
+def is_package_installed(pkg: str) -> bool:
     res = subprocess.run(["/usr/bin/rpm", "--quiet", "--query", pkg])
     return res.returncode == 0
 
 
-def install_packages(pkgs, repository=None):
+def install_packages(pkgs: str, repository: str=None) -> None:
     if len(pkgs) == 0:
         return
 
@@ -110,7 +111,7 @@ def install_packages(pkgs, repository=None):
     util.logged_check_call(command)
 
 
-def remove_packages(pkgs):
+def remove_packages(pkgs: str) -> None:
     if len(pkgs) == 0:
         return
 

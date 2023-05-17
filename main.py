@@ -13,6 +13,7 @@ import pkg_resources
 import sys
 import subprocess
 import threading
+import typing
 import time
 import zipfile
 
@@ -20,12 +21,12 @@ from enum import Flag, auto
 from optparse import OptionParser, OptionValueError, SUPPRESS_HELP
 
 
-def get_version():
+def get_version() -> str:
     with pkg_resources.resource_stream(__name__, "version.json") as f:
         return json.load(f)["version"]
 
 
-def get_revision(short=True):
+def get_revision(short: bool = True) -> str:
     with pkg_resources.resource_stream(__name__, "version.json") as f:
         revision = json.load(f)["revision"]
         if short:
@@ -33,7 +34,8 @@ def get_revision(short=True):
         return revision
 
 
-def merge_dicts_of_lists(dict1, dict2):
+def merge_dicts_of_lists(dict1: typing.Dict[typing.Any, typing.Any],
+                         dict2: typing.Dict[typing.Any, typing.Any]) -> typing.Dict[typing.Any, typing.Any]:
     for key, value in dict2.items():
         if key in dict1:
             for item in value:
@@ -43,7 +45,7 @@ def merge_dicts_of_lists(dict1, dict2):
     return dict1
 
 
-def prepare_feedback():
+def prepare_feedback() -> None:
     feedback_archive = "centos2alma_feedback.zip"
     versions_file = "versions.txt"
 
@@ -106,7 +108,7 @@ def convert_string_to_stage(option, opt_str, value, parser):
     raise OptionValueError("Unknown stage: {}".format(value))
 
 
-def is_required_conditions_satisfied(options, stage_flag):
+def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) -> bool:
     checks = []
     if Stages.finish in stage_flag:
         checks = [
@@ -150,7 +152,7 @@ def is_required_conditions_satisfied(options, stage_flag):
         return False
 
 
-def construct_actions(options, stage_flag):
+def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[int, typing.List[actions.ActiveAction]]:
     actions_map = {}
 
     if Stages.test in stage_flag:
@@ -221,7 +223,7 @@ def construct_actions(options, stage_flag):
     return actions_map
 
 
-def get_flow(stage_flag, actions_map):
+def get_flow(stage_flag: Stages, actions_map: typing.Dict[int, typing.List[actions.ActiveAction]]) -> actions.ActiveFlow:
     if Stages.finish in stage_flag:
         return actions.FinishActionsFlow(actions_map)
     elif Stages.revert in stage_flag:
@@ -230,7 +232,7 @@ def get_flow(stage_flag, actions_map):
         return actions.PrepareActionsFlow(actions_map)
 
 
-def start_flow(flow):
+def start_flow(flow: actions.ActiveFlow) -> None:
     with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
         progressbar = actions.FlowProgressbar(flow, [stdout_writer, status_writer])
         progress = threading.Thread(target=progressbar.display)
@@ -246,7 +248,7 @@ def start_flow(flow):
 STATUS_FILE_PATH = "/tmp/centos2alma.status"
 
 
-def show_status():
+def show_status() -> None:
     if not os.path.exists(STATUS_FILE_PATH):
         print("Conversion process is not running.")
         return
@@ -256,7 +258,7 @@ def show_status():
     print(status[0])
 
 
-def monitor_status():
+def monitor_status() -> None:
     if not os.path.exists(STATUS_FILE_PATH):
         print("Conversion process is not running.")
         return
@@ -270,7 +272,7 @@ def monitor_status():
             time.sleep(1)
 
 
-def show_fail_motd():
+def show_fail_motd() -> None:
     common.motd.add_finish_ssh_login_message("""
 Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
 See the /var/log/plesk/centos2alma.log file for more information.
@@ -278,7 +280,7 @@ See the /var/log/plesk/centos2alma.log file for more information.
     common.motd.publish_finish_ssh_login_message()
 
 
-def handle_error(error):
+def handle_error(error: str) -> None:
     sys.stdout.write("\n{}\n".format(error))
     sys.stdout.write(common.FAIL_MESSAGE_HEAD.format(common.DEFAULT_LOG_FILE))
 
@@ -296,7 +298,7 @@ def handle_error(error):
     show_fail_motd()
 
 
-def do_convert(options):
+def do_convert(options: typing.Any) -> None:
     if not is_required_conditions_satisfied(options, options.stage):
         common.log.err("Please fix noted problems before proceed the conversation")
         return 1

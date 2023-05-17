@@ -4,7 +4,7 @@ import subprocess
 import common
 
 
-def logged_check_call(cmd, **kwargs):
+def logged_check_call(cmd: str, **kwargs) -> None:
     common.log.info("Running: {cmd!s}. Output:".format(cmd=cmd))
 
     # I beleive we should be able pass argument to the subprocess function
@@ -24,4 +24,3 @@ def logged_check_call(cmd, **kwargs):
         raise subprocess.CalledProcessError(process.returncode, cmd)
 
     common.log.info("Command '{cmd}' finished successfully".format(cmd=cmd))
-

@@ -1,6 +1,7 @@
 import unittest
 import os
 import json
+import typing
 
 from common import leapp_configs
 
@@ -15,7 +16,7 @@ class AddMappingTests(unittest.TestCase):
             if os.path.exists(files):
                 os.remove(files)
 
-    def _perform_test(self, repos, expected_repos, expected_mapping, ignore=None):
+    def _perform_test(self, repos: typing.Dict[str, str], expected_repos: str, expected_mapping: str, ignore: bool = None) -> None:
         for filename, content in repos.items():
             with open(filename, "w") as f:
                 f.write(content)

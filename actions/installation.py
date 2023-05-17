@@ -18,13 +18,13 @@ class LeapInstallation(ActiveAction):
             "leapp-data-almalinux",
         ]
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> None:
         if not rpm.is_package_installed("elevate-release"):
             util.logged_check_call(["/usr/bin/yum", "install", "-y", "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
 
         util.logged_check_call(["/usr/bin/yum", "install", "-y"] + self.pkgs_to_install)
 
-    def _post_action(self):
+    def _post_action(self) -> None:
         rpm.remove_packages(rpm.filter_installed_packages(self.pkgs_to_install + ["elevate-release"]))
 
         leapp_related_files = [
@@ -44,8 +44,8 @@ class LeapInstallation(ActiveAction):
             if os.path.exists(directory):
                 shutil.rmtree(directory)
 
-    def _revert_action(self):
+    def _revert_action(self) -> None:
         pass
 
-    def estimate_prepare_time(self):
+    def estimate_prepare_time(self) -> int:
         return 40

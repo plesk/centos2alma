@@ -1,6 +1,8 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import logging
 
+import typing
+
 
 DEFAULT_LOG_FILE = "/var/log/plesk/centos2alma.log"
 
@@ -12,7 +14,8 @@ class log():
     streams_logger = logging.getLogger("centos2alma_streams")
 
     @staticmethod
-    def init_logger(logfiles, streams, console=False, loglevel=logging.INFO):
+    def init_logger(logfiles: typing.List[str], streams: typing.List[typing.Any],
+                    console: bool = False, loglevel: int = logging.INFO) -> None:
         log.files_logger.setLevel(loglevel)
         log.streams_logger.setLevel(loglevel)
 
@@ -38,7 +41,7 @@ class log():
             log.streams_logger.addHandler(handler)
 
     @staticmethod
-    def debug(msg, to_file=True, to_stream=True):
+    def debug(msg: str, to_file: bool = True, to_stream: bool = True) -> None:
         if to_file:
             log.files_logger.debug(msg)
 
@@ -46,7 +49,7 @@ class log():
             log.streams_logger.debug(msg)
 
     @staticmethod
-    def info(msg, to_file=True, to_stream=True):
+    def info(msg: str, to_file: bool = True, to_stream: bool = True) -> None:
         if to_file:
             log.files_logger.info(msg)
 
@@ -54,7 +57,7 @@ class log():
             log.streams_logger.info(msg)
 
     @staticmethod
-    def warn(msg, to_file=True, to_stream=True):
+    def warn(msg: str, to_file: bool = True, to_stream: bool = True) -> None:
         if to_file:
             log.files_logger.warn(msg)
 
@@ -62,7 +65,7 @@ class log():
             log.streams_logger.warn(msg)
 
     @staticmethod
-    def err(msg, to_file=True, to_stream=True):
+    def err(msg: str, to_file: bool = True, to_stream: bool = True) -> None:
         if to_file:
             log.files_logger.error(msg)
 

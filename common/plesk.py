@@ -2,11 +2,12 @@
 
 import os
 import subprocess
+import typing
 
 from common import log
 
 
-def send_error_report(error_message):
+def send_error_report(error_message: str) -> None:
     # Todo. For now we works only on RHEL-based distros, so the path
     # to the send-error-report utility will be the same.
     # But if we will support Debian-based we should choose path carefully
@@ -20,7 +21,7 @@ def send_error_report(error_message):
         pass
 
 
-def get_plesk_version():
+def get_plesk_version() -> typing.List[str]:
     version_info = subprocess.check_output(["/usr/sbin/plesk", "version"], universal_newlines=True).splitlines()
     for line in version_info:
         if line.startswith("Product version"):
@@ -33,12 +34,12 @@ def get_plesk_version():
 _CONVERSION_STATUS_FLAG_FILE = "/usr/local/psa/tmp/centos2alma-conversion.flag"
 
 
-def prepare_conversion_flag():
+def prepare_conversion_flag() -> None:
     with open(_CONVERSION_STATUS_FLAG_FILE, "w"):
         pass
 
 
-def send_conversion_status(succeed):
+def send_conversion_status(succeed: bool) -> str:
     results_sander_path = None
     for path in ["/var/cache/parallels_installer/report-update", "/root/parallels/report-update"]:
         if os.path.exists(path):
@@ -70,6 +71,6 @@ def send_conversion_status(succeed):
     remove_conversion_flag()
 
 
-def remove_conversion_flag():
+def remove_conversion_flag() -> str:
     if os.path.exists(_CONVERSION_STATUS_FLAG_FILE):
         os.unlink(_CONVERSION_STATUS_FLAG_FILE)

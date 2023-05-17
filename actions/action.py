@@ -3,6 +3,7 @@ import os
 import json
 import math
 import time
+import typing
 import shutil
 
 from enum import Enum
@@ -46,10 +47,10 @@ class ActiveAction(Action):
     def invoke_revert(self):
         self._revert_action()
 
-    def is_required(self):
+    def is_required(self) -> bool:
         return self._is_required()
 
-    def _is_required(self):
+    def _is_required(self) -> bool:
         # All actions are required by default - just to simplefy things
         return True
 
@@ -71,7 +72,7 @@ class ActionState(str, Enum):
 
 class ActionsFlow():
 
-    def __init__(self, stages):
+    def __init__(self, stages: typing.Dict[str, typing.List[Action]]):
         self.stages = stages
 
     def __enter__(self):
@@ -85,7 +86,7 @@ class ActiveFlow(ActionsFlow):
 
     PATH_TO_ACTIONS_DATA = "/usr/local/psa/tmp/centos2alma_actions.json"
 
-    def __init__(self, stages):
+    def __init__(self, stages: typing.Dict[str, typing.List[ActiveAction]]):
         super().__init__(stages)
         self._finished = False
         self.current_stage = "initiliazing"
@@ -100,7 +101,7 @@ class ActiveFlow(ActionsFlow):
                 if not isinstance(action, ActiveAction):
                     raise TypeError("Non an ActiveAction passed into action flow. Name of the action is {name!s}".format(name=action.name))
 
-    def pass_actions(self):
+    def pass_actions(self) -> bool:
         stages = self._get_flow()
         self._finished = False
 
@@ -128,25 +129,25 @@ class ActiveFlow(ActionsFlow):
         self._finished = True
         return True
 
-    def _get_flow(self):
-        pass
+    def _get_flow(self) -> typing.Dict[str, typing.List[ActiveAction]]:
+        return {}
 
-    def _pre_stage(self, stage_id, actions):
+    def _pre_stage(self, stage_id: str, actions: typing.List[ActiveAction]):
         common.log.info("Start stage {stage}.".format(stage=stage_id))
         self.current_stage = stage_id
         pass
 
-    def _post_stage(self, stage_id, actions):
+    def _post_stage(self, stage_id: str, actions: typing.List[ActiveAction]):
         pass
 
-    def _is_action_required(self, action):
+    def _is_action_required(self, action: ActiveAction) -> bool:
         return action.is_required()
 
-    def _invoke_action(self, action):
+    def _invoke_action(self, action: ActiveAction) -> None:
         common.log.info("Do: {description!s}".format(description=action))
         self.current_action = action.name
 
-    def _save_action_state(self, name, state):
+    def _save_action_state(self, name: str, state: ActionState) -> None:
         pass
 
     def _load_actions_state(self):
@@ -156,25 +157,25 @@ class ActiveFlow(ActionsFlow):
 
         return {"actions": []}
 
-    def is_finished(self):
+    def is_finished(self) -> bool:
         return self._finished or self.error is not None
 
-    def is_failed(self):
+    def is_failed(self) -> bool:
         return self.error is not None
 
-    def get_error(self):
+    def get_error(self) -> Exception:
         return self.error
 
-    def get_current_stage(self):
+    def get_current_stage(self) -> str:
         return self.current_stage
 
-    def get_current_action(self):
+    def get_current_action(self) -> str:
         return self.current_action
 
-    def _get_action_estimate(self, action):
+    def _get_action_estimate(self, action: ActiveAction) -> int:
         return action.estimate_prepare_time()
 
-    def get_total_time(self):
+    def get_total_time(self) -> int:
         if self.total_time != 0:
             return self.total_time
 
@@ -187,7 +188,7 @@ class ActiveFlow(ActionsFlow):
 
 class PrepareActionsFlow(ActiveFlow):
 
-    def __init__(self, stages):
+    def __init__(self, stages: typing.Dict[str, typing.List[ActiveAction]]):
         super().__init__(stages)
         self.actions_data = {}
 
@@ -198,7 +199,7 @@ class PrepareActionsFlow(ActiveFlow):
     def __exit__(self, *kwargs):
         common.rewrite_json_file(self.PATH_TO_ACTIONS_DATA, self.actions_data)
 
-    def _save_action_state(self, name, state):
+    def _save_action_state(self, name: str, state: ActionState) -> None:
         for action in self.actions_data["actions"]:
             if action["name"] == name:
                 action["state"] = state
@@ -206,14 +207,14 @@ class PrepareActionsFlow(ActiveFlow):
 
         self.actions_data["actions"].append({"name": name, "state": state})
 
-    def _get_flow(self):
+    def _get_flow(self) -> typing.Dict[str, typing.List[ActiveAction]]:
         return self.stages
 
-    def _invoke_action(self, action):
+    def _invoke_action(self, action: ActiveAction) -> None:
         super()._invoke_action(action)
         action.invoke_prepare()
 
-    def _get_action_estimate(self, action):
+    def _get_action_estimate(self, action: ActiveAction) -> int:
         return action.estimate_prepare_time()
 
 
@@ -227,10 +228,10 @@ class ReverseActionFlow(ActiveFlow):
         if os.path.exists(self.PATH_TO_ACTIONS_DATA):
             os.remove(self.PATH_TO_ACTIONS_DATA)
 
-    def _get_flow(self):
+    def _get_flow(self) -> typing.Dict[str, typing.List[ActiveAction]]:
         return dict(reversed(list(self.stages.items())))
 
-    def _is_action_required(self, action):
+    def _is_action_required(self, action: ActiveAction) -> bool:
         # I believe the finish stage could have an action that was not performed on preparation and conversation stages
         # So we ignore the case when there is no actions is persistance store
         for stored_action in self.actions_data["actions"]:
@@ -244,32 +245,32 @@ class ReverseActionFlow(ActiveFlow):
 
 
 class FinishActionsFlow(ReverseActionFlow):
-    def _invoke_action(self, action):
+    def _invoke_action(self, action: ActiveAction) -> None:
         super()._invoke_action(action)
         action.invoke_post()
 
-    def _get_action_estimate(self, action):
+    def _get_action_estimate(self, action: ActiveAction) -> int:
         if not self._is_action_required(action):
             return 0
         return action.estimate_post_time()
 
 
 class RevertActionsFlow(ReverseActionFlow):
-    def _invoke_action(self, action):
+    def _invoke_action(self, action: ActiveAction) -> None:
         super()._invoke_action(action)
         action.invoke_revert()
 
-    def _get_action_estimate(self, action):
+    def _get_action_estimate(self, action: ActiveAction) -> int:
         if not self._is_action_required(action):
             return 0
         return action.estimate_revert_time()
 
 
 class CheckAction(Action):
-    def do_check(self):
+    def do_check(self) -> bool:
         return self._do_check()
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         raise NotImplementedError("Not implemented check call")
 
 
@@ -278,11 +279,10 @@ class CheckFlow(ActionsFlow):
     def validate_actions(self):
         # Note. This one is for development porpuses only
         for check in self.stages:
-
             if not isinstance(check, CheckAction):
                 raise TypeError("Non an CheckAction passed into check flow. Name of the action is {name!s}".format(check.name))
 
-    def make_checks(self):
+    def make_checks(self) -> typing.List[str]:
         failed_checks_msgs = []
         common.log.debug("Start checks")
         for check in self.stages:
@@ -294,7 +294,7 @@ class CheckFlow(ActionsFlow):
 
 
 class FlowProgressbar():
-    def __init__(self, flow, writers=None):
+    def __init__(self, flow: ActionsFlow, writers: typing.List[common.Writer] = None):
         self.flow = flow
         self.total_time = flow.get_total_time()
 
@@ -302,21 +302,21 @@ class FlowProgressbar():
             writers = [common.StdoutWriter]
         self.writers = writers
 
-    def _seconds_to_minutes(self, seconds):
+    def _seconds_to_minutes(self, seconds: str) -> str:
         minutes = int(seconds / 60)
         seconds = int(seconds % 60)
         return f"{minutes:02d}:{seconds:02d}"
 
-    def get_action_description(self):
+    def get_action_description(self) -> str:
         description = f" stage {self.flow.get_current_stage()} / action {self.flow.get_current_action()} "
         description_length = len(description)
         return "(" + " " * math.floor((50 - description_length) / 2) + description + " " * math.ceil((50 - description_length) / 2) + ")"
 
-    def write(self, msg):
+    def write(self, msg: str) -> None:
         for writer in self.writers:
             writer.write(msg)
 
-    def display(self):
+    def display(self) -> None:
         start_time = time.time()
         passed_time = 0
 
