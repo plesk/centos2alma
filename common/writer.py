@@ -10,7 +10,7 @@ class Writer():
     def __enter__(self):
         return self
 
-    def write(self, message):
+    def write(self, message: str):
         raise NotImplementedError("Not implemented writer call")
 
     def __exit__(self, *args):
@@ -18,7 +18,7 @@ class Writer():
 
 
 class StdoutWriter(Writer):
-    def write(self, message):
+    def write(self, message: str) -> None:
         sys.stdout.write(message)
         sys.stdout.flush()
 
@@ -32,7 +32,7 @@ class FileWriter(Writer):
         self.file = open(self.filename, "w")
         return self
 
-    def write(self, message):
+    def write(self, message: str) -> None:
         self.file.write(message)
         self.file.flush()
 

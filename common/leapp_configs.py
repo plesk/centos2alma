@@ -2,6 +2,7 @@
 import os
 import json
 import shutil
+import typing
 
 from enum import IntEnum
 
@@ -26,7 +27,7 @@ metalink={url}
 """
 
 
-def _do_replacement(to_change, replacement_list):
+def _do_replacement(to_change: str, replacement_list: typing.List[typing.Callable[[str], str]]) -> str:
     if to_change is None:
         return None
 
@@ -35,13 +36,13 @@ def _do_replacement(to_change, replacement_list):
     return to_change
 
 
-def _do_id_replacement(id):
+def _do_id_replacement(id: str) -> str:
     return _do_replacement(id, [
         lambda to_change: "alma-" + to_change,
     ])
 
 
-def _do_name_replacement(name):
+def _do_name_replacement(name: str) -> str:
     return _do_replacement(name, [
         lambda to_change: "Alma " + to_change,
         lambda to_change: to_change.replace("Enterprise Linux 7",  "Enterprise Linux 8"),
@@ -50,7 +51,7 @@ def _do_name_replacement(name):
     ])
 
 
-def _fixup_old_php_urls(to_change):
+def _fixup_old_php_urls(to_change: str) -> str:
     supported_old_versions = ["7.1", "7.2", "7.3"]
     for version in supported_old_versions:
         if "PHP_" + version in to_change:
@@ -59,14 +60,14 @@ def _fixup_old_php_urls(to_change):
     return to_change
 
 
-def _fix_rackspace_repository(to_change):
+def _fix_rackspace_repository(to_change: str) -> str:
     if "mirror.rackspace.com" in to_change:
         return to_change.replace("centos7-amd64", "rhel8-amd64")
 
     return to_change
 
 
-def _do_url_replacement(url):
+def _do_url_replacement(url: str) -> str:
     return _do_replacement(url, [
         _fixup_old_php_urls,
         _fix_rackspace_repository,
@@ -85,7 +86,7 @@ def _do_url_replacement(url):
     ])
 
 
-def _do_common_replacement(line):
+def _do_common_replacement(line: str) -> str:
     return _do_replacement(line, [
         lambda to_change: to_change.replace("EPEL-7", "EPEL-8"),
         # We can't check repository gpg because the key is not stored in the temporary file system
@@ -94,7 +95,7 @@ def _do_common_replacement(line):
     ])
 
 
-def is_repo_ok(id, name, url, metalink):
+def is_repo_ok(id: str, name: str, url: str, metalink: str) -> bool:
     if name is None:
         log.warn("Repository info for '[{id}]' has no a name".format(id=id))
         return False
@@ -106,7 +107,7 @@ def is_repo_ok(id, name, url, metalink):
     return True
 
 
-def adopt_repositories(repofile, ignore=None):
+def adopt_repositories(repofile: str, ignore: typing.List = None) -> None:
     if ignore is None:
         ignore = []
 
@@ -144,7 +145,9 @@ def adopt_repositories(repofile, ignore=None):
     shutil.move(repofile + ".next", repofile)
 
 
-def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP_REPOS_FILE_PATH, mapfile_path=LEAPP_MAP_FILE_PATH):
+def add_repositories_mapping(repofiles: typing.List[str], ignore: typing.List = None,
+                             leapp_repos_file_path: str = LEAPP_REPOS_FILE_PATH,
+                             mapfile_path: str = LEAPP_MAP_FILE_PATH) -> None:
     if ignore is None:
         ignore = []
 
@@ -197,7 +200,7 @@ def add_repositories_mapping(repofiles, ignore=None, leapp_repos_file_path=LEAPP
         map_file.write("\n")
 
 
-def set_package_repository(package, repository, leapp_pkgs_conf_path=LEAPP_PKGS_CONF_PATH):
+def set_package_repository(package: str, repository: str, leapp_pkgs_conf_path: str = LEAPP_PKGS_CONF_PATH) -> None:
     pkg_mapping = None
     with open(leapp_pkgs_conf_path, "r") as pkg_mapping_file:
         pkg_mapping = json.load(pkg_mapping_file)
@@ -222,7 +225,7 @@ class LeappActionType(IntEnum):
     RENAMED = 7
 
 
-def set_package_action(package, type, leapp_pkgs_conf_path=LEAPP_PKGS_CONF_PATH):
+def set_package_action(package: str, type: LeappActionType, leapp_pkgs_conf_path: str = LEAPP_PKGS_CONF_PATH):
     pkg_mapping = None
     with open(leapp_pkgs_conf_path, "r") as pkg_mapping_file:
         pkg_mapping = json.load(pkg_mapping_file)

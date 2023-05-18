@@ -4,11 +4,12 @@ import json
 import os
 import re
 import shutil
+import typing
 
 import common
 
 
-def replace_string(filename, original_substring, new_substring):
+def replace_string(filename: str, original_substring: str, new_substring: str) -> None:
     with open(filename, "r") as original, open(filename + ".next", "w") as dst:
         for line in original.readlines():
             line = line.replace(original_substring, new_substring)
@@ -17,7 +18,7 @@ def replace_string(filename, original_substring, new_substring):
     shutil.move(filename + ".next", filename)
 
 
-def append_strings(filename, strings):
+def append_strings(filename: str, strings: typing.List[str]) -> None:
     next_file = filename + ".next"
     shutil.copy(filename, next_file)
 
@@ -28,7 +29,7 @@ def append_strings(filename, strings):
     shutil.move(next_file, filename)
 
 
-def push_front_strings(filename, strings):
+def push_front_strings(filename: str, strings: typing.List[str]) -> None:
     next_file = filename + ".next"
 
     with open(filename, "r") as original, open(next_file, "w") as dst:
@@ -41,7 +42,7 @@ def push_front_strings(filename, strings):
     shutil.move(next_file, filename)
 
 
-def rewrite_json_file(filename, jobj):
+def rewrite_json_file(filename: str, jobj: typing.Union[dict, typing.List]) -> None:
     if filename is None or jobj is None:
         return
 
@@ -53,35 +54,35 @@ def rewrite_json_file(filename, jobj):
     shutil.move(filename + ".next", filename)
 
 
-def get_last_lines(filename, n):
+def get_last_lines(filename: str, n: int) -> typing.List[str]:
     with open(filename) as f:
         return f.readlines()[-n:]
 
 
-def backup_file(filename):
+def backup_file(filename: str) -> None:
     if os.path.exists(filename):
         shutil.copy(filename, filename + ".bak")
 
 
-def restore_file_from_backup(filename, remove_if_no_backup=False):
+def restore_file_from_backup(filename: str, remove_if_no_backup: bool = False) -> None:
     if os.path.exists(filename + ".bak"):
         shutil.move(filename + ".bak", filename)
     elif remove_if_no_backup and os.path.exists(filename):
         os.remove(filename)
 
 
-def remove_backup(filename):
+def remove_backup(filename: str) -> None:
     if os.path.exists(filename + ".bak"):
         os.remove(filename + ".bak")
 
 
-def __get_files_recursive(path):
+def __get_files_recursive(path: str) -> typing.Iterator[str]:
     for root, _, files in os.walk(path):
         for file in files:
             yield os.path.relpath(os.path.join(root, file), path)
 
 
-def find_files_case_insensitive(path, regexps_strings, recursive=False):
+def find_files_case_insensitive(path: str, regexps_strings: typing.Union[typing.List, str], recursive: bool = False):
     # Todo. We should add typing for our functions
     if not isinstance(regexps_strings, list) and not isinstance(regexps_strings, str):
         raise TypeError("find_files_case_insensitive argument regexps_strings must be a list")
@@ -104,5 +105,5 @@ def find_files_case_insensitive(path, regexps_strings, recursive=False):
     return result
 
 
-def is_directory_empty(path):
+def is_directory_empty(path: str):
     return not os.path.exists(path) or len(os.listdir(path)) == 0

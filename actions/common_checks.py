@@ -17,7 +17,7 @@ class PleskInstallerNotInProgress(CheckAction):
 \tPlease wait until it finishes or call 'plesk installer stop' to abort it.
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         installer_status = subprocess.check_output(["/usr/sbin/plesk", "installer", "--query-status", "--enable-xml-output"],
                                                    universal_newlines=True)
         if "query_ok" in installer_status:
@@ -32,7 +32,7 @@ class DistroIsCentos79(CheckAction):
 \tIf you are running an earlier Centos 7 release, update to Centos 7.9 and try again.
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         distro = platform.linux_distribution()
         major_version, minor_version = distro[1].split(".")[:2]
         if distro[0] == "CentOS Linux" and int(major_version) == 7 and int(minor_version) == 9:
@@ -45,7 +45,7 @@ class DistroIsAlmalinux8(CheckAction):
         self.name = "checking if distro is AlmaLinux8"
         self.description = "You are running a distributive other than AlmaLinux 8. The finalization stage can only be started on AlmaLinux 8."
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         distro = platform.linux_distribution()
         major_version = distro[1].split(".")[0]
         if distro[0] == "AlmaLinux" and int(major_version) == 8:
@@ -58,7 +58,7 @@ class PleskVersionIsActual(CheckAction):
         self.name = "checking if Plesk version is actual"
         self.description = "Only Plesk Obsidian 18.0.43 or later is supported. Update Plesk to version 18.0.43 or later and try again."
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         try:
             major, _, iter, _ = plesk.get_plesk_version()
             return int(major) >= 18 and int(iter) >= 43
@@ -85,7 +85,7 @@ class CheckAvailableSpace(CheckAction):
             size /= 1024
         return f"{original} B"
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         # Leapp stores rhel 8 filesystem in /var/lib/leapp
         # That's why it takes so much disk space
         available_space = shutil.disk_usage("/var/lib")[2]
@@ -109,7 +109,7 @@ class CheckOutdatedPHP(CheckAction):
 \t2. Remove outdated PHP packages via Plesk Installer.
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         outdated_php_packages = {
             "plesk-php52": "PHP 5.2",
             "plesk-php53": "PHP 5.3",
@@ -153,7 +153,7 @@ class CheckGrubInstalled(CheckAction):
 \tMake sure that GRUB is installed and try again.
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         return os.path.exists("/etc/default/grub")
 
 
@@ -166,7 +166,7 @@ class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
 \tIntarfeces: {}
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         # We can't use this method th get interfaces names, so just skip the check
         if not os.path.exists("/sys/class/net"):
             return True
@@ -185,16 +185,16 @@ class CheckIsInContainer(CheckAction):
         self.name = "checking if the system not in a container"
         self.description = "The system is running in a container-like environment ({}). The conversion is not supported for such systems."
 
-    def _is_docker(self):
+    def _is_docker(self) -> bool:
         return os.path.exists("/.dockerenv")
 
-    def _is_podman(self):
+    def _is_podman(self) -> bool:
         return os.path.exists("/run/.containerenv")
 
-    def _is_vz_like(self):
+    def _is_vz_like(self) -> bool:
         return os.path.exists("/proc/vz")
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         if self._is_docker():
             self.description = self.description.format("Docker container")
             return False
@@ -216,17 +216,17 @@ class CheckLastInstalledKernelInUse(CheckAction):
 \tReboot the system to use the last installed kernel.
 """
 
-    def _get_kernel_vesion__in_use(self):
+    def _get_kernel_vesion__in_use(self) -> str:
         return subprocess.check_output(["/usr/bin/uname", "-r"], universal_newlines=True).strip()
 
-    def _get_last_installed_kernel_version(self):
+    def _get_last_installed_kernel_version(self) -> str:
         versions = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
         return max(versions).split("-", 1)[-1]
 
-    def _is_realtime_installed(self):
+    def _is_realtime_installed(self) -> bool:
         return len(subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel-rt"], universal_newlines=True).splitlines()) > 0
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         # For now skip checking realtime kernels. leapp will check it on it's side
         # I believe we have no much installation with realtime kernel
         if self._is_realtime_installed():
@@ -249,14 +249,14 @@ class CheckIsLocalRepositoryNotPresent(CheckAction):
 \t- {}
 """
 
-    def _is_repo_contains_local_storage(self, repo_file):
+    def _is_repo_contains_local_storage(self, repo_file) -> bool:
         with open(repo_file) as f:
             repository_content = f.read()
             return ("baseurl=file:" in repository_content or "baseurl = file:" in repository_content or
                     "metalink=file:" in repository_content or "metalink = file:" in repository_content or
                     "mirrorlist=file:" in repository_content or "mirrorlist = file:" in repository_content)
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         # CentOS-Media.repo is a special file which is created by default on CentOS 7. It contains a local repository
         # but leapp allows it anyway. So we could skip it.
         local_repositories_files = [file for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
@@ -278,7 +278,7 @@ class CheckRepositoryDuplicates(CheckAction):
 \tPlease remove the duplicate to proceed the conversion.
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         repositories = []
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
         for repofile in repofiles:            
@@ -301,7 +301,7 @@ class CheckPackagesUpToDate(CheckAction):
         self.name = "checking if all packages are up to date"
         self.description = "There are packages which are not up to date. Call `yum update -y && reboot` to update the packages.\n"
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         subprocess.check_call(["/usr/bin/yum", "clean", "all"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         checker = subprocess.run(["/usr/bin/yum", "check-update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return checker.returncode == 0

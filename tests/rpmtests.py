@@ -228,3 +228,35 @@ gpgcheck=0
         rpm.write_repodata(self.REPO_FILE_NAME, "repo1", "repo1", "http://repo1", None, ["enabled=1\n", "gpgcheck=0\n"])
         with open(self.REPO_FILE_NAME) as file:
             self.assertEqual(file.read(), expected_content)
+
+
+class HandleRpmnewFilesTests(unittest.TestCase):
+    def test_no_rpmnew(self):
+        with open("test.txt", "w") as f:
+            f.write("test")
+
+        self.assertFalse(rpm.handle_rpmnew_files("test.txt"))
+
+    def test_has_rpmnew(self):
+        with open("test.txt", "w") as f:
+            f.write("1")
+
+        with open("test.txt.rpmnew", "w") as f:
+            f.write("2")
+
+        self.assertTrue(rpm.handle_rpmnew_files("test.txt"))
+        self.assertTrue(os.path.exists("test.txt"))
+        self.assertEqual(open("test.txt").read(), "2")
+
+        self.assertTrue(os.path.exists("test.txt.rpmsave"))
+        self.assertEqual(open("test.txt.rpmnew").read(), "1")
+
+    def test_missing_original(self):
+        with open("test.txt.rpmnew", "w") as f:
+            f.write("2")
+
+        self.assertTrue(rpm.handle_rpmnew_files("test.txt"))
+        self.assertTrue(os.path.exists("test.txt"))
+        self.assertEqual(open("test.txt").read(), "2")
+
+        self.assertFalse(os.path.exists("test.txt.rpmsave"))

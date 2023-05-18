@@ -16,33 +16,33 @@ class RebundleRubyApplications(ActiveAction):
         self.name = "rebundling ruby applications"
         self.description = "rebundling ruby applications"
 
-    def _find_file_in_domain(self, domain, file):
+    def _find_file_in_domain(self, domain: str, file: str) -> str:
         for root, _, domain_files in os.walk(domain):
             for subfile in domain_files:
                 if os.path.basename(subfile) == file:
                     return os.path.join(root, file)
         return None
 
-    def _find_directory_in_domain(self, domain, directory):
+    def _find_directory_in_domain(self, domain: str, directory: str) -> str:
         for root, directories, _ in os.walk(domain):
             for subdir in directories:
                 if os.path.basename(subdir) == directory:
                     return os.path.join(root, directory)
         return None
 
-    def _is_ruby_domain(self, domain_path):
+    def _is_ruby_domain(self, domain_path) -> bool:
         return os.path.exists(os.path.join(domain_path, ".rbenv"))
 
-    def _is_required(self):
+    def _is_required(self) -> bool:
         if not os.path.exists("/var/lib/rbenv/versions/"):
             return False
 
         return any(self._is_ruby_domain(domain) for domain in os.scandir("/var/www/vhosts"))
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> None:
         pass
 
-    def _post_action(self):
+    def _post_action(self) -> None:
         ruby_domains = (domain_path for domain_path in os.scandir("/var/www/vhosts") if self._is_ruby_domain(domain_path))
         for domain_path in ruby_domains:
             log.debug("Rebundling ruby application in domain: {}".format(domain_path.name))
@@ -61,10 +61,10 @@ class RebundleRubyApplications(ActiveAction):
             shutil.rmtree(boundle)
             util.logged_check_call(["/usr/sbin/plesk", "sbin", "rubymng", "run-bundler", username, app_directory])
 
-    def _revert_action(self):
+    def _revert_action(self) -> None:
         pass
 
-    def estimate_post_time(self):
+    def estimate_post_time(self) -> int:
         return 60 * len([domain_path for domain_path in os.scandir("/var/www/vhosts") if self._is_ruby_domain(domain_path)])
 
 
@@ -72,10 +72,10 @@ class FixupImunify(ActiveAction):
     def __init__(self):
         self.name = "fixing up imunify360"
 
-    def _is_required(self):
+    def _is_required(self) -> bool:
         return len(files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify360.repo"])) > 0
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> None:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify*.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles)
@@ -84,10 +84,10 @@ class FixupImunify(ActiveAction):
         # but imunify packages require libssh2. So we should use PRESENT action to keep it.
         leapp_configs.set_package_action("libssh2", leapp_configs.LeappActionType.PRESENT)
 
-    def _post_action(self):
+    def _post_action(self) -> None:
         pass
 
-    def _revert_action(self):
+    def _revert_action(self) -> None:
         pass
 
 
@@ -95,27 +95,27 @@ class AdoptKolabRepositories(ActiveAction):
     def __init__(self):
         self.name = "adopting kolab repositories"
 
-    def _is_required(self):
+    def _is_required(self) -> bool:
         return len(files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"])) > 0
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> None:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles, ignore=["kolab-16-source",
                                                                   "kolab-16-testing-source",
                                                                   "kolab-16-testing-candidate-source"])
 
-    def _post_action(self):
+    def _post_action(self) -> None:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["kolab*.repo"]):
             leapp_configs.adopt_repositories(file)
 
         util.logged_check_call(["/usr/bin/dnf", "-y", "update"])
 
-    def _revert_action(self):
+    def _revert_action(self) -> None:
         pass
 
-    def estimate_prepare_time(self):
+    def estimate_prepare_time(self) -> int:
         return 30
 
-    def estimate_post_time(self):
+    def estimate_post_time(self) -> int:
         return 2 * 60
