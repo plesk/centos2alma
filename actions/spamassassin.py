@@ -1,7 +1,9 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
+from .action import ActiveAction, CheckAction
 
 from common import motd, rpm, util
+
+import os
 
 SPAMASSASIN_CONFIG_PATH = "/etc/mail/spamassassin/init.pre"
 
@@ -33,3 +35,35 @@ class FixSpamassassinConfig(ActiveAction):
     def _revert_action(self) -> None:
         util.logged_check_call(["/usr/bin/systemctl", "enable", "spamassassin.service"])
         util.logged_check_call(["/usr/bin/systemctl", "start", "spamassassin.service"])
+
+
+class CheckSpamassassinPlugins(CheckAction):
+    def __init__(self):
+        self.name = "check spamassassin additional plugins enabled"
+        self.description = """There are additional plugins enabled in spamassassin configuration:
+\t- {}
+
+They will not be available after the conversion. Please disable them manually or use --disable-spamassasin-plugins option to force script to remove them automatically.
+"""
+        self.supported_plugins = [
+            "Mail::SpamAssassin::Plugin::URIDNSBL",
+            "Mail::SpamAssassin::Plugin::Hashcash",
+            "Mail::SpamAssassin::Plugin::SPF",
+        ]
+
+    def _do_check(self) -> bool:
+        if not os.path.exists(SPAMASSASIN_CONFIG_PATH):
+            return True
+
+        unsupported_plugins = []
+        with open(SPAMASSASIN_CONFIG_PATH, "r") as fp:
+            for loadline in [line for line in fp.readlines() if line.startswith("loadplugin")]:
+                plugin = loadline.rstrip().split(' ')[1]
+                if plugin not in self.supported_plugins:
+                    unsupported_plugins.append(plugin)
+
+        if not unsupported_plugins:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(unsupported_plugins))
+        return False

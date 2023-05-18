@@ -133,6 +133,8 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             checks.append(actions.CheckOutdatedPostgresInstalled())
         if not options.remove_unknown_perl_modules:
             checks.append(actions.CheckUnknownPerlCpanModules())
+        if not options.disable_spamassasin_plugins:
+            checks.append(actions.CheckSpamassassinPlugins())
 
     try:
         with actions.CheckFlow(checks) as check_flow, common.writer.StdoutWriter() as writer:
@@ -371,6 +373,8 @@ def main():
     opts.add_option("--remove-unknown-perl-modules", action="store_true", dest="remove_unknown_perl_modules", default=False,
                     help="Allow to remove unknown perl modules installed from cpan. In this case all modules installed "
                          "by cpan will be removed. Note that it could lead to some issues with perl scripts")
+    opts.add_option("--disable-spamassasin-plugins", action="store_true", dest="disable_spamassasin_plugins", default=False,
+                    help="Disable additional plugins in spamassasin configuration during the conversion.")
     opts.add_option("-s", "--stage", action="callback", callback=convert_string_to_stage, type="string",
                     help="Start one of the conversion process' stages. Allowed values: 'start', 'revert', and 'finish'.")
     opts.add_option("-v", "--version", action="store_true", dest="version", default=False,
