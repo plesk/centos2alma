@@ -8,21 +8,14 @@ jobs:
                           # https://github.com/actions/setup-python/issues/544
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-java@v1
+    - name: Prepare artifact store
+      run: mkdir -p ./buck-out/gen
+    - name: Build centos2alma
+      id: build
+      uses: SandakovMM/build-with-buck@v1
       with:
-        java-version: 8
-    - uses: actions/setup-python@v4
-      with:
-        python-version: 3.6
-    - name: Install buck from official github (release 2022.05.05.01)
-      run: >
-          wget https://github.com/facebook/buck/releases/download/v2022.05.05.01/buck.2022.05.05.01_all.deb -O buck.deb
-          && sudo apt-get install openjdk-8-jre-headless
-          && sudo dpkg --install buck.deb
-    - name: Build our program
-      run: buck build :centos2alma
-    - name: Prepare result
-      run: mv buck-out/gen/centos2alma.pex buck-out/gen/centos2alma
+        command: build
+        target: :centos2alma
     - name: Store result
       uses: actions/upload-artifact@v3
       with:

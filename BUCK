@@ -42,10 +42,17 @@ python_test(
 )
 
 python_binary(
-    name = 'centos2alma',
+    name = 'centos2alma-script',
     platform = 'py3',
     main_module = 'main',
     deps = [
         ':libs.lib',
     ]
+)
+
+genrule(
+    name = 'centos2alma',
+    srcs = [':centos2alma-script'],
+    out = 'centos2alma',
+    cmd = 'cp $(location :centos2alma-script) $OUT && chmod +x $OUT',
 )
