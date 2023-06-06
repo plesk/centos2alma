@@ -231,11 +231,17 @@ gpgcheck=0
 
 
 class HandleRpmnewFilesTests(unittest.TestCase):
+    def tearDown(self):
+        tests_related_files = ["test.txt", "test.txt.rpmnew", "test.txt.rpmsave"]
+        for file in tests_related_files:
+            if os.path.exists(file):
+                os.remove(file)
+
     def test_no_rpmnew(self):
         with open("test.txt", "w") as f:
             f.write("test")
 
-        self.assertFalse(rpm.handle_rpmnew_files("test.txt"))
+        self.assertFalse(rpm.handle_rpmnew("test.txt"))
 
     def test_has_rpmnew(self):
         with open("test.txt", "w") as f:
@@ -244,18 +250,18 @@ class HandleRpmnewFilesTests(unittest.TestCase):
         with open("test.txt.rpmnew", "w") as f:
             f.write("2")
 
-        self.assertTrue(rpm.handle_rpmnew_files("test.txt"))
+        self.assertTrue(rpm.handle_rpmnew("test.txt"))
         self.assertTrue(os.path.exists("test.txt"))
         self.assertEqual(open("test.txt").read(), "2")
 
         self.assertTrue(os.path.exists("test.txt.rpmsave"))
-        self.assertEqual(open("test.txt.rpmnew").read(), "1")
+        self.assertEqual(open("test.txt.rpmsave").read(), "1")
 
     def test_missing_original(self):
         with open("test.txt.rpmnew", "w") as f:
             f.write("2")
 
-        self.assertTrue(rpm.handle_rpmnew_files("test.txt"))
+        self.assertTrue(rpm.handle_rpmnew("test.txt"))
         self.assertTrue(os.path.exists("test.txt"))
         self.assertEqual(open("test.txt").read(), "2")
 
