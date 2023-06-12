@@ -405,8 +405,7 @@ def main():
         monitor_status()
         return 0
 
-    do_convert(options)
-    return 0
+    return do_convert(options)
 
 
 if __name__ == "__main__":
