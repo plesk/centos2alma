@@ -8,7 +8,7 @@ import time
 import typing
 
 import common
-from common import messages, motd, plesk, util, rpm
+from common import files, messages, motd, plesk, util
 
 
 class FixNamedConfig(ActiveAction):
@@ -177,3 +177,33 @@ class HandleConversionStatus(ActiveAction):
 
     def _revert_action(self) -> None:
         plesk.remove_conversion_flag()
+
+
+class FixSyslogLogrotateConfig(ActiveAction):
+    def __init__(self):
+        self.name = "fix logrotate config for rsyslog"
+        self.config_path = "/etc/logrotate.d/syslog"
+        self.right_logrotate_config = """
+/var/log/cron
+/var/log/messages
+/var/log/secure
+/var/log/spooler
+{
+    missingok
+    sharedscripts
+    postrotate
+        /usr/bin/systemctl kill -s HUP rsyslog.service >/dev/null 2>&1 || true
+    endscript
+}
+"""
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        files.backup_file(self.config_path)
+        with open(self.config_path, "w") as f:
+            f.write(self.right_logrotate_config)
+
+    def _revert_action(self):
+        pass
