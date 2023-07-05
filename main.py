@@ -215,6 +215,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             ],
             2: [
                 actions.RebundleRubyApplications(),
+                actions.FixSyslogLogrotateConfig(),
             ],
             4: [
                 actions.AdoptRepositories(),
