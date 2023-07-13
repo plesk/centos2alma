@@ -56,6 +56,9 @@ def prepare_feedback() -> None:
                 versions.write(line + "\n")
             versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
             versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+
+            kernel_info = subprocess.check_output(["/usr/bin/uname", "-a"], universal_newlines=True).splitlines()[0]
+            versions.write("Kernel information: {}\n".format(kernel_info))
         except subprocess.CalledProcessError:
             versions.write("Plesk version is not available\n")
 
