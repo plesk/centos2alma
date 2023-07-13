@@ -59,8 +59,18 @@ def prepare_feedback() -> None:
         except subprocess.CalledProcessError:
             versions.write("Plesk version is not available\n")
 
+    packages_file = "installed_packages.txt"
+    with open(packages_file, "w") as pkgs_file:
+        try:
+            pkgs_info = subprocess.check_output(["/usr/bin/yum", "list", "installed"], universal_newlines=True).splitlines()
+            for line in pkgs_info:
+                pkgs_file.write(line + "\n")
+        except subprocess.CalledProcessError:
+            pkgs_file.write("Getting installed packages from yum failed\n")
+
     keep_files = [
         versions_file,
+        packages_file,
         common.DEFAULT_LOG_FILE,
         actions.ActiveFlow.PATH_TO_ACTIONS_DATA,
         "/etc/leapp/files/repomap.csv",
