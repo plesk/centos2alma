@@ -3,4 +3,4 @@
 [python]
     interpreter = python2.7
 [python#py3]
-    interpreter = python3
+    interpreter = /usr/bin/python3.6
