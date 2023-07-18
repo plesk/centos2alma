@@ -1,19 +1,15 @@
 # Convert a CentOS 7 server with Plesk to AlmaLinux 8
 
-CentOS 7 to AlmaLinux 8 conversion tool **beta**
+CentOS 7 to AlmaLinux 8 conversion tool
 
 ## Introduction
 This script is the official tool for converting a CentOS 7 server with Plesk to AlmaLinux 8. It uses the [AlmaLinux ELevate tool](https://wiki.almalinux.org/elevate/ELevate-quickstart-guide.html), which is based on the [leapp modernization framework](https://leapp.readthedocs.io/en/latest/). The script includes additional repository and configuration support provided by Plesk.
 
-### Important notes about beta status
-
-**PLEASE BE AWARE that the tool is currently in public beta. We advise caution when using it on production servers as we cannot guarantee that the conversion process will proceed without any issues. As the process involves updating databases, there is a possibility that your data may become corrupted. Therefore, it is essential to ensure that you have backups of your data before proceeding with the conversion process.**
-
 ## Preparation
 To avoid downtime and data loss, make sure you have read and understood the following information before using the script:
-1. Back up all your databases and have the means to restore them. The script uses standard MariaDB and PostgreSQL tools to upgrade the databases, but this does not guarantee that the process will be free of issues.
-2. Ensure that you have a way to restart the server without a direct SSH connection. The conversion process may get stuck once the server boots into the temporary OS distribution that does not start any network interfaces. You can use a serial port connection to the server to monitor the status of the conversion process in real time, and to reboot the server if necessary.
-3. We strongly recommend that you create a snapshot you can use as a recovery point in case the conversion process fails.
+1. **Back up all your databases** and have the means to restore them. The script uses standard MariaDB and PostgreSQL tools to upgrade the databases, but this does not guarantee that the process will be free of issues.
+2. **Ensure that you have a way to restart the server without a direct SSH connection**. The conversion process may get stuck once the server boots into the temporary OS distribution that does not start any network interfaces. You can use a serial port connection to the server to monitor the status of the conversion process in real time, and to reboot the server if necessary.
+3. We strongly recommend that you **create a snapshot you can use as a recovery point** in case the conversion process fails.
 4. Read the [Known issues](#known-issues) section below for the list of known issues.
 
 ## Timing
@@ -43,8 +39,8 @@ To retrieve the latest available version of the tool, please navigate to the "Re
 
 To prepare the latest version of the tool for use from a command line, please run the following commands:
 ```shell
-> wget https://github.com/plesk/centos2alma/releases/download/v0.2.0/centos2alma-0.2.0.zip
-> unzip centos2alma-0.2.0.zip
+> wget https://github.com/plesk/centos2alma/releases/download/v1.0.0/centos2alma-1.0.0.zip
+> unzip centos2alma-1.0.0.zip
 > chmod 755 centos2alma
 ```
 
