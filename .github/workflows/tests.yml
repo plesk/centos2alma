@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Perform tests
       id: test
-      uses: SandakovMM/build-with-buck@v1
+      uses: SandakovMM/build-with-buck@v2
       with:
         command: test
         target: :libs.tests
