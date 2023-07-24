@@ -205,6 +205,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.FixSpamassassinConfig(),
             actions.RulePleskRelatedServices(),
             actions.RuleSelinux(),
+            actions.RestoreMissingNginx(),
         ],
         4: [
             actions.DoConvert(),
