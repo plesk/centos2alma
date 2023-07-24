@@ -250,3 +250,26 @@ class RemoveOldMigratorThirparty(ActiveAction):
     def _revert_action(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             files.restore_file_from_backup(file)
+
+
+class RestoreMissingNginx(ActiveAction):
+    def __init__(self):
+        self.name = "restore nginx if it was removed during the conversion"
+
+    def _is_required(self):
+        # nginx related to plesk could be removed by user. So we need to make sure
+        # it is installed before we start the conversion
+        return rpm.is_package_installed("sw-nginx")
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        if not rpm.is_package_installed("sw-nginx"):
+            util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "nginx"])
+
+    def _revert_action(self):
+        pass
+
+    def estimate_post_time(self):
+        return 3 * 60
