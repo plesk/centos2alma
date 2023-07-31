@@ -6,7 +6,7 @@ from common import util
 
 class DoConvert(ActiveAction):
     def __init__(self):
-        self.name = "making the conversation"
+        self.name = "doing the conversion"
 
     def _prepare_action(self) -> None:
         util.logged_check_call(["/usr/bin/leapp", "preupgrade"])
