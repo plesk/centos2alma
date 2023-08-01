@@ -99,14 +99,15 @@ class CheckAvailableSpace(CheckAction):
 class CheckOutdatedPHP(CheckAction):
     def __init__(self):
         self.name = "checking outdated PHP"
-        self.description = """Outdated PHP versions were detected: '{}'. To proceed with the conversion:
-\t1.  Switch the following domains to PHP 7.2 or later:
+        self.description = "Outdated PHP versions were detected: '{}'. To proceed with the conversion:"
+        self.fix_domains_step = """Switch the following domains to PHP 7.2 or later:
 \t- {}
 
 \tYou can do so by running the following command:
 \t> plesk bin domain -u [domain] -php_handler_id plesk-php80-fastcgi
-
-\t2. Remove outdated PHP packages via Plesk Installer.
+"""
+        self.remove_php_step = """Remove outdated PHP packages via Plesk Installer. You can do it by calling the following command:
+\tplesk installer remove --components {}
 """
 
     def _do_check(self) -> bool:
@@ -141,8 +142,14 @@ class CheckOutdatedPHP(CheckAction):
         except Exception:
             outdated_php_domains = "Unable to get domains list. Please check it manually."
 
-        self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]),
-                                                   outdated_php_domains)
+        self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]))
+        if outdated_php_domains:
+            self.description += "\n\t1. " + self.fix_domains_step.format(outdated_php_domains) + "\n\t2. "
+        else:
+            self.description += "\n\t"
+
+        self.description += self.remove_php_step.format(" ".join(outdated_php_packages[installed].replace(" ", "") for installed in installed_pkgs).lower())
+
         return False
 
 
