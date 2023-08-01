@@ -67,7 +67,7 @@ class ReinstallPleskComponents(ActiveAction):
         return 2 * 60
 
     def estimate_revert_time(self):
-        return 2 * 60
+        return 6 * 60
 
 
 class ReinstallConflictPackages(ActiveAction):
