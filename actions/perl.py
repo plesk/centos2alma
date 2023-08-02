@@ -69,7 +69,7 @@ class CheckUnknownPerlCpanModules(CheckAction):
 class ReinstallPerlCpanModules(ActiveAction):
     def __init__(self):
         self.name = "reinstalling perl cpan modules"
-        self.removed_modules_file = "/usr/local/psa/tmp/centos2alma_removed_perl_modules.txt"
+        self.removed_modules_file = "/tmp/centos2alma_removed_perl_modules.txt"
 
     def _is_required(self):
         return not files.is_directory_empty(CPAN_MODULES_DIRECTORY)
