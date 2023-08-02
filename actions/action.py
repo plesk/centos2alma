@@ -232,7 +232,7 @@ class ReverseActionFlow(ActiveFlow):
         return dict(reversed(list(self.stages.items())))
 
     def _is_action_required(self, action: ActiveAction) -> bool:
-        # I believe the finish stage could have an action that was not performed on preparation and conversation stages
+        # I believe the finish stage could have an action that was not performed on conversion stage
         # So we ignore the case when there is no actions is persistance store
         for stored_action in self.actions_data["actions"]:
             if stored_action["name"] == action.name:

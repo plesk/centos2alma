@@ -317,7 +317,7 @@ def handle_error(error: str) -> None:
 
 def do_convert(options: typing.Any) -> None:
     if not is_required_conditions_satisfied(options, options.stage):
-        common.log.err("Please fix noted problems before proceed the conversation")
+        common.log.err("Please fix noted problems before proceed the conversion")
         return 1
 
     actions_map = construct_actions(options, options.stage)

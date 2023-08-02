@@ -128,7 +128,7 @@ class UpdateMariadbDatabase(ActiveAction):
             shadowdata = shadowfile.readline().rstrip()
             util.logged_check_call(["/usr/bin/mysql_upgrade", "-uadmin", "-p" + shadowdata])
         # Also find a way to drop cookies, because it will ruin your day
-        # We have to delete it once again, because leapp going to install it in scope of conversation process,
+        # We have to delete it once again, because leapp going to install it in scope of conversion process,
         # but without right configs
 
     def _revert_action(self) -> None:

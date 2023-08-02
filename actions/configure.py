@@ -43,7 +43,7 @@ class LeapReposConfiguration(ActiveAction):
         ])
 
     def _post_action(self) -> None:
-        # Since only leap related files should be changed, there is no to do after a conversation
+        # Since only leap related files should be changed, there is nothing to do after on finishing stage
         pass
 
     def _revert_action(self) -> None:
