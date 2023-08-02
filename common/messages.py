@@ -40,8 +40,8 @@ For assistance, call 'centos2alma --prepare-feedback' and follow the instruction
 
 TIME_EXCEEDED_MESSAGE = """
 \033[91m**************************************************************************************
-The conversion process is taking too long. It may be stuck.
-See the /var/log/plesk/centos2alma.log file for more information.
+The conversion process is taking too long. It may be stuck. Please verify if the process is
+still running by checking if logfile /var/log/plesk/centos2alma.log continues to update.
 It is safe to interrupt the process with Ctrl+C and restart it from the same stage.
 **************************************************************************************\033[0m
 """
