@@ -31,7 +31,7 @@ def get_plesk_version() -> typing.List[str]:
     raise Exception("Unable to parce plesk version output.")
 
 
-_CONVERSION_STATUS_FLAG_FILE = "/usr/local/psa/tmp/centos2alma-conversion.flag"
+_CONVERSION_STATUS_FLAG_FILE = "/tmp/centos2alma-conversion.flag"
 
 
 def prepare_conversion_flag() -> None:

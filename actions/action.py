@@ -84,7 +84,7 @@ class ActionsFlow():
 
 class ActiveFlow(ActionsFlow):
 
-    PATH_TO_ACTIONS_DATA = "/usr/local/psa/tmp/centos2alma_actions.json"
+    PATH_TO_ACTIONS_DATA = "/tmp/centos2alma_actions.json"
 
     def __init__(self, stages: typing.Dict[str, typing.List[ActiveAction]]):
         super().__init__(stages)
