@@ -24,9 +24,19 @@ class FixNamedConfig(ActiveAction):
         if not os.path.exists(self.user_options_path):
             os.symlink(self.chrooted_file_path, self.user_options_path)
 
+        if os.path.getsize(self.chrooted_file_path) == 0:
+            with open(self.chrooted_file_path, "w") as f:
+                f.write("# centos2alma workaround commentary")
+
     def _post_action(self) -> None:
         if os.path.exists(self.user_options_path):
             os.unlink(self.user_options_path)
+
+        with open(self.chrooted_file_path, "r") as f:
+            if f.read() == "# centos2alma workaround commentary":
+                os.unlink(self.chrooted_file_path)
+                with open(self.chrooted_file_path, "w") as _:
+                    pass
 
     def _revert_action(self) -> None:
         if os.path.exists(self.user_options_path):
