@@ -67,10 +67,20 @@ def _fix_rackspace_repository(to_change: str) -> str:
     return to_change
 
 
+def _fix_mariadb_repository(to_change: str) -> str:
+    # Mariadb official repository doesn't support short url for centos 8 since 10.11
+    # Since there are short URL for rhel8 short for all versions, we could use it instead
+    if "yum.mariadb.org" in to_change:
+        return to_change.replace("centos7", "rhel8")
+
+    return to_change
+
+
 def _do_url_replacement(url: str) -> str:
     return _do_replacement(url, [
         _fixup_old_php_urls,
         _fix_rackspace_repository,
+        _fix_mariadb_repository,
         lambda to_change: to_change.replace("rpm-CentOS-7", "rpm-RedHat-el8"),
         lambda to_change: to_change.replace("epel-7", "epel-8"),
         lambda to_change: to_change.replace("epel-debug-7", "epel-debug-8"),
