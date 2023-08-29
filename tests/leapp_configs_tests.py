@@ -207,6 +207,29 @@ PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,alma-PLESK_18_0_XX-PHP80,all,all,x8
                            expected_leapp_repos, expected_leapp_mapping,
                            ignore=["PLESK_18_0_XX-PHP-5.5"])
 
+    def test_mariadb_mapping(self):
+        mariadb_like_repos = """[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.11/centos7-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+"""
+
+        expected_mariadb_repos = """[alma-mariadb]
+name=Alma MariaDB
+baseurl=http://yum.mariadb.org/10.11/rhel8-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+"""
+
+        expected_mariadb_mapping = """mariadb,alma-mariadb,alma-mariadb,all,all,x86_64,rpm,ga,ga
+"""
+
+        self._perform_test({"mariadb.repo": mariadb_like_repos},
+                           expected_mariadb_repos, expected_mariadb_mapping)
+
 
 class SetPackageRepositoryTests(unittest.TestCase):
     INITIAL_JSON = {
