@@ -16,13 +16,6 @@ class RebundleRubyApplications(ActiveAction):
         self.name = "rebundling ruby applications"
         self.description = "rebundling ruby applications"
 
-    def _find_file_in_domain(self, domain: str, file: str) -> str:
-        for root, _, domain_files in os.walk(domain):
-            for subfile in domain_files:
-                if os.path.basename(subfile) == file:
-                    return os.path.join(root, file)
-        return None
-
     def _find_directory_in_domain(self, domain: str, directory: str) -> str:
         for root, directories, _ in os.walk(domain):
             for subdir in directories:
