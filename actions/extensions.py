@@ -40,7 +40,7 @@ class RebundleRubyApplications(ActiveAction):
         for domain_path in ruby_domains:
             log.debug("Rebundling ruby application in domain: {}".format(domain_path.name))
 
-            boundle = self._find_directory_in_domain(domain_path, "bundle")
+            boundle = files.find_subdirectory_by(domain_path, lambda subdir: os.path.basename(subdir) == "bundle")
             if boundle is None or not os.path.isdir(boundle):
                 log.debug("Skip reboundling for non boundled domain '{}'".format(domain_path.name))
                 continue

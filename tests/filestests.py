@@ -295,7 +295,7 @@ class FindFilesCaseInsensativeTests(unittest.TestCase):
 
 
 class CheckDirectoryIsEmpty(unittest.TestCase):
-    
+
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
 
@@ -312,3 +312,41 @@ class CheckDirectoryIsEmpty(unittest.TestCase):
 
     def test_no_such_directory(self):
         self.assertTrue(files.is_directory_empty(os.path.join(self.temp_dir, "no_such_dir")))
+
+
+class FindSubdirectory(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_find_by_name(self):
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        os.mkdir(os.path.join(self.temp_dir, "subdir2"))
+
+        self.assertEqual(files.find_subdirectory_by(self.temp_dir, lambda subdir: os.path.basename(subdir) == "subdir2"),
+                         os.path.join(self.temp_dir, "subdir2"))
+
+    def test_find_by_name_not_found(self):
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        os.mkdir(os.path.join(self.temp_dir, "subdir2"))
+
+        self.assertIsNone(files.find_subdirectory_by(self.temp_dir, lambda subdir: os.path.basename(subdir) == "subdir3"))
+
+    def test_find_by_name_in_subdir(self):
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        os.mkdir(os.path.join(self.temp_dir, "subdir2"))
+        os.mkdir(os.path.join(self.temp_dir, "subdir2", "subdir3"))
+
+        self.assertEqual(files.find_subdirectory_by(self.temp_dir, lambda subdir: os.path.basename(subdir) == "subdir3"),
+                         os.path.join(self.temp_dir, "subdir2", "subdir3"))
+
+    def test_find_by_file_inside(self):
+        os.mkdir(os.path.join(self.temp_dir, "subdir"))
+        os.mkdir(os.path.join(self.temp_dir, "subdir2"))
+        with open(os.path.join(self.temp_dir, "subdir2", "file.txt"), "w") as f:
+            f.write("")
+
+        self.assertEqual(files.find_subdirectory_by(self.temp_dir, lambda subdir: os.path.exists(os.path.join(subdir, "file.txt"))), os.path.join(self.temp_dir, "subdir2"))
