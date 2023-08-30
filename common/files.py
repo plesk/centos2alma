@@ -107,3 +107,24 @@ def find_files_case_insensitive(path: str, regexps_strings: typing.Union[typing.
 
 def is_directory_empty(path: str):
     return not os.path.exists(path) or len(os.listdir(path)) == 0
+
+
+def find_subdirectory_by(directory: str, functor: typing.Callable[[str], bool]) -> str:
+    for root, directories, _ in os.walk(directory):
+        for subdir in directories:
+            fullpath = os.path.join(root, subdir)
+            if functor(fullpath):
+                return fullpath
+    return None
+
+
+def find_file_substrings(filename: str, substring: str) -> typing.List[str]:
+    if not os.path.exists(filename):
+        return []
+
+    res = []
+    with open(filename, "r") as f:
+        for line in f.readlines():
+            if substring in line:
+                res.append(line)
+    return res
