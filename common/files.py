@@ -116,3 +116,15 @@ def find_subdirectory_by(directory: str, functor: typing.Callable[[str], bool]) 
             if functor(fullpath):
                 return fullpath
     return None
+
+
+def find_file_substrings(filename: str, substring: str) -> typing.List[str]:
+    if not os.path.exists(filename):
+        return []
+
+    res = []
+    with open(filename, "r") as f:
+        for line in f.readlines():
+            if substring in line:
+                res.append(line)
+    return res

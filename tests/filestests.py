@@ -350,3 +350,39 @@ class FindSubdirectory(unittest.TestCase):
             f.write("")
 
         self.assertEqual(files.find_subdirectory_by(self.temp_dir, lambda subdir: os.path.exists(os.path.join(subdir, "file.txt"))), os.path.join(self.temp_dir, "subdir2"))
+
+
+class FindFileSubstring(unittest.TestCase):
+
+    def setUp(self):
+        self.temp_file = tempfile.mkstemp()[1]
+
+    def tearDown(self) -> None:
+        os.remove(self.temp_file)
+
+    def test_one_line(self):
+        with open(self.temp_file, "w") as f:
+            f.write("aaaa: bbbbbb\n")
+            f.write("cccc: bbbbbb\n")
+            f.write("dddd: kkkkkk\n")
+
+        self.assertEqual(files.find_file_substrings(self.temp_file, "cccc"), ["cccc: bbbbbb\n"])
+
+    def test_several_lines(self):
+        with open(self.temp_file, "w") as f:
+            f.write("aaaa: bbbbbb\n")
+            f.write("cccc: bbbbbb\n")
+            f.write("dddd: kkkkkk\n")
+
+        self.assertEqual(files.find_file_substrings(self.temp_file, "bbbbb"), ["aaaa: bbbbbb\n", "cccc: bbbbbb\n"])
+
+    def test_no_such_file(self):
+        self.assertEqual(files.find_file_substrings("no_such_file.txt", "bbbbb"), [])
+
+    def test_no_such_substring(self):
+        with open(self.temp_file, "w") as f:
+            f.write("aaaa: bbbbbb\n")
+            f.write("cccc: bbbbbb\n")
+            f.write("dddd: kkkkkk\n")
+
+        self.assertEqual(files.find_file_substrings(self.temp_file, "no_such_substring"), [])
