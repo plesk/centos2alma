@@ -7,4 +7,5 @@ from .plesk import *
 from .files import *
 from .rpm import *
 from .util import *
+from .version import *
 from .writer import *

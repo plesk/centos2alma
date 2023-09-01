@@ -7,7 +7,7 @@ import platform
 import shutil
 import subprocess
 
-from common import files, log, plesk, rpm
+from common import files, log, plesk, rpm, version
 
 
 class PleskInstallerNotInProgress(CheckAction):
@@ -223,12 +223,18 @@ class CheckLastInstalledKernelInUse(CheckAction):
 \tReboot the system to use the last installed kernel.
 """
 
-    def _get_kernel_vesion__in_use(self) -> str:
-        return subprocess.check_output(["/usr/bin/uname", "-r"], universal_newlines=True).strip()
+    def _get_kernel_version_in_use(self) -> version.KernelVersion:
+        return version.KernelVersion(subprocess.check_output(["/usr/bin/uname", "-r"], universal_newlines=True).strip())
 
-    def _get_last_installed_kernel_version(self) -> str:
+    def _get_last_installed_kernel_version(self) -> version.KernelVersion:
         versions = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
-        return max(versions).split("-", 1)[-1]
+        # There is 'kernel-' prefix, that doesn't matter for us now, so just skip it 
+        versions = [ver.split("-", 1)[-1] for ver in versions]
+
+        log.debug("Installed kernel versions: {}".format(', '.join(versions)))
+
+        versions = [version.KernelVersion(ver) for ver in versions]
+        return max(versions)
 
     def _is_realtime_installed(self) -> bool:
         return len(subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel-rt"], universal_newlines=True).splitlines()) > 0
@@ -240,9 +246,10 @@ class CheckLastInstalledKernelInUse(CheckAction):
             return True
 
         last_installed_kernel_version = self._get_last_installed_kernel_version()
-        used_kernel_version = self._get_kernel_vesion__in_use()
+        used_kernel_version = self._get_kernel_version_in_use()
+
         if used_kernel_version != last_installed_kernel_version:
-            self.description = self.description.format(used_kernel_version, last_installed_kernel_version)
+            self.description = self.description.format(str(used_kernel_version), str(last_installed_kernel_version))
             return False
 
         return True
