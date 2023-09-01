@@ -37,14 +37,35 @@ class KernelVersionTests(unittest.TestCase):
         kernel2 = version.KernelVersion("3.10.2-1160.95.1.el7.x86_64")
         self.assertLess(kernel1, kernel2)
 
+    def test_compare_simple_less_patch_exponent(self):
+        kernel1 = version.KernelVersion("3.10.1-1160.95.1.el7.x86_64")
+        kernel2 = version.KernelVersion("3.10.10-1160.95.1.el7.x86_64")
+        self.assertLess(kernel1, kernel2)
+
     def test_compare_simple_less_minor(self):
         kernel1 = version.KernelVersion("3.10.0-1160.95.1.el7.x86_64")
         kernel2 = version.KernelVersion("3.11.0-1160.95.1.el7.x86_64")
         self.assertLess(kernel1, kernel2)
 
+    def test_compare_simple_less_minor_exponent(self):
+        kernel1 = version.KernelVersion("3.10.0-1160.95.1.el7.x86_64")
+        kernel2 = version.KernelVersion("3.101.0-1160.95.1.el7.x86_64")
+        self.assertLess(kernel1, kernel2)
+
     def test_compare_simple_less_major(self):
         kernel1 = version.KernelVersion("3.10.0-1160.95.1.el7.x86_64")
         kernel2 = version.KernelVersion("4.10.0-1160.95.1.el7.x86_64")
+        self.assertLess(kernel1, kernel2)
+    
+    def test_compare_simple_less_major_exponent(self):
+        kernel1 = version.KernelVersion("3.10.0-1160.95.1.el7.x86_64")
+        kernel2 = version.KernelVersion("30.10.0-1160.95.1.el7.x86_64")
+        self.assertLess(kernel1, kernel2)
+
+
+    def test_compare_different_length_build(self):
+        kernel1 = version.KernelVersion("3.10.0-1160.95.1.23.el7.x86_64")
+        kernel2 = version.KernelVersion("3.10.0-1160.95.11.23.el7.x86_64")
         self.assertLess(kernel1, kernel2)
 
     def test_compare_simple_build_vs_short(self):
