@@ -76,11 +76,37 @@ def _fix_mariadb_repository(to_change: str) -> str:
     return to_change
 
 
+def _fix_postgresql_official_repository(to_change: str) -> str:
+    # The default PostgreSQL official repository list includes a testing repository
+    # intended for CentOS 7, which does not have an equivalent for RHEL-based 8.
+    # This behavior is specific exactly for testing repository, srpms, common and debug
+    # repositories are fine.
+    # This issue is applicable to all PostgreSQL versions before 16.
+    # Therefore, we need to create a mapping to the non-testing repository
+    # to prevent errors during the conversion process.
+    if "download.postgresql.org" in to_change:
+        splited = to_change.split("/")
+        for index, item in enumerate(splited):
+            if item == "testing":
+                # An exclusion for srpms repository. No rhel 8 repository when version is 14. Looks strange, maybe some kind of a mess
+                if splited[index - 1] == "srpms" and splited[index + 1].isdigit() and int(splited[index + 1]) != 14:
+                    return to_change
+                if splited[index + 1] == "common" or splited[index + 1] == "debug":
+                    return to_change
+                if splited[index + 1].isdigit() and int(splited[index + 1]) >= 16:
+                    return to_change
+
+        return to_change.replace("/testing/", "/")
+
+    return to_change
+
+
 def _do_url_replacement(url: str) -> str:
     return _do_replacement(url, [
         _fixup_old_php_urls,
         _fix_rackspace_repository,
         _fix_mariadb_repository,
+        _fix_postgresql_official_repository,
         lambda to_change: to_change.replace("rpm-CentOS-7", "rpm-RedHat-el8"),
         lambda to_change: to_change.replace("epel-7", "epel-8"),
         lambda to_change: to_change.replace("epel-debug-7", "epel-debug-8"),
