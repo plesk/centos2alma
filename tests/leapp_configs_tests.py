@@ -230,6 +230,176 @@ gpgcheck=1
         self._perform_test({"mariadb.repo": mariadb_like_repos},
                            expected_mariadb_repos, expected_mariadb_mapping)
 
+    def test_official_postgresql_mapping(self):
+        # Not full, but representative enough
+        postgresql_like_repos = """[pgdg-common]
+name=PostgreSQL common RPMs for RHEL / CentOS $releasever - $basearch
+baseurl=https://download.postgresql.org/pub/repos/yum/common/redhat/rhel-$releasever-$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg15]
+name=PostgreSQL 15 for RHEL / CentOS $releasever - $basearch
+baseurl=https://download.postgresql.org/pub/repos/yum/15/redhat/rhel-$releasever-$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg-common-testing]
+name=PostgreSQL common testing RPMs for RHEL / CentOS $releasever - $basearch
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/common/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg16-updates-testing]
+name=PostgreSQL 16 for RHEL / CentOS $releasever - $basearch - Updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/16/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg15-updates-testing]
+name=PostgreSQL 15 for RHEL / CentOS $releasever - $basearch - Updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/15/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg-source-common]
+name=PostgreSQL 12 for RHEL / CentOS $releasever - $basearch - Source
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/common/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg15-updates-testing-debuginfo]
+name=PostgreSQL 15 for RHEL / CentOS $releasever - $basearch - Debuginfo
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/debug/15/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg15-source-updates-testing]
+name=PostgreSQL 15 for RHEL / CentOS $releasever - $basearch - Source updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/testing/15/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg14-source]
+name=PostgreSQL 14 for RHEL / CentOS $releasever - $basearch - Source
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/14/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+
+[pgdg14-source-updates-testing]
+name=PostgreSQL 14 for RHEL / CentOS $releasever - $basearch - Source updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/testing/14/redhat/rhel-$releasever-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 1
+"""
+
+        expected_postgresql_repos = """[alma-pgdg-common]
+name=Alma PostgreSQL common RPMs for RHEL / CentOS 8 - $basearch
+baseurl=https://download.postgresql.org/pub/repos/yum/common/redhat/rhel-8-$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg15]
+name=Alma PostgreSQL 15 for RHEL / CentOS 8 - $basearch
+baseurl=https://download.postgresql.org/pub/repos/yum/15/redhat/rhel-8-$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg-common-testing]
+name=Alma PostgreSQL common testing RPMs for RHEL / CentOS 8 - $basearch
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/common/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg16-updates-testing]
+name=Alma PostgreSQL 16 for RHEL / CentOS 8 - $basearch - Updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/16/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg15-updates-testing]
+name=Alma PostgreSQL 15 for RHEL / CentOS 8 - $basearch - Updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/15/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg-source-common]
+name=Alma PostgreSQL 12 for RHEL / CentOS 8 - $basearch - Source
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/common/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg15-updates-testing-debuginfo]
+name=Alma PostgreSQL 15 for RHEL / CentOS 8 - $basearch - Debuginfo
+baseurl=https://download.postgresql.org/pub/repos/yum/testing/debug/15/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg15-source-updates-testing]
+name=Alma PostgreSQL 15 for RHEL / CentOS 8 - $basearch - Source updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/testing/15/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg14-source]
+name=Alma PostgreSQL 14 for RHEL / CentOS 8 - $basearch - Source
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/14/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+[alma-pgdg14-source-updates-testing]
+name=Alma PostgreSQL 14 for RHEL / CentOS 8 - $basearch - Source updates testing
+baseurl=https://download.postgresql.org/pub/repos/yum/srpms/14/redhat/rhel-8-$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-PGDG
+repo_gpgcheck = 0
+"""
+
+        expected_postgresql_mapping = """pgdg-common,alma-pgdg-common,alma-pgdg-common,all,all,x86_64,rpm,ga,ga
+pgdg15,alma-pgdg15,alma-pgdg15,all,all,x86_64,rpm,ga,ga
+pgdg-common-testing,alma-pgdg-common-testing,alma-pgdg-common-testing,all,all,x86_64,rpm,ga,ga
+pgdg16-updates-testing,alma-pgdg16-updates-testing,alma-pgdg16-updates-testing,all,all,x86_64,rpm,ga,ga
+pgdg15-updates-testing,alma-pgdg15-updates-testing,alma-pgdg15-updates-testing,all,all,x86_64,rpm,ga,ga
+pgdg-source-common,alma-pgdg-source-common,alma-pgdg-source-common,all,all,x86_64,rpm,ga,ga
+pgdg15-updates-testing-debuginfo,alma-pgdg15-updates-testing-debuginfo,alma-pgdg15-updates-testing-debuginfo,all,all,x86_64,rpm,ga,ga
+pgdg15-source-updates-testing,alma-pgdg15-source-updates-testing,alma-pgdg15-source-updates-testing,all,all,x86_64,rpm,ga,ga
+pgdg14-source,alma-pgdg14-source,alma-pgdg14-source,all,all,x86_64,rpm,ga,ga
+pgdg14-source-updates-testing,alma-pgdg14-source-updates-testing,alma-pgdg14-source-updates-testing,all,all,x86_64,rpm,ga,ga
+"""
+
+        self._perform_test({"pgdg-redhat-all.repo": postgresql_like_repos},
+                           expected_postgresql_repos, expected_postgresql_mapping)
+
 
 class SetPackageRepositoryTests(unittest.TestCase):
     INITIAL_JSON = {
