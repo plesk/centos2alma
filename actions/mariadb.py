@@ -79,12 +79,14 @@ class UpdateModernMariadb(ActiveAction):
         for repofile in repofiles:
             leapp_configs.adopt_repositories(repofile)
 
+        mariadb_repo_id, _1, _2, _3, _4 = [repo for repo in rpm.extract_repodata(repofiles[0])][0]
+
         rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
                                                            "MariaDB-compat",
                                                            "MariaDB-common",
                                                            "MariaDB-server",
                                                            "MariaDB-shared"]))
-        rpm.install_packages(["MariaDB-client", "MariaDB-server"], repository="alma-mariadb")
+        rpm.install_packages(["MariaDB-client", "MariaDB-server"], repository=mariadb_repo_id)
 
     def _revert_action(self) -> None:
         pass
