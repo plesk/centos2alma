@@ -195,9 +195,6 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
         3: [
             actions.DisablePleskSshBanner(),
             actions.RemovingPleskConflictPackages(),
-            actions.UpdateMariadbDatabase(),
-            actions.UpdateModernMariadb(),
-            actions.AddMysqlConnector(),
             actions.ReinstallPleskComponents(),
             actions.ReinstallConflictPackages(),
             actions.ReinstallPerlCpanModules(),
@@ -208,9 +205,17 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.RestoreMissingNginx(),
         ],
         4: [
-            actions.DoConvert(),
+            actions.StartPleskBasicServices(),
         ],
         5: [
+            actions.UpdateMariadbDatabase(),
+            actions.UpdateModernMariadb(),
+            actions.AddMysqlConnector(),
+        ],
+        6: [
+            actions.DoConvert(),
+        ],
+        7: [
             actions.PreRebootPause(),
         ]
     })
@@ -231,10 +236,9 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
                 actions.RebundleRubyApplications(),
                 actions.FixSyslogLogrotateConfig(),
             ],
-            4: [
+            6: [
                 actions.AdoptRepositories(),
-                actions.StartPleskBasicServices(),
-            ],
+            ]
         })
 
     return actions_map
