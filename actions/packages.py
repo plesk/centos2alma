@@ -161,6 +161,15 @@ class UpdatePlesk(ActiveAction):
         self.name = "updating plesk"
 
     def _prepare_action(self):
+        # The conversion process removes the python36-lxml package since it conflicts with python3-lxml from AlmaLinux.
+        # If the conversion fails for any reason and there is no rollback, we need to reinstall the package.
+        # Otherwise, the Plesk installer will encounter issues. The problem with conversion only occurs when
+        # new Plesk packages have been published, such as hotfixes, so the impact of the problem is low.
+        # However, because we don't do a rollback for every conversion failure, this scenario is possible
+        # and could be confusing for users. Therefore, we've decided to handle it proactively.
+        if not rpm.is_package_installed("python36-lxml"):
+            rpm.install_packages(["python36-lxml"])
+
         util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
 
     def _post_action(self):
