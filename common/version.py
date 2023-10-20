@@ -48,7 +48,16 @@ class KernelVersion():
         return f"{self.major}.{self.minor}.{self.patch}-{self.build}.{self.distro}.{self.arch}"
 
     def __lt__(self, other):
-        return self.major < other.major or self.minor < other.minor or self.patch < other.patch or self.build < other.build
+        if self.major < other.major or self.minor < other.minor or self.patch < other.patch:
+            return True
+
+        for build_part_left, build_part_right in zip(self.build.split("."), other.build.split(".")):
+            if int(build_part_left) < int(build_part_right):
+                return True
+            elif int(build_part_left) > int(build_part_right):
+                return False
+
+        return len(self.build) < len(other.build)
 
     def __eq__(self, other):
         return self.major == other.major and self.minor == other.minor and self.patch == other.patch and self.build == other.build
