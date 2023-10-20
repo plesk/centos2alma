@@ -63,8 +63,13 @@ class KernelVersionTests(unittest.TestCase):
         self.assertLess(kernel1, kernel2)
 
     def test_compare_different_length_build(self):
-        kernel1 = version.KernelVersion("3.10.0-1160.95.1.el7.x86_64")
-        kernel2 = version.KernelVersion("3.10.0-957.5.1.el7.x86_64")
+        kernel1 = version.KernelVersion("3.10.0-957.5.1.el7.x86_64")
+        kernel2 = version.KernelVersion("3.10.0-1160.95.1.el7.x86_64")
+        self.assertLess(kernel1, kernel2)
+
+    def test_compare_different_build_subversion(self):
+        kernel1 = version.KernelVersion("3.10.0-957.el7.x86_64")
+        kernel2 = version.KernelVersion("3.10.0-1160.99.1.el7.x86_64")
         self.assertLess(kernel1, kernel2)
 
     def test_compare_different_length_build_after_dot(self):
