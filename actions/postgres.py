@@ -1,10 +1,8 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction, CheckAction
-
 import os
 import subprocess
 
-from common import files, leapp_configs, util
+from common import action, files, leapp_configs, util
 
 _PATH_TO_PGSQL = '/var/lib/pgsql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
@@ -37,7 +35,7 @@ def _is_modern_database():
             return True
 
 
-class CheckOutdatedPostgresInstalled(CheckAction):
+class CheckOutdatedPostgresInstalled(action.CheckAction):
     def __init__(self):
         self.name = "checking postgres version 10 or later is installed"
         self.description = '''Postgres version less then 10. This means the database should be upgraded.
@@ -48,7 +46,7 @@ class CheckOutdatedPostgresInstalled(CheckAction):
         return not _is_postgres_installed() or not _is_database_initialized() or _get_postgres_major_version() >= _MODERN_POSTGRES
 
 
-class PostgresDatabasesUpdate(ActiveAction):
+class PostgresDatabasesUpdate(action.ActiveAction):
 
     def __init__(self):
         self.name = "updating postgres databases"
@@ -92,7 +90,7 @@ class PostgresDatabasesUpdate(ActiveAction):
         return 3 * 60
 
 
-class PostgresReinstallModernPackage(ActiveAction):
+class PostgresReinstallModernPackage(action.ActiveAction):
     # Leapp is going to remove postgresql package from the system during conversion process.
     # So during this action we shouldn't use any postgresql related commands. Luckily data will not be removed
     # and we can use them to recognize versions of postgresql we should install.

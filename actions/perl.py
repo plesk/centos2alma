@@ -1,10 +1,8 @@
 # Copyright 1999-2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction, CheckAction
-
 import os
 import shutil
 
-from common import files, log, motd, rpm
+from common import action, files, log, motd, rpm
 
 CPAN_MODULES_DIRECTORY = "/usr/local/lib64/perl5"
 CPAN_MODULES_RPM_MAPPING = {
@@ -36,7 +34,7 @@ CPAN_MODULES_RPM_MAPPING = {
 }
 
 
-class CheckUnknownPerlCpanModules(CheckAction):
+class CheckUnknownPerlCpanModules(action.CheckAction):
     def __init__(self):
         self.name = "checking if there are no unknown perl cpan modules"
         self.description = """There are Perl modules installed by CPAN without known RPM package analogues are found.
@@ -67,7 +65,7 @@ class CheckUnknownPerlCpanModules(CheckAction):
         return False
 
 
-class ReinstallPerlCpanModules(ActiveAction):
+class ReinstallPerlCpanModules(action.ActiveAction):
     def __init__(self):
         self.name = "reinstalling perl cpan modules"
         self.removed_modules_file = "/tmp/centos2alma_removed_perl_modules.txt"

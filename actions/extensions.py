@@ -1,18 +1,16 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
 import os
 import pwd
 import shutil
 import typing
 
-from common import util, log, leapp_configs, files
+from common import action, util, log, leapp_configs, files
 
 
 # We should do rebundling of ruby applications after the conversion
 # because some of our libraries will be missing.
 # The prime example of missing library - libmysqlclient.so.18 required by mysql2 gem
-class RebundleRubyApplications(ActiveAction):
+class RebundleRubyApplications(action.ActiveAction):
     PLESK_APACHE_CONFIGS_PATH = "/etc/httpd/conf/plesk.conf.d/vhosts/"
 
     def __init__(self):
@@ -92,7 +90,7 @@ class RebundleRubyApplications(ActiveAction):
         return 60 * len([domain_path for domain_path in os.scandir("/var/www/vhosts") if self._is_ruby_domain(domain_path)])
 
 
-class FixupImunify(ActiveAction):
+class FixupImunify(action.ActiveAction):
     def __init__(self):
         self.name = "fixing up imunify360"
 
@@ -115,7 +113,7 @@ class FixupImunify(ActiveAction):
         pass
 
 
-class AdoptKolabRepositories(ActiveAction):
+class AdoptKolabRepositories(action.ActiveAction):
     def __init__(self):
         self.name = "adopting kolab repositories"
 

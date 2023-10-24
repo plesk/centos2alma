@@ -2,23 +2,27 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 
 import actions
-import common
 
 from datetime import datetime
 import json
 import logging
 import os
-import platform
 import pkg_resources
 import sys
 import subprocess
 import threading
 import typing
 import time
-import zipfile
 
 from enum import Flag, auto
 from optparse import OptionParser, OptionValueError, SUPPRESS_HELP
+
+import messages
+from common import action, dist, feedback, files, log, motd, plesk, systemd, writers
+
+
+DEFAULT_LOG_FILE = "/var/log/plesk/centos2alma.log"
+PRE_REBOOT_DELAY = 45
 
 
 def get_version() -> str:
@@ -46,36 +50,31 @@ def merge_dicts_of_lists(dict1: typing.Dict[typing.Any, typing.Any],
 
 
 def prepare_feedback() -> None:
-    feedback_archive = "centos2alma_feedback.zip"
-    versions_file = "versions.txt"
+    feedback_archive: str = "centos2alma_feedback.zip"
 
-    with open(versions_file, "w") as versions:
-        try:
-            version_info = subprocess.check_output(["/usr/sbin/plesk", "version"], universal_newlines=True).splitlines()
-            for line in version_info:
-                versions.write(line + "\n")
-            versions.write("The centos2alma utility version: {ver}-{rev}\n".format(ver=get_version(), rev=get_revision()))
-            versions.write("Distribution information: {}\n".format(" ".join(platform.linux_distribution())))
+    def get_installed_packages_list():
+        packages_file = "installed_packages.txt"
+        with open(packages_file, "w") as pkgs_file:
+            try:
+                pkgs_info = subprocess.check_output(["/usr/bin/yum", "list", "installed"], universal_newlines=True).splitlines()
+                for line in pkgs_info:
+                    pkgs_file.write(line + "\n")
+            except subprocess.CalledProcessError:
+                pkgs_file.write("Getting installed packages from yum failed\n")
 
-            kernel_info = subprocess.check_output(["/usr/bin/uname", "-a"], universal_newlines=True).splitlines()[0]
-            versions.write("Kernel information: {}\n".format(kernel_info))
-        except subprocess.CalledProcessError:
-            versions.write("Plesk version is not available\n")
+        return packages_file
 
-    packages_file = "installed_packages.txt"
-    with open(packages_file, "w") as pkgs_file:
-        try:
-            pkgs_info = subprocess.check_output(["/usr/bin/yum", "list", "installed"], universal_newlines=True).splitlines()
-            for line in pkgs_info:
-                pkgs_file.write(line + "\n")
-        except subprocess.CalledProcessError:
-            pkgs_file.write("Getting installed packages from yum failed\n")
+    def get_plesk_version():
+        plesk_version_file = "plesk_version.txt"
+        with open(plesk_version_file, "w") as version_file:
+            for lines in plesk.get_plesk_full_version():
+                version_file.write(lines + "\n")
+
+        return plesk_version_file
 
     keep_files = [
-        versions_file,
-        packages_file,
-        common.DEFAULT_LOG_FILE,
-        actions.ActiveFlow.PATH_TO_ACTIONS_DATA,
+        DEFAULT_LOG_FILE,
+        action.ActiveFlow.PATH_TO_ACTIONS_DATA,
         "/etc/leapp/files/repomap.csv",
         "/etc/leapp/files/pes-events.json",
         "/etc/leapp/files/leapp_upgrade_repositories.repo",
@@ -84,16 +83,17 @@ def prepare_feedback() -> None:
         "/var/log/leapp/leapp-upgrade.log",
     ]
 
-    for repofile in common.files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo*"]):
+    for repofile in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo*"]):
         keep_files.append(repofile)
 
-    with zipfile.ZipFile(feedback_archive, "w") as zip_file:
-        for file in (file for file in keep_files if os.path.exists(file)):
-            zip_file.write(file)
+    prepare_feedback = feedback.Feedback("centos2alma", get_version() + "-" + get_revision(), keep_files,
+                                         [
+                                            get_installed_packages_list,
+                                            get_plesk_version,
+                                         ])
+    prepare_feedback.save_archive(feedback_archive)
 
-    os.unlink(versions_file)
-
-    print(common.FEEDBACK_IS_READY_MESSAGE.format(feedback_archive_path=feedback_archive))
+    print(messages.FEEDBACK_IS_READY_MESSAGE.format(feedback_archive_path=feedback_archive))
 
 
 class Stages(Flag):
@@ -150,24 +150,24 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             checks.append(actions.CheckSpamassassinPlugins())
 
     try:
-        with actions.CheckFlow(checks) as check_flow, common.writer.StdoutWriter() as writer:
+        with action.CheckFlow(checks) as check_flow, writers.StdoutWriter() as writer:
             writer.write("Do preparation checks...")
             check_flow.validate_actions()
             failed_checks = check_flow.make_checks()
             writer.write("\r")
             for check in failed_checks:
                 writer.write(check)
-                common.log.err(check)
+                log.err(check)
 
             if failed_checks:
                 return False
             return True
     except Exception as ex:
-        common.log.err("{}".format(ex))
+        log.err("{}".format(ex))
         return False
 
 
-def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[int, typing.List[actions.ActiveAction]]:
+def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[int, typing.List[action.ActiveAction]]:
     actions_map = {}
 
     if Stages.test in stage_flag:
@@ -216,7 +216,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.DoConvert(),
         ],
         7: [
-            actions.PreRebootPause(),
+            actions.PreRebootPause(messages.REBOOT_WARN_MESSAGE.format(delay=PRE_REBOOT_DELAY), PRE_REBOOT_DELAY),
         ]
     })
 
@@ -244,18 +244,18 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
     return actions_map
 
 
-def get_flow(stage_flag: Stages, actions_map: typing.Dict[int, typing.List[actions.ActiveAction]]) -> actions.ActiveFlow:
+def get_flow(stage_flag: Stages, actions_map: typing.Dict[int, typing.List[action.ActiveAction]]) -> action.ActiveFlow:
     if Stages.finish in stage_flag:
-        return actions.FinishActionsFlow(actions_map)
+        return action.FinishActionsFlow(actions_map)
     elif Stages.revert in stage_flag:
-        return actions.RevertActionsFlow(actions_map)
+        return action.RevertActionsFlow(actions_map)
     else:
-        return actions.PrepareActionsFlow(actions_map)
+        return action.PrepareActionsFlow(actions_map)
 
 
-def start_flow(flow: actions.ActiveFlow) -> None:
-    with common.FileWriter(STATUS_FILE_PATH) as status_writer, common.StdoutWriter() as stdout_writer:
-        progressbar = actions.FlowProgressbar(flow, [stdout_writer, status_writer])
+def start_flow(flow: action.ActiveFlow) -> None:
+    with writers.FileWriter(STATUS_FILE_PATH) as status_writer, writers.StdoutWriter() as stdout_writer:
+        progressbar = action.FlowProgressbar(flow, [stdout_writer, status_writer])
         progress = threading.Thread(target=progressbar.display)
         executor = threading.Thread(target=flow.pass_actions)
 
@@ -275,7 +275,7 @@ def show_status() -> None:
         return
 
     print("Conversion process in progress:")
-    status = common.get_last_lines(STATUS_FILE_PATH, 1)
+    status = files.get_last_lines(STATUS_FILE_PATH, 1)
     print(status[0])
 
 
@@ -294,34 +294,34 @@ def monitor_status() -> None:
 
 
 def show_fail_motd() -> None:
-    common.motd.add_finish_ssh_login_message("""
+    motd.add_finish_ssh_login_message("""
 Something went wrong during the final stage of CentOS 7 to AlmaLinux 8 conversion
 See the /var/log/plesk/centos2alma.log file for more information.
 """)
-    common.motd.publish_finish_ssh_login_message()
+    motd.publish_finish_ssh_login_message()
 
 
 def handle_error(error: str) -> None:
     sys.stdout.write("\n{}\n".format(error))
-    sys.stdout.write(common.FAIL_MESSAGE_HEAD.format(common.DEFAULT_LOG_FILE))
+    sys.stdout.write(messages.FAIL_MESSAGE_HEAD.format(DEFAULT_LOG_FILE))
 
     error_message = f"centos2alma (version {get_version()}-{get_revision()}) process has been failed. Error: {error}.\n\n"
-    for line in common.get_last_lines(common.DEFAULT_LOG_FILE, 100):
+    for line in files.get_last_lines(DEFAULT_LOG_FILE, 100):
         sys.stdout.write(line)
         error_message += line
 
-    sys.stdout.write(common.FAIL_MESSAGE_TAIL.format(common.DEFAULT_LOG_FILE))
+    sys.stdout.write(messages.FAIL_MESSAGE_TAIL.format(DEFAULT_LOG_FILE))
 
-    common.plesk.send_error_report(error_message)
-    common.plesk.send_conversion_status(True)
+    plesk.send_error_report(error_message)
+    plesk.send_conversion_status(True)
 
-    common.log.err(f"centos2alma process has been failed. Error: {error}")
+    log.err(f"centos2alma process has been failed. Error: {error}")
     show_fail_motd()
 
 
 def do_convert(options: typing.Any) -> None:
     if not is_required_conditions_satisfied(options, options.stage):
-        common.log.err("Please fix noted problems before proceed the conversion")
+        log.err("Please fix noted problems before proceed the conversion")
         return 1
 
     actions_map = construct_actions(options, options.stage)
@@ -334,17 +334,17 @@ def do_convert(options: typing.Any) -> None:
             return 1
 
     if not options.no_reboot and (Stages.convert in options.stage or Stages.finish in options.stage):
-        common.log.info("Going to reboot the system")
+        log.info("Going to reboot the system")
         if Stages.convert in options.stage:
-            sys.stdout.write(common.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),
-                                                                   script_path=os.path.abspath(sys.argv[0])))
+            sys.stdout.write(messages.CONVERT_RESTART_MESSAGE.format(time=datetime.now().strftime("%H:%M:%S"),
+                                                                     script_path=os.path.abspath(sys.argv[0])))
         elif Stages.finish in options.stage:
-            sys.stdout.write(common.FINISH_RESTART_MESSAGE)
+            sys.stdout.write(messages.FINISH_RESTART_MESSAGE)
 
         subprocess.call(["/usr/bin/systemctl", "reboot"])
 
     if Stages.revert in options.stage:
-        sys.stdout.write(common.REVET_FINISHED_MESSAGE)
+        sys.stdout.write(messages.REVET_FINISHED_MESSAGE)
 
 
 HELP_MESSAGE = f"""centos2alma [options]
@@ -406,8 +406,7 @@ def main():
 
     options, _ = opts.parse_args(args=sys.argv[1:])
 
-    common.log.init_logger([common.DEFAULT_LOG_FILE], [],
-                           loglevel=logging.DEBUG if options.verbose else logging.INFO)
+    log.init_logger([DEFAULT_LOG_FILE], [], loglevel=logging.DEBUG if options.verbose else logging.INFO)
 
     if options.version:
         print(get_version() + "-" + get_revision())

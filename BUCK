@@ -15,30 +15,15 @@ python_library(
 )
 
 python_library(
-    name = 'common.lib',
-    srcs = glob(['./common/*.py']),
-)
-
-python_library(
-    name = 'libs.lib',
-    srcs = glob(['main.py']),
+    name = 'centos2alma.lib',
+    srcs = glob(['main.py', 'messages.py']),
     deps = [
         ':actions.lib',
-        ':common.lib',
+        '//common:common.lib',
     ],
     resources = [
         ':version',
     ],
-)
-
-python_test(
-    name = 'libs.tests',
-    srcs = glob(['./tests/*.py']),
-    deps = [
-        ':common.lib',
-        ':actions.lib',
-    ],
-    platform = 'py3',
 )
 
 python_binary(
@@ -46,7 +31,7 @@ python_binary(
     platform = 'py3',
     main_module = 'main',
     deps = [
-        ':libs.lib',
+        ':centos2alma.lib',
     ]
 )
 

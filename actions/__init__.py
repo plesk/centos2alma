@@ -1,5 +1,4 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import *
 from .common_checks import *
 from .common import *
 from .configure import *

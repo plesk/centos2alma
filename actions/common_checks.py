@@ -1,5 +1,4 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import CheckAction
 
 import collections
 import os
@@ -7,10 +6,10 @@ import platform
 import shutil
 import subprocess
 
-from common import files, log, plesk, rpm, version
+from common import action, files, log, plesk, rpm, version
 
 
-class PleskInstallerNotInProgress(CheckAction):
+class PleskInstallerNotInProgress(action.CheckAction):
     def __init__(self):
         self.name = "checking if Plesk installer is in progress"
         self.description = """The conversion process cannot continue because Plesk Installer is working.
@@ -25,7 +24,7 @@ class PleskInstallerNotInProgress(CheckAction):
         return False
 
 
-class DistroIsCentos79(CheckAction):
+class DistroIsCentos79(action.CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
         self.description = """You are running a distributive other than CentOS 7.9. At the moment, only CentOS 7.9 is supported.
@@ -40,7 +39,7 @@ class DistroIsCentos79(CheckAction):
         return False
 
 
-class DistroIsAlmalinux8(CheckAction):
+class DistroIsAlmalinux8(action.CheckAction):
     def __init__(self):
         self.name = "checking if distro is AlmaLinux8"
         self.description = "You are running a distributive other than AlmaLinux 8. The finalization stage can only be started on AlmaLinux 8."
@@ -53,7 +52,7 @@ class DistroIsAlmalinux8(CheckAction):
         return False
 
 
-class PleskVersionIsActual(CheckAction):
+class PleskVersionIsActual(action.CheckAction):
     def __init__(self):
         self.name = "checking if Plesk version is actual"
         self.description = "Only Plesk Obsidian 18.0.43 or later is supported. Update Plesk to version 18.0.43 or later and try again."
@@ -68,7 +67,7 @@ class PleskVersionIsActual(CheckAction):
         return False
 
 
-class CheckAvailableSpace(CheckAction):
+class CheckAvailableSpace(action.CheckAction):
     def __init__(self):
         self.name = "checking available space"
         self.required_space = 5 * 1024 * 1024 * 1024  # 5GB
@@ -96,7 +95,7 @@ class CheckAvailableSpace(CheckAction):
         return False
 
 
-class CheckOutdatedPHP(CheckAction):
+class CheckOutdatedPHP(action.CheckAction):
     def __init__(self):
         self.name = "checking outdated PHP"
         self.description = "Outdated PHP versions were detected: '{}'. To proceed with the conversion:"
@@ -153,7 +152,7 @@ class CheckOutdatedPHP(CheckAction):
         return False
 
 
-class CheckGrubInstalled(CheckAction):
+class CheckGrubInstalled(action.CheckAction):
     def __init__(self):
         self.name = "checking if grub is installed"
         self.description = """The /etc/default/grub file is missing. GRUB may not be installed.
@@ -164,7 +163,7 @@ class CheckGrubInstalled(CheckAction):
         return os.path.exists("/etc/default/grub")
 
 
-class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
+class CheckNoMoreThenOneKernelNamedNIC(action.CheckAction):
     def __init__(self):
         self.name = "checking if there is more than one NIC interface using ketnel-name"
         self.description = """The system has one or more network interface cards (NICs) using kernel-names (ethX).
@@ -187,7 +186,7 @@ class CheckNoMoreThenOneKernelNamedNIC(CheckAction):
         return True
 
 
-class CheckIsInContainer(CheckAction):
+class CheckIsInContainer(action.CheckAction):
     def __init__(self):
         self.name = "checking if the system not in a container"
         self.description = "The system is running in a container-like environment ({}). The conversion is not supported for such systems."
@@ -215,7 +214,7 @@ class CheckIsInContainer(CheckAction):
         return True
 
 
-class CheckLastInstalledKernelInUse(CheckAction):
+class CheckLastInstalledKernelInUse(action.CheckAction):
     def __init__(self):
         self.name = "checking if the last installed kernel is in use"
         self.description = """The last installed kernel is not in use.
@@ -255,7 +254,7 @@ class CheckLastInstalledKernelInUse(CheckAction):
         return True
 
 
-class CheckIsLocalRepositoryNotPresent(CheckAction):
+class CheckIsLocalRepositoryNotPresent(action.CheckAction):
     def __init__(self):
         self.name = "checking if the local repository is present"
         self.description = """There are rpm repository with local storage present. Leapp is not support such kind of repositories.
@@ -283,7 +282,7 @@ class CheckIsLocalRepositoryNotPresent(CheckAction):
         return False
 
 
-class CheckRepositoryDuplicates(CheckAction):
+class CheckRepositoryDuplicates(action.CheckAction):
     def __init__(self):
         self.name = "checking if there are duplicate repositories"
         self.description = """There are duplicate repositories present:
@@ -310,7 +309,7 @@ class CheckRepositoryDuplicates(CheckAction):
         return False
 
 
-class CheckPackagesUpToDate(CheckAction):
+class CheckPackagesUpToDate(action.CheckAction):
     def __init__(self):
         self.name = "checking if all packages are up to date"
         self.description = "There are packages which are not up to date. Call `yum update -y && reboot` to update the packages.\n"

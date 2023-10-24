@@ -1,12 +1,10 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
 import os
 
-from common import leapp_configs, files
+from common import action, leapp_configs, files
 
 
-class PrepareLeappConfigurationBackup(ActiveAction):
+class PrepareLeappConfigurationBackup(action.ActiveAction):
     def __init__(self):
         self.name = "prepare leapp configuration backup"
         self.leapp_configs = ["/etc/leapp/files/leapp_upgrade_repositories.repo",
@@ -29,7 +27,7 @@ class PrepareLeappConfigurationBackup(ActiveAction):
                 files.restore_file_from_backup(file)
 
 
-class LeapReposConfiguration(ActiveAction):
+class LeapReposConfiguration(action.ActiveAction):
 
     def __init__(self):
         self.name = "map plesk repositories for leapp"
@@ -50,7 +48,7 @@ class LeapReposConfiguration(ActiveAction):
         pass
 
 
-class LeapChoicesConfiguration(ActiveAction):
+class LeapChoicesConfiguration(action.ActiveAction):
 
     def __init__(self):
         self.name = "configure leapp user choices"
@@ -73,7 +71,7 @@ class LeapChoicesConfiguration(ActiveAction):
         pass
 
 
-class PatchLeappErrorOutput(ActiveAction):
+class PatchLeappErrorOutput(action.ActiveAction):
 
     def __init__(self):
         self.name = "patch leapp error log output"

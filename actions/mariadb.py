@@ -1,67 +1,19 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
 import subprocess
 import os
 
-from common import leapp_configs, files, log, rpm, util
+from common import action, leapp_configs, files, mariadb, rpm, util
 
 
-MARIADB_VERSION_ON_ALMA = "10.3.35"
+MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.35")
 
 
-def _is_version_larger(left: str, right: str) -> bool:
-    for pleft, pright in zip(left.split("."), right.split(".")):
-        if int(pleft) > int(pright):
-            return True
-        elif int(pright) > int(pleft):
-            return False
-
-    return False
-
-
-def _get_mariadb_utilname() -> str:
-    for utility in ("mariadb", "mysql"):
-        if subprocess.run(["which", utility], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-            return utility
-
-    return None
-
-
-def _is_mariadb_installed() -> bool:
-    utility = _get_mariadb_utilname()
-    if utility is None:
-        return False
-    elif utility == "mariadb":
-        return True
-
-    return "MariaDB" in subprocess.check_output([utility, "--version"], universal_newlines=True)
-
-
-def _is_mysql_installed() -> bool:
-    utility = _get_mariadb_utilname()
-    if utility is None or utility == "mariadb":
-        return False
-
-    return "MariaDB" not in subprocess.check_output([utility, "--version"], universal_newlines=True)
-
-
-def _get_mariadb_version() -> str:
-    utility = _get_mariadb_utilname()
-
-    out = subprocess.check_output([utility, "--version"], universal_newlines=True)
-
-    log.debug("Detected mariadb version is: {version}".format(version=out.split("Distrib ")[1].split(",")[0].split("-")[0]))
-
-    return out.split("Distrib ")[1].split(",")[0].split("-")[0]
-
-
-class UpdateModernMariadb(ActiveAction):
+class UpdateModernMariadb(action.ActiveAction):
     def __init__(self):
         self.name = "update modern mariadb"
 
     def _is_required(self) -> bool:
-        return _is_mariadb_installed() and _is_version_larger(_get_mariadb_version(), MARIADB_VERSION_ON_ALMA)
+        return mariadb.is_mariadb_installed() and mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA
 
     def _prepare_action(self) -> None:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
@@ -98,12 +50,12 @@ class UpdateModernMariadb(ActiveAction):
         return 60
 
 
-class UpdateMariadbDatabase(ActiveAction):
+class UpdateMariadbDatabase(action.ActiveAction):
     def __init__(self):
         self.name = "updating mariadb databases"
 
     def _is_required(self) -> bool:
-        return _is_mariadb_installed() and not _is_version_larger(_get_mariadb_version(), MARIADB_VERSION_ON_ALMA)
+        return mariadb.is_mariadb_installed() and not mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA
 
     def _prepare_action(self) -> None:
         pass
@@ -140,12 +92,12 @@ class UpdateMariadbDatabase(ActiveAction):
         return 2 * 60
 
 
-class AddMysqlConnector(ActiveAction):
+class AddMysqlConnector(action.ActiveAction):
     def __init__(self):
         self.name = "install mysql connector"
 
     def _is_required(self) -> bool:
-        return _is_mysql_installed()
+        return mariadb.is_mysql_installed
 
     def _prepare_action(self) -> None:
         pass
