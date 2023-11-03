@@ -1,17 +1,14 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
 import os
 import subprocess
 import sys
 import time
 import typing
 
-import common
-from common import files, messages, motd, plesk, util
+from common import action, files, motd, plesk, util
 
 
-class FixNamedConfig(ActiveAction):
+class FixNamedConfig(action.ActiveAction):
     def __init__(self):
         self.name = "fix named configuration"
         self.user_options_path = "/etc/named-user-options.conf"
@@ -43,7 +40,7 @@ class FixNamedConfig(ActiveAction):
             os.unlink(self.user_options_path)
 
 
-class DisableSuspiciousKernelModules(ActiveAction):
+class DisableSuspiciousKernelModules(action.ActiveAction):
     def __init__(self):
         self.name = "rule suspicious kernel modules"
         self.suspicious_modules = ["pata_acpi", "btrfs", "floppy"]
@@ -68,17 +65,17 @@ class DisableSuspiciousKernelModules(ActiveAction):
 
     def _post_action(self) -> None:
         for module in self.suspicious_modules:
-            common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
+            files.replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
     def _revert_action(self) -> None:
         if not os.path.exists(self.modules_konfig_path):
             return
 
         for module in self.suspicious_modules:
-            common.replace_string(self.modules_konfig_path, "blacklist " + module, "")
+            files.replace_string(self.modules_konfig_path, "blacklist " + module, "")
 
 
-class RuleSelinux(ActiveAction):
+class RuleSelinux(action.ActiveAction):
     def __init__(self):
         self.name = "rule selinux status"
         self.selinux_config = "/etc/selinux/config"
@@ -91,16 +88,16 @@ class RuleSelinux(ActiveAction):
         return subprocess.check_output([self.getenforce_cmd], universal_newlines=True).strip() == "Enforcing"
 
     def _prepare_action(self) -> None:
-        common.replace_string(self.selinux_config, "SELINUX=enforcing", "SELINUX=permissive")
+        files.replace_string(self.selinux_config, "SELINUX=enforcing", "SELINUX=permissive")
 
     def _post_action(self) -> None:
-        common.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
+        files.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
 
     def _revert_action(self) -> None:
-        common.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
+        files.replace_string(self.selinux_config, "SELINUX=permissive", "SELINUX=enforcing")
 
 
-class AddFinishSshLoginMessage(ActiveAction):
+class AddFinishSshLoginMessage(action.ActiveAction):
     def __init__(self):
         self.name = "add finish ssh login message"
         self.finish_message = """
@@ -118,7 +115,7 @@ The server has been converted to AlmaLinux 8.
         pass
 
 
-class AddInProgressSshLoginMessage(ActiveAction):
+class AddInProgressSshLoginMessage(action.ActiveAction):
     def __init__(self):
         self.name = "add in progress ssh login message"
         path_to_script = os.path.abspath(sys.argv[0])
@@ -141,28 +138,28 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
         motd.restore_ssh_login_message()
 
 
-class DisablePleskSshBanner(ActiveAction):
+class DisablePleskSshBanner(action.ActiveAction):
     def __init__(self):
         self.name = "disable plesk ssh banner"
         self.banner_command_path = "/root/.plesk_banner"
 
     def _prepare_action(self) -> None:
         if os.path.exists(self.banner_command_path):
-            common.backup_file(self.banner_command_path)
+            files.backup_file(self.banner_command_path)
             os.unlink(self.banner_command_path)
 
     def _post_action(self) -> None:
-        common.restore_file_from_backup(self.banner_command_path)
+        files.restore_file_from_backup(self.banner_command_path)
 
     def _revert_action(self) -> None:
-        common.restore_file_from_backup(self.banner_command_path)
+        files.restore_file_from_backup(self.banner_command_path)
 
 
-class PreRebootPause(ActiveAction):
-    def __init__(self):
+class PreRebootPause(action.ActiveAction):
+    def __init__(self, reboot_message: str, pause_time: int = 45):
         self.name = "pause before reboot"
-        self.pause_time = 45
-        self.message = messages.REBOOT_WARN_MESSAGE.format(delay=self.pause_time)
+        self.pause_time = pause_time
+        self.message = reboot_message
 
     def _prepare_action(self) -> None:
         print(self.message)
@@ -175,7 +172,7 @@ class PreRebootPause(ActiveAction):
         pass
 
 
-class HandleConversionStatus(ActiveAction):
+class HandleConversionStatus(action.ActiveAction):
     def __init__(self):
         self.name = "prepare and send conversion status"
 
@@ -189,7 +186,7 @@ class HandleConversionStatus(ActiveAction):
         plesk.remove_conversion_flag()
 
 
-class FixSyslogLogrotateConfig(ActiveAction):
+class FixSyslogLogrotateConfig(action.ActiveAction):
     def __init__(self):
         self.name = "fix logrotate config for rsyslog"
         self.config_path = "/etc/logrotate.d/syslog"

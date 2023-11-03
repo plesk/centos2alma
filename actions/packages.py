@@ -1,13 +1,11 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
-from common import files, leapp_configs, log, motd, rpm, util
+from common import action, files, leapp_configs, log, motd, rpm, util
 
 import os
 import shutil
 
 
-class RemovingPleskConflictPackages(ActiveAction):
+class RemovingPleskConflictPackages(action.ActiveAction):
 
     def __init__(self):
         self.name = "remove plesk conflict packages"
@@ -34,7 +32,7 @@ class RemovingPleskConflictPackages(ActiveAction):
         return 10
 
 
-class ReinstallPleskComponents(ActiveAction):
+class ReinstallPleskComponents(action.ActiveAction):
     def __init__(self):
         self.name = "re-installing plesk components"
 
@@ -70,7 +68,7 @@ class ReinstallPleskComponents(ActiveAction):
         return 6 * 60
 
 
-class ReinstallConflictPackages(ActiveAction):
+class ReinstallConflictPackages(action.ActiveAction):
     def __init__(self):
         self.name = "re-installing common conflict packages"
         self.removed_packages_file = "/tmp/centos2alma_removed_packages.txt"
@@ -156,7 +154,7 @@ class ReinstallConflictPackages(ActiveAction):
         return 60 + 10 * pkgs_number
 
 
-class UpdatePlesk(ActiveAction):
+class UpdatePlesk(action.ActiveAction):
     def __init__(self):
         self.name = "updating plesk"
 
@@ -188,7 +186,7 @@ files with the .rpmsave extension. Below is a list of the changed files:
 """
 
 
-class AdoptRepositories(ActiveAction):
+class AdoptRepositories(action.ActiveAction):
     def __init__(self):
         self.name = "adopting repositories"
 
@@ -232,7 +230,7 @@ class AdoptRepositories(ActiveAction):
         return 2 * 60
 
 
-class RemoveOldMigratorThirparty(ActiveAction):
+class RemoveOldMigratorThirparty(action.ActiveAction):
     def __init__(self):
         self.name = "removing old migrator thirdparty packages"
 
@@ -261,7 +259,7 @@ class RemoveOldMigratorThirparty(ActiveAction):
             files.restore_file_from_backup(file)
 
 
-class RestoreMissingNginx(ActiveAction):
+class RestoreMissingNginx(action.ActiveAction):
     def __init__(self):
         self.name = "restore nginx if it was removed during the conversion"
 

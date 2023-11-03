@@ -1,13 +1,11 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
 import os
 import shutil
 
-from common import rpm, util
+from common import action, rpm, util
 
 
-class LeapInstallation(ActiveAction):
+class LeapInstallation(action.ActiveAction):
 
     def __init__(self):
         self.name = "installing leapp"

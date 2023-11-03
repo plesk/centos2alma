@@ -1,10 +1,8 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
-from common import util
+from common import action, util
 
 
-class DoConvert(ActiveAction):
+class DoConvert(action.ActiveAction):
     def __init__(self):
         self.name = "doing the conversion"
 

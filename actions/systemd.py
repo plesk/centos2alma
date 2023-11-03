@@ -1,16 +1,14 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction
-
 import os
 
-from common import util
+from common import action, util
 
 
 def _is_service_exists(service):
     return os.path.exists(os.path.join("/usr/lib/systemd/system/", service))
 
 
-class RulePleskRelatedServices(ActiveAction):
+class RulePleskRelatedServices(action.ActiveAction):
 
     def __init__(self):
         self.name = "rule plesk services"
@@ -69,7 +67,7 @@ class RulePleskRelatedServices(ActiveAction):
         return 10
 
 
-class AddUpgradeSystemdService(ActiveAction):
+class AddUpgradeSystemdService(action.ActiveAction):
 
     def __init__(self, script_path, options):
         self.name = "adding centos2alma resume service"
@@ -123,7 +121,7 @@ WantedBy=multi-user.target
             os.remove(self.service_file_path)
 
 
-class StartPleskBasicServices(ActiveAction):
+class StartPleskBasicServices(action.ActiveAction):
 
     def __init__(self):
         self.name = "starting plesk services"

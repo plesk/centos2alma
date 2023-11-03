@@ -1,14 +1,12 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from .action import ActiveAction, CheckAction
-
-from common import motd, rpm, util
+from common import action, motd, rpm, util
 
 import os
 
 SPAMASSASIN_CONFIG_PATH = "/etc/mail/spamassassin/init.pre"
 
 
-class FixSpamassassinConfig(ActiveAction):
+class FixSpamassassinConfig(action.ActiveAction):
     # Make sure the trick is preformed before any call of 'systemctl daemon-reload'
     # because we change spamassassin.service configuration in scope of this action.
     def __init__(self):
@@ -37,7 +35,7 @@ class FixSpamassassinConfig(ActiveAction):
         util.logged_check_call(["/usr/bin/systemctl", "start", "spamassassin.service"])
 
 
-class CheckSpamassassinPlugins(CheckAction):
+class CheckSpamassassinPlugins(action.CheckAction):
     def __init__(self):
         self.name = "check spamassassin additional plugins enabled"
         self.description = """There are additional plugins enabled in spamassassin configuration:
