@@ -7,7 +7,10 @@ jobs:
     runs-on: ubuntu-20.04 # Not latest, because python3.6 is not available on latest
                           # https://github.com/actions/setup-python/issues/544
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Prepare artifact store
       run: mkdir -p ./buck-out/gen
     - name: Build centos2alma
