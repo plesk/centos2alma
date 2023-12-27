@@ -92,7 +92,11 @@ class UpdateMariadbDatabase(action.ActiveAction):
         return mariadb.is_mariadb_installed() and not mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA
 
     def _prepare_action(self) -> None:
-        pass
+        rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
+                                                           "MariaDB-compat",
+                                                           "MariaDB-common",
+                                                           "MariaDB-server",
+                                                           "MariaDB-shared"]))
 
     def _post_action(self) -> None:
         # Leapp is not remove non-standard MariaDB-client package. But since we have updated
