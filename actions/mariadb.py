@@ -2,7 +2,7 @@
 import subprocess
 import os
 
-from common import action, leapp_configs, files, mariadb, rpm, util
+from common import action, leapp_configs, files, log, mariadb, rpm, util
 
 
 MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.39")
@@ -54,7 +54,10 @@ class UpdateModernMariadb(action.ActiveAction):
         if len(repofiles) == 0:
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format("/etc/yum.repos.d/mariadb.repo"))
 
+        log.debug("Add MariaDB repository files '{}' mapping".format(repofiles[0]))
         leapp_configs.add_repositories_mapping(repofiles)
+
+        log.debug("Set repository mapping in the leapp configuration file")
         leapp_configs.set_package_repository("mariadb", "alma-mariadb")
 
     def _post_action(self) -> None:
