@@ -140,6 +140,7 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             actions.CheckLastInstalledKernelInUse(),
             actions.CheckIsLocalRepositoryNotPresent(),
             actions.CheckRepositoryDuplicates(),
+            actions.CheckMariadbRepoAvailable(),
             actions.CheckPackagesUpToDate(),
         ]
         if not options.upgrade_postgres_allowed:
