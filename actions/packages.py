@@ -1,5 +1,5 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
-from common import action, files, leapp_configs, log, motd, rpm, util
+from common import action, files, leapp_configs, log, motd, plesk, rpm, util
 
 import os
 import shutil
@@ -71,7 +71,7 @@ class ReinstallPleskComponents(action.ActiveAction):
 class ReinstallConflictPackages(action.ActiveAction):
     def __init__(self):
         self.name = "re-installing common conflict packages"
-        self.removed_packages_file = "/tmp/centos2alma_removed_packages.txt"
+        self.removed_packages_file = plesk.CONVERTER_TEMP_DIRECTORY + "/centos2alma_removed_packages.txt"
         self.conflict_pkgs_map = {
             "galera": "galera",
             "python36-argcomplete": "python3-argcomplete",

@@ -409,6 +409,9 @@ def main():
 
     log.init_logger([DEFAULT_LOG_FILE], [], loglevel=logging.DEBUG if options.verbose else logging.INFO)
 
+    if not os.path.exists(plesk.CONVERTER_TEMP_DIRECTORY):
+        os.mkdir(plesk.CONVERTER_TEMP_DIRECTORY, 0o750)
+
     if options.version:
         print(get_version() + "-" + get_revision())
         return 0
