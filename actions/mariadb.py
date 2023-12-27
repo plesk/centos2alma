@@ -5,7 +5,7 @@ import os
 from common import action, leapp_configs, files, mariadb, rpm, util
 
 
-MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.35")
+MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.39")
 
 
 class UpdateModernMariadb(action.ActiveAction):
