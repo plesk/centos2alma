@@ -256,7 +256,8 @@ def get_flow(stage_flag: Stages, actions_map: typing.Dict[int, typing.List[actio
 
 def start_flow(flow: action.ActiveFlow) -> None:
     with writers.FileWriter(STATUS_FILE_PATH) as status_writer, writers.StdoutWriter() as stdout_writer:
-        progressbar = action.FlowProgressbar(flow, [stdout_writer, status_writer])
+        progressbar = action.FlowProgressbar(flow, [stdout_writer, status_writer],
+                                             messages.TIME_EXCEEDED_MESSAGE.format(DEFAULT_LOG_FILE))
         progress = threading.Thread(target=progressbar.display)
         executor = threading.Thread(target=flow.pass_actions)
 
