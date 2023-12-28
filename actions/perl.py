@@ -2,7 +2,7 @@
 import os
 import shutil
 
-from common import action, files, log, motd, rpm
+from common import action, files, log, motd, plesk, rpm
 
 CPAN_MODULES_DIRECTORY = "/usr/local/lib64/perl5"
 CPAN_MODULES_RPM_MAPPING = {
@@ -68,7 +68,7 @@ class CheckUnknownPerlCpanModules(action.CheckAction):
 class ReinstallPerlCpanModules(action.ActiveAction):
     def __init__(self):
         self.name = "reinstalling perl cpan modules"
-        self.removed_modules_file = "/tmp/centos2alma_removed_perl_modules.txt"
+        self.removed_modules_file = plesk.CONVERTER_TEMP_DIRECTORY + "/centos2alma_removed_perl_modules.txt"
 
     def _is_required(self):
         return not files.is_directory_empty(CPAN_MODULES_DIRECTORY)

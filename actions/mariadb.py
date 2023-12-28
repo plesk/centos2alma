@@ -2,10 +2,44 @@
 import subprocess
 import os
 
-from common import action, leapp_configs, files, mariadb, rpm, util
+from common import action, leapp_configs, files, log, mariadb, rpm, util
 
 
-MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.35")
+MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.39")
+
+
+class CheckMariadbRepoAvailable(action.CheckAction):
+    def __init__(self):
+        self.name = "check mariadb repo available"
+        self.description = """
+The MariaDB repository with id '{}' from the file '{}' is not accessible.
+\tThis issue may be caused by the deprecation of the currently installed MariaDB version or the disabling
+\tof the MariaDB repository by the provider. To resolve this, update MariaDB to any version from the official
+\trepository 'rpm.mariadb.org', or use the official archive repository for your current MariaDB version at 'archive.mariadb.org'.
+"""
+
+    def _do_check(self) -> bool:
+        if not mariadb.is_mariadb_installed() or not mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA:
+            return True
+
+        repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
+        if len(repofiles) == 0:
+            return True
+
+        for repofile in repofiles:
+            for repo in rpm.extract_repodata(repofile):
+                repo_id, _, repo_baseurl, _, _ = repo
+                if ".mariadb.org" not in repo_baseurl:
+                    continue
+
+                # Since repository will be deprecated for any distro at once it looks fine to check only for 7 on x86_64
+                repo_baseurl = repo_baseurl.replace("$releasever", "7").replace("$basearch", "x86_64")
+                result = subprocess.run(["curl", "-s", "-o", "/dev/null", "-f", repo_baseurl])
+                if result.returncode != 0:
+                    self.description = self.description.format(repo_id, repofile)
+                    return False
+
+        return True
 
 
 class UpdateModernMariadb(action.ActiveAction):
@@ -20,8 +54,11 @@ class UpdateModernMariadb(action.ActiveAction):
         if len(repofiles) == 0:
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format("/etc/yum.repos.d/mariadb.repo"))
 
+        log.debug("Add MariaDB repository files '{}' mapping".format(repofiles[0]))
         leapp_configs.add_repositories_mapping(repofiles)
-        leapp_configs.set_package_repository("mariadb", "alma-maridb")
+
+        log.debug("Set repository mapping in the leapp configuration file")
+        leapp_configs.set_package_repository("mariadb", "alma-mariadb")
 
     def _post_action(self) -> None:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
@@ -58,7 +95,11 @@ class UpdateMariadbDatabase(action.ActiveAction):
         return mariadb.is_mariadb_installed() and not mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA
 
     def _prepare_action(self) -> None:
-        pass
+        rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
+                                                           "MariaDB-compat",
+                                                           "MariaDB-common",
+                                                           "MariaDB-server",
+                                                           "MariaDB-shared"]))
 
     def _post_action(self) -> None:
         # Leapp is not remove non-standard MariaDB-client package. But since we have updated

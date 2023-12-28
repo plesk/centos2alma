@@ -140,6 +140,7 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             actions.CheckLastInstalledKernelInUse(),
             actions.CheckIsLocalRepositoryNotPresent(),
             actions.CheckRepositoryDuplicates(),
+            actions.CheckMariadbRepoAvailable(),
             actions.CheckPackagesUpToDate(),
         ]
         if not options.upgrade_postgres_allowed:
@@ -255,7 +256,8 @@ def get_flow(stage_flag: Stages, actions_map: typing.Dict[int, typing.List[actio
 
 def start_flow(flow: action.ActiveFlow) -> None:
     with writers.FileWriter(STATUS_FILE_PATH) as status_writer, writers.StdoutWriter() as stdout_writer:
-        progressbar = action.FlowProgressbar(flow, [stdout_writer, status_writer])
+        progressbar = action.FlowProgressbar(flow, [stdout_writer, status_writer],
+                                             messages.TIME_EXCEEDED_MESSAGE.format(DEFAULT_LOG_FILE))
         progress = threading.Thread(target=progressbar.display)
         executor = threading.Thread(target=flow.pass_actions)
 
@@ -407,6 +409,9 @@ def main():
     options, _ = opts.parse_args(args=sys.argv[1:])
 
     log.init_logger([DEFAULT_LOG_FILE], [], loglevel=logging.DEBUG if options.verbose else logging.INFO)
+
+    if not os.path.exists(plesk.CONVERTER_TEMP_DIRECTORY):
+        os.mkdir(plesk.CONVERTER_TEMP_DIRECTORY, 0o750)
 
     if options.version:
         print(get_version() + "-" + get_revision())
