@@ -1,7 +1,7 @@
 # Copyright 1999-2023. Plesk International GmbH. All rights reserved.
 # vim:ft=python:
 
-PRODUCT_VERSION = '1.2.1'
+PRODUCT_VERSION = '1.2.2'
 
 genrule(
     name = 'version',
