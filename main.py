@@ -134,6 +134,7 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             actions.PleskInstallerNotInProgress(),
             actions.CheckAvailableSpace(),
             actions.CheckOutdatedPHP(),
+            actions.CheckCronUsesOutdatedPHP(),
             actions.CheckGrubInstalled(),
             actions.CheckNoMoreThenOneKernelNamedNIC(),
             actions.CheckIsInContainer(),

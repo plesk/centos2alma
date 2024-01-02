@@ -152,6 +152,54 @@ class CheckOutdatedPHP(action.CheckAction):
         return False
 
 
+class CheckCronUsesOutdatedPHP(action.CheckAction):
+    def __init__(self):
+        self.name = "checking cronjob uses outdated PHP"
+        self.description = """We have detected that some cronjobs are using outdated PHP versions.
+\tSwitch the following cronjobs to PHP 7.2 handler or a later version to proceed with the conversion:"
+\t- {}
+
+\tYou can do this in the Plesk web interface by going “Tools & Settings” → “Scheduled Tasks”.
+"""
+
+    def _do_check(self) -> bool:
+        outdated_php = [
+            "plesk-php52",
+            "plesk-php53",
+            "plesk-php54",
+            "plesk-php55",
+            "plesk-php56",
+            "plesk-php70",
+            "plesk-php71",
+        ]
+
+        php_hanlers = {"'{}-cgi'", "'{}-fastcgi'", "'{}-fpm'", "'{}-fpm-dedicated'"}
+        outdated_php_handlers = []
+        for installed in outdated_php:
+            outdated_php_handlers += [handler.format(installed) for handler in php_hanlers]
+
+        try:
+            looking_for_cronjobs_sql_request = """
+                SELECT command from ScheduledTasks WHERE type = "php" and phpHandlerId in ({});
+            """.format(", ".join(outdated_php_handlers))
+
+            outdated_php_cronjobs = subprocess.check_output(["/usr/sbin/plesk", "db", looking_for_cronjobs_sql_request],
+                                                           universal_newlines=True)
+            outdated_php_cronjobs = [domain[2:-2] for domain in outdated_php_cronjobs.splitlines()
+                                    if domain.startswith("|") and not domain.startswith("| command ")]
+            if len(outdated_php_cronjobs) <= 0:
+                return True
+
+            outdated_php_cronjobs = "\n\t- ".join(outdated_php_cronjobs)
+
+            self.description = self.description.format(outdated_php_cronjobs)
+            return False
+        except Exception:
+            log.error("Unable to get domains list from plesk database!")
+
+        return True
+
+
 class CheckGrubInstalled(action.CheckAction):
     def __init__(self):
         self.name = "checking if grub is installed"
