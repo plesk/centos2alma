@@ -299,7 +299,7 @@ class CheckLastInstalledKernelInUse(action.CheckAction):
 
     def _get_last_installed_kernel_version(self) -> version.KernelVersion:
         versions = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
-        # There is 'kernel-' prefix, that doesn't matter for us now, so just skip it 
+        # There is 'kernel-' prefix, that doesn't matter for us now, so just skip it
         versions = [ver.split("-", 1)[-1] for ver in versions]
 
         log.debug("Installed kernel versions: {}".format(', '.join(versions)))
