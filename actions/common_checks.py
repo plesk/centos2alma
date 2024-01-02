@@ -98,15 +98,10 @@ class CheckAvailableSpace(action.CheckAction):
 class CheckOutdatedPHP(action.CheckAction):
     def __init__(self):
         self.name = "checking outdated PHP"
-        self.description = "Outdated PHP versions were detected: '{}'. To proceed with the conversion:"
-        self.fix_domains_step = """Switch the following domains to PHP 7.2 or later:
-\t- {}
-
-\tYou can do so by running the following command:
-\t> plesk bin domain -u [domain] -php_handler_id plesk-php80-fastcgi
-"""
-        self.remove_php_step = """Remove outdated PHP packages via Plesk Installer. You can do it by calling the following command:
-\tplesk installer remove --components {}
+        self.description = """Outdated PHP versions were detected: '{}'.
+\tRemove outdated PHP packages via Plesk Installer to proceed with the conversion:
+\tYou can do it by calling the following command:
+\t> plesk installer remove --components {}
 """
 
     def _do_check(self) -> bool:
@@ -124,9 +119,38 @@ class CheckOutdatedPHP(action.CheckAction):
         if len(installed_pkgs) == 0:
             return True
 
+        self.description = self.description.format(
+            ", ".join([outdated_php_packages[installed] for installed in installed_pkgs]),
+            " ".join(outdated_php_packages[installed].replace(" ", "") for installed in installed_pkgs).lower())
+
+        return False
+
+
+class CheckWebsitesUsesOutdatedPHP(action.CheckAction):
+    def __init__(self):
+        self.name = "checking domains uses outdated PHP"
+        self.description = """We have identified that the domains are using older versions of PHP.
+\tSwitch the following domains to PHP 7.2 or later to proceed with the conversion:
+\t- {}
+
+\tYou can achieve this by executing the following command:
+\t> plesk bin domain -u [domain] -php_handler_id plesk-php80-fastcgi
+"""
+
+    def _do_check(self) -> bool:
+        outdated_php_packages = {
+            "plesk-php52": "PHP 5.2",
+            "plesk-php53": "PHP 5.3",
+            "plesk-php54": "PHP 5.4",
+            "plesk-php55": "PHP 5.5",
+            "plesk-php56": "PHP 5.6",
+            "plesk-php70": "PHP 7.0",
+            "plesk-php71": "PHP 7.1",
+        }
+
         php_hanlers = {"'{}-fastcgi'", "'{}-fpm'", "'{}-fpm-dedicated'"}
         outdated_php_handlers = []
-        for installed in installed_pkgs:
+        for installed in outdated_php_packages.keys():
             outdated_php_handlers += [handler.format(installed) for handler in php_hanlers]
 
         try:
@@ -137,19 +161,65 @@ class CheckOutdatedPHP(action.CheckAction):
                                                            universal_newlines=True)
             outdated_php_domains = [domain[2:-2] for domain in outdated_php_domains.splitlines()
                                     if domain.startswith("|") and not domain.startswith("| name ")]
+            if len(outdated_php_domains) <= 0:
+                return True
+
             outdated_php_domains = "\n\t- ".join(outdated_php_domains)
+            self.description = self.description.format(outdated_php_domains)
+
+            return False
         except Exception:
-            outdated_php_domains = "Unable to get domains list. Please check it manually."
+            log.error("Unable to get domains list from plesk database!")
 
-        self.description = self.description.format(", ".join([outdated_php_packages[installed] for installed in installed_pkgs]))
-        if outdated_php_domains:
-            self.description += "\n\t1. " + self.fix_domains_step.format(outdated_php_domains) + "\n\t2. "
-        else:
-            self.description += "\n\t"
+        return True
 
-        self.description += self.remove_php_step.format(" ".join(outdated_php_packages[installed].replace(" ", "") for installed in installed_pkgs).lower())
 
-        return False
+class CheckCronUsesOutdatedPHP(action.CheckAction):
+    def __init__(self):
+        self.name = "checking cronjob uses outdated PHP"
+        self.description = """We have detected that some cronjobs are using outdated PHP versions.
+\tSwitch the following cronjobs to PHP 7.2 handler or a later version to proceed with the conversion:"
+\t- {}
+
+\tYou can do this in the Plesk web interface by going “Tools & Settings” → “Scheduled Tasks”.
+"""
+
+    def _do_check(self) -> bool:
+        outdated_php = [
+            "plesk-php52",
+            "plesk-php53",
+            "plesk-php54",
+            "plesk-php55",
+            "plesk-php56",
+            "plesk-php70",
+            "plesk-php71",
+        ]
+
+        php_hanlers = {"'{}-cgi'", "'{}-fastcgi'", "'{}-fpm'", "'{}-fpm-dedicated'"}
+        outdated_php_handlers = []
+        for installed in outdated_php:
+            outdated_php_handlers += [handler.format(installed) for handler in php_hanlers]
+
+        try:
+            looking_for_cronjobs_sql_request = """
+                SELECT command from ScheduledTasks WHERE type = "php" and phpHandlerId in ({});
+            """.format(", ".join(outdated_php_handlers))
+
+            outdated_php_cronjobs = subprocess.check_output(["/usr/sbin/plesk", "db", looking_for_cronjobs_sql_request],
+                                                           universal_newlines=True)
+            outdated_php_cronjobs = [domain[2:-2] for domain in outdated_php_cronjobs.splitlines()
+                                    if domain.startswith("|") and not domain.startswith("| command ")]
+            if len(outdated_php_cronjobs) <= 0:
+                return True
+
+            outdated_php_cronjobs = "\n\t- ".join(outdated_php_cronjobs)
+
+            self.description = self.description.format(outdated_php_cronjobs)
+            return False
+        except Exception:
+            log.error("Unable to get domains list from plesk database!")
+
+        return True
 
 
 class CheckGrubInstalled(action.CheckAction):
