@@ -19,7 +19,15 @@ class LeapInstallation(action.ActiveAction):
         if not rpm.is_package_installed("elevate-release"):
             util.logged_check_call(["/usr/bin/yum", "install", "-y", "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
 
+        util.logged_check_call(["/usr/bin/yum-config-manager", "--enable", "elevate"])
+
         util.logged_check_call(["/usr/bin/yum", "install", "-y"] + self.pkgs_to_install)
+        # We want to prevent the leapp packages from being updated accidentally to
+        # the latest version (for example by using 'yum update -y'). Therefore, we
+        # should disable the 'elevate' repository. Additionally, this will prevent
+        # the pre-checker from detecting leapp as outdated and prevent re-evaluation
+        # on the next restart.
+        util.logged_check_call(["/usr/bin/yum-config-manager", "--disable", "elevate"])
 
     def _post_action(self) -> None:
         rpm.remove_packages(rpm.filter_installed_packages(self.pkgs_to_install + ["elevate-release"]))
