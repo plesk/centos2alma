@@ -129,6 +129,7 @@ To monitor the conversion progress in real time, run the '{path_to_script} --mon
 """
 
     def _prepare_action(self) -> None:
+        motd.restore_ssh_login_message()
         motd.add_inprogress_ssh_login_message(self.in_progress_message)
 
     def _post_action(self) -> None:
