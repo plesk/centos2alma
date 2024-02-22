@@ -38,7 +38,7 @@ class RulePleskRelatedServices(action.ActiveAction):
         # so we should choose the right smtp service, otherwise they will conflict
         if systemd.is_service_exists("qmail.service"):
             self.plesk_systemd_services.append("qmail.service")
-        else:
+        elif systemd.is_service_exists("postfix.service"):
             self.plesk_systemd_services.append("postfix.service")
 
     def _prepare_action(self):
