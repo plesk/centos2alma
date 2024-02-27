@@ -190,6 +190,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.AdoptKolabRepositories(),
             actions.FixupImunify(),
             actions.PatchLeappErrorOutput(),
+            actions.PatchLeappDebugNonAsciiPackager(),
             actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
             actions.UpdatePlesk(),
             actions.PostgresReinstallModernPackage(),
