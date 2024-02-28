@@ -86,3 +86,24 @@ class PatchLeappErrorOutput(action.ActiveAction):
 
     def _revert_action(self) -> None:
         pass
+
+
+class PatchLeappDebugNonAsciiPackager(action.ActiveAction):
+
+    def __init__(self):
+        self.name = "patch leapp to allow print debug message for non-ascii packager"
+        self.path_to_src = "/usr/share/leapp-repository/repositories/system_upgrade/common/actors/redhatsignedrpmscanner/actor.py"
+
+    def is_required(self) -> bool:
+        return os.path.exists(self.path_to_src)
+
+    def _prepare_action(self) -> None:
+        # so sometimes we could have non-ascii packager name, in this case leapp will fail
+        # on printing debug message. So we need to encode it to utf-8 before print (and only before print I think)
+        files.replace_string(self.path_to_src, ", pkg.packager", ", pkg.packager.encode('utf-8')")
+
+    def _post_action(self) -> None:
+        pass
+
+    def _revert_action(self) -> None:
+        pass
