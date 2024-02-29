@@ -216,6 +216,12 @@ class FixSyslogLogrotateConfig(action.ActiveAction):
         with open(self.config_path, "w") as f:
             f.write(self.right_logrotate_config)
 
+        # File installed from the package not relay on our goals because
+        # it will rotate /var/log/maillog, which should be processed from plesk side
+        rpmnew_file = self.config_path + ".rpmnew"
+        if os.path.exists(rpmnew_file):
+            os.remove(rpmnew_file)
+
         motd.add_finish_ssh_login_message(f"The logrotate configuration for rsyslog has been updated. The old configuration has been saved as {path_to_backup}")
 
     def _revert_action(self):
