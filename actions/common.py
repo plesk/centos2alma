@@ -1,5 +1,6 @@
 # Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -209,9 +210,13 @@ class FixSyslogLogrotateConfig(action.ActiveAction):
         pass
 
     def _post_action(self):
-        files.backup_file(self.config_path)
+        path_to_backup = plesk.CONVERTER_TEMP_DIRECTORY + "/syslog.logrotate.bak"
+        shutil.move(self.config_path, path_to_backup)
+
         with open(self.config_path, "w") as f:
             f.write(self.right_logrotate_config)
+
+        motd.add_finish_ssh_login_message(f"The logrotate configuration for rsyslog has been updated. The old configuration has been saved as {path_to_backup}")
 
     def _revert_action(self):
         pass
