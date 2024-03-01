@@ -6,7 +6,7 @@ import sys
 import time
 import typing
 
-from common import action, files, motd, plesk, util
+from common import action, files, log, motd, plesk, rpm, util
 
 
 class FixNamedConfig(action.ActiveAction):
@@ -226,3 +226,37 @@ class FixSyslogLogrotateConfig(action.ActiveAction):
 
     def _revert_action(self):
         pass
+
+
+class RecreateAwstatConfigurationFiles(action.ActiveAction):
+    def __init__(self):
+        self.name = "recreate awstat configuration files for domains"
+
+    def get_awstat_domains(self) -> typing.Set[str]:
+        domains_awstats_directory = "/usr/local/psa/etc/awstats/"
+        domains = set()
+        for awstat_config_file in os.listdir(domains_awstats_directory):
+            if awstat_config_file.startswith("awstats.") and awstat_config_file.endswith("-http.conf"):
+                domains.add(awstat_config_file.split("awstats.")[-1].rsplit("-http.conf")[0])
+        return domains
+
+    def _prepare_action(self):
+        pass
+
+    def _post_action(self):
+        rpm.handle_all_rpmnew_files("/etc/awstats")
+
+        for domain in self.get_awstat_domains():
+            log.info(f"Recreating awstat configuration for domain: {domain}")
+            util.logged_check_call(
+                [
+                    "/usr/sbin/plesk", "sbin", "webstatmng", "--set-configs",
+                    "--stat-prog", "awstats", "--domain-name", domain
+                ], stdin=subprocess.DEVNULL
+            )
+
+    def _revert_action(self):
+        pass
+
+    def estimate_post_time(self) -> int:
+        return len(self.get_awstat_domains()) * 0.1 + 5
