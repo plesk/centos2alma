@@ -101,6 +101,9 @@ class ReinstallConflictPackages(action.ActiveAction):
             "python36-six": "python3-six",
             "python36-urllib3": "python3-urllib3",
             "libpcap": "libpcap",
+            "libwebp7": "libwebp",
+            "libzip5": "libzip",
+            "libytnef": "ytnef",
         }
 
     def _is_required(self):
