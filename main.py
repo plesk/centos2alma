@@ -196,6 +196,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.PostgresReinstallModernPackage(),
             actions.FixNamedConfig(),
             actions.RecreateAwstatConfigurationFiles(),
+            actions.IncreaseDovecotDHParameters(),
         ],
         3: [
             actions.DisablePleskSshBanner(),

@@ -3,6 +3,7 @@ from .common_checks import *
 from .common import *
 from .configure import *
 from .convert import *
+from .emails import *
 from .extensions import *
 from .installation import *
 from .mariadb import *
