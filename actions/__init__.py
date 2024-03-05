@@ -9,6 +9,7 @@ from .installation import *
 from .mariadb import *
 from .packages import *
 from .perl import *
+from .php import *
 from .postgres import *
 from .spamassassin import *
 from .systemd import *
