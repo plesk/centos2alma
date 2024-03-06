@@ -197,6 +197,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.FixNamedConfig(),
             actions.RecreateAwstatConfigurationFiles(),
             actions.IncreaseDovecotDHParameters(),
+            actions.FixOsVendorPhpFpmConfiguration(),
         ],
         3: [
             actions.DisablePleskSshBanner(),
