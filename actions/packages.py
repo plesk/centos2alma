@@ -276,3 +276,23 @@ class RestoreMissingNginx(action.ActiveAction):
 
     def estimate_post_time(self):
         return 3 * 60
+
+
+class CheckOutdatedLetsencryptExtensionRepository(action.CheckAction):
+    OUTDATED_LETSENCRYPT_REPO_PATHS = ["/etc/yum.repos.d/plesk-letsencrypt.repo", "/etc/yum.repos.d/plesk-ext-letsencrypt.repo"]
+
+    def __init__(self):
+        self.name = "checking if outdated repository for letsencrypt extension is used"
+        self.description = """There is outdated repository for letsencrypt extension used.
+\tTo resolve the problem perform following actions:
+\t1. make sure the letsencrypt extension is up to date from Plesk web interface
+\t2. rpm -qe plesk-letsencrypt-pre plesk-py27-pip plesk-py27-setuptools plesk-py27-virtualenv plesk-wheel-cffi plesk-wheel-cryptography plesk-wheel-psutil
+\t3. rm {repo_paths}
+"""
+
+    def _do_check(self):
+        for path in self.OUTDATED_LETSENCRYPT_REPO_PATHS:
+            if os.path.exists(path):
+                self.description = self.description.format(repo_paths=path)
+                return False
+        return True
