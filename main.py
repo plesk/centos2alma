@@ -144,6 +144,7 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             actions.CheckRepositoryDuplicates(),
             actions.CheckMariadbRepoAvailable(),
             actions.CheckPackagesUpToDate(),
+            actions.CheckOutdatedLetsencryptExtensionRepository(),
         ]
         if not options.upgrade_postgres_allowed:
             checks.append(actions.CheckOutdatedPostgresInstalled())
