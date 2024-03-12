@@ -1,4 +1,4 @@
-# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
+# Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
 from common import action, files, leapp_configs, log, motd, plesk, rpm, util
 
 import os
