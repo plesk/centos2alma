@@ -1,4 +1,4 @@
-# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
+# Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
 
 CONVERT_RESTART_MESSAGE = """
 \033[92m**************************************************************************************

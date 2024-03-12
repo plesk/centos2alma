@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
+# Copyright 1999-2024. WebPros International GmbH. All rights reserved.
 
 import actions
 
@@ -324,7 +324,7 @@ def handle_error(error: str) -> None:
     sys.stdout.write(messages.FAIL_MESSAGE_TAIL.format(DEFAULT_LOG_FILE))
 
     plesk.send_error_report(error_message)
-    plesk.send_conversion_status(True)
+    plesk.send_conversion_status(False)
 
     log.err(f"centos2alma process has been failed. Error: {error}")
     show_fail_motd()
