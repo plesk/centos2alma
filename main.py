@@ -184,6 +184,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.HandleConversionStatus(),
             actions.LeapInstallation(),
             actions.AddInProgressSshLoginMessage(),
+            actions.RevertChangesInGrub(),
         ],
         2: [
             actions.PrepareLeappConfigurationBackup(),

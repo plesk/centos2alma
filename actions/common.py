@@ -260,3 +260,38 @@ class RecreateAwstatConfigurationFiles(action.ActiveAction):
 
     def estimate_post_time(self) -> int:
         return len(self.get_awstat_domains()) * 0.1 + 5
+
+
+class RevertChangesInGrub(action.ActiveAction):
+    grub_configs_paths: typing.List[str]
+
+    def __init__(self):
+        self.name = "revert changes in grub made by elivate"
+        self.grub_configs_paths = [
+            "/boot/grub2/grub.cfg",
+            "/boot/grub2/grubenv",
+        ]
+
+    def _prepare_action(self):
+        for config in self.grub_configs_paths:
+            if os.path.exists(config):
+                files.backup_file(config)
+
+    def _post_action(self):
+        for config in self.grub_configs_paths:
+            if os.path.exists(config):
+                files.remove_backup(config)
+
+    def _revert_action(self):
+        for config in self.grub_configs_paths:
+            if os.path.exists(config):
+                files.restore_file_from_backup(config)
+
+    def estimate_prepare_time(self):
+        return 1
+
+    def estimate_post_time(self):
+        return 1
+
+    def estimate_revert_time(self):
+        return 1
