@@ -23,6 +23,7 @@ from common import action, dist, feedback, files, log, motd, plesk, systemd, wri
 
 DEFAULT_LOG_FILE = "/var/log/plesk/centos2alma.log"
 PRE_REBOOT_DELAY = 45
+PHP_MINIMAL_VERSION_ON_ALMALINUX = "7.1"
 
 
 def get_version() -> str:
@@ -133,9 +134,10 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             actions.PleskVersionIsActual(),
             actions.PleskInstallerNotInProgress(),
             actions.CheckAvailableSpace(),
-            actions.AssertMinPhpVersionInstalled("7.2"),
-            actions.AssertMinPhpVersionUsedByWebsites("7.2"),
-            actions.AssertMinPhpVersionUsedByCron("7.2"),
+            actions.AssertMinPhpVersionInstalled(PHP_MINIMAL_VERSION_ON_ALMALINUX),
+            actions.AssertMinPhpVersionUsedByWebsites(PHP_MINIMAL_VERSION_ON_ALMALINUX),
+            actions.AssertMinPhpVersionUsedByCron(PHP_MINIMAL_VERSION_ON_ALMALINUX),
+            actions.AssertOSVendorPHPUsedByWebsites(PHP_MINIMAL_VERSION_ON_ALMALINUX),
             actions.CheckGrubInstalled(),
             actions.CheckNoMoreThenOneKernelNamedNIC(),
             actions.CheckIsInContainer(),
