@@ -136,6 +136,7 @@ def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) ->
             actions.AssertMinPhpVersionInstalled("7.2"),
             actions.AssertMinPhpVersionUsedByWebsites("7.2"),
             actions.AssertMinPhpVersionUsedByCron("7.2"),
+            actions.AssertOSVendorPHPUsedByWebsites("7.2"),
             actions.CheckGrubInstalled(),
             actions.CheckNoMoreThenOneKernelNamedNIC(),
             actions.CheckIsInContainer(),
