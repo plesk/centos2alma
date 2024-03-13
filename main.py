@@ -184,6 +184,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.HandleConversionStatus(),
             actions.LeapInstallation(),
             actions.AddInProgressSshLoginMessage(),
+            actions.RevertChangesInGrub(),
         ],
         2: [
             actions.PrepareLeappConfigurationBackup(),
@@ -225,10 +226,14 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
         6: [
             actions.DoConvert(),
         ],
-        7: [
-            actions.PreRebootPause(messages.REBOOT_WARN_MESSAGE.format(delay=PRE_REBOOT_DELAY), PRE_REBOOT_DELAY),
-        ]
     })
+
+    if not options.no_reboot:
+        actions_map = merge_dicts_of_lists(actions_map, {
+            7: [
+                actions.PreRebootPause(messages.REBOOT_WARN_MESSAGE.format(delay=PRE_REBOOT_DELAY), PRE_REBOOT_DELAY),
+            ]
+        })
 
     if options.upgrade_postgres_allowed:
         actions_map = merge_dicts_of_lists(actions_map, {
