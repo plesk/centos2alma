@@ -1,8 +1,10 @@
 # Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
 import json
+import os
+import shutil
 import subprocess
 
-from common import action, log, util
+from common import action, files, log, motd, plesk, util
 
 
 class IncreaseDovecotDHParameters(action.ActiveAction):
@@ -49,3 +51,28 @@ class IncreaseDovecotDHParameters(action.ActiveAction):
 
     def estimate_post_time(self) -> int:
         return 5
+
+
+class RestoreDovecotConfiguration(action.ActiveAction):
+    dovecot_config_path: str
+
+    def __init__(self):
+        self.name = "restore Dovecot configuration"
+        self.dovecot_config_path = "/etc/dovecot/dovecot.conf"
+
+    def _is_required(self) -> bool:
+        return os.path.exists(self.dovecot_config_path)
+
+    def _prepare_action(self) -> None:
+        files.backup_file(self.dovecot_config_path)
+
+    def _post_action(self):
+        path_to_backup = plesk.CONVERTER_TEMP_DIRECTORY + "/dovecot.conf.bak"
+        if os.path.exists(self.dovecot_config_path):
+            shutil.copy(path_to_backup, self.dovecot_config_path)
+            motd.add_finish_ssh_login_message(f"The dovecot configuration '{self.dovecot_config_path}' has been restored from CentOS 7. Modern configuration was placed in '{path_to_backup}'.")
+
+        files.restore_file_from_backup(self.dovecot_config_path)
+
+    def _revert_action(self):
+        files.remove_backup(self.dovecot_config_path)
