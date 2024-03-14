@@ -199,6 +199,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.UpdatePlesk(),
             actions.PostgresReinstallModernPackage(),
             actions.FixNamedConfig(),
+            actions.RestoreDovecotConfiguration(),
             actions.RecreateAwstatConfigurationFiles(),
             actions.IncreaseDovecotDHParameters(),
             actions.FixOsVendorPhpFpmConfiguration(),
