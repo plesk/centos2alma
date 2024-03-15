@@ -401,6 +401,7 @@ def main():
                     help="Start the finalization stage. This returns Plesk to normal operation. "
                          "Can be run again if the conversion process failed to finish successfully earlier.")
     opts.add_option("-t", "--test", action="store_const", dest="stage", const=Stages.test, help=SUPPRESS_HELP)
+    opts.add_option("--test-finish", action="store_const", dest="stage", const=Stages.test | Stages.finish, help=SUPPRESS_HELP)
     opts.add_option("--retry", action="store_true", dest="retry", default=False,
                     help="Retry the most recently started stage. This option can only take effect "
                          "during the preparation stage.")
