@@ -69,7 +69,7 @@ class RestoreDovecotConfiguration(action.ActiveAction):
     def _post_action(self):
         path_to_backup = plesk.CONVERTER_TEMP_DIRECTORY + "/dovecot.conf.bak"
         if os.path.exists(self.dovecot_config_path):
-            shutil.copy(path_to_backup, self.dovecot_config_path)
+            shutil.copy(self.dovecot_config_path, path_to_backup)
             motd.add_finish_ssh_login_message(f"The dovecot configuration '{self.dovecot_config_path}' has been restored from CentOS 7. Modern configuration was placed in '{path_to_backup}'.")
 
         files.restore_file_from_backup(self.dovecot_config_path)
