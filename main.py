@@ -123,6 +123,10 @@ def convert_string_to_stage(option, opt_str, value, parser):
 
 
 def is_required_conditions_satisfied(options: typing.Any, stage_flag: Stages) -> bool:
+    if Stages.test in stage_flag:
+        # We don't need to check anything if we testing one action
+        return True
+
     checks = []
     if Stages.finish in stage_flag:
         checks = [
