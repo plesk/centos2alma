@@ -27,7 +27,9 @@ class RulePleskRelatedServices(action.ActiveAction):
             "sw-cp-server.service",
             "sw-engine.service",
         ]
-        self.plesk_systemd_services = [service for service in plesk_known_systemd_services if systemd.is_service_exists(service)]
+        self.plesk_systemd_services = [
+            service for service in plesk_known_systemd_services if systemd.is_service_can_be_started(service)
+        ]
 
         # Oneshot services are special, so they shouldn't be started on revert or after conversion, just enabled
         self.oneshot_services = [
@@ -36,9 +38,9 @@ class RulePleskRelatedServices(action.ActiveAction):
 
         # We don't remove postfix service when remove it during qmail installation
         # so we should choose the right smtp service, otherwise they will conflict
-        if systemd.is_service_exists("qmail.service"):
+        if systemd.is_service_can_be_started("qmail.service"):
             self.plesk_systemd_services.append("qmail.service")
-        elif systemd.is_service_exists("postfix.service"):
+        elif systemd.is_service_can_be_started("postfix.service"):
             self.plesk_systemd_services.append("postfix.service")
 
     def _prepare_action(self):
