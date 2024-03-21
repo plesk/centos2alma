@@ -208,9 +208,9 @@ class AdoptRepositories(action.ActiveAction):
     def _adopt_plesk_repositories(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
             rpm.remove_repositories(file, [
-                lambda id, _1, _2, _3: id in ["PLESK_17_PHP52", "PLESK_17_PHP53",
-                                              "PLESK_17_PHP54", "PLESK_17_PHP55",
-                                              "PLESK_17_PHP56", "PLESK_17_PHP70"],
+                lambda id, _1, _2, _3, _4: id in ["PLESK_17_PHP52", "PLESK_17_PHP53",
+                                                  "PLESK_17_PHP54", "PLESK_17_PHP55",
+                                                  "PLESK_17_PHP56", "PLESK_17_PHP70"],
             ])
             leapp_configs.adopt_repositories(file)
 
@@ -232,7 +232,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
 
     def _is_required(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
-            for _1, _2, url, _3, _4 in rpm.extract_repodata(file):
+            for _1, _2, url, _3, _4, _5 in rpm.extract_repodata(file):
                 if "PMM_0.1.10/thirdparty-rpm" in url:
                     return True
 
@@ -243,7 +243,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
             files.backup_file(file)
 
             rpm.remove_repositories(file, [
-                lambda _1, _2, baseurl, _3: "PMM_0.1.10/thirdparty-rpm" in baseurl,
+                lambda _1, _2, baseurl, _3, _4: "PMM_0.1.10/thirdparty-rpm" in baseurl,
             ])
 
     def _post_action(self):

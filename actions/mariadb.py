@@ -28,7 +28,7 @@ The MariaDB repository with id '{}' from the file '{}' is not accessible.
 
         for repofile in repofiles:
             for repo in rpm.extract_repodata(repofile):
-                repo_id, _, repo_baseurl, _, _ = repo
+                repo_id, _, repo_baseurl, _, _, _ = repo
                 if ".mariadb.org" not in repo_baseurl:
                     continue
 
@@ -68,7 +68,7 @@ class UpdateModernMariadb(action.ActiveAction):
         for repofile in repofiles:
             leapp_configs.adopt_repositories(repofile)
 
-        mariadb_repo_id, _1, _2, _3, _4 = [repo for repo in rpm.extract_repodata(repofiles[0])][0]
+        mariadb_repo_id, _1, _2, _3, _4, _5 = [repo for repo in rpm.extract_repodata(repofiles[0])][0]
 
         rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
                                                            "MariaDB-client-compat",
