@@ -296,3 +296,23 @@ class CheckOutdatedLetsencryptExtensionRepository(action.CheckAction):
                 self.description = self.description.format(repo_paths=path)
                 return False
         return True
+
+
+class AdoptAtomicRepositories(action.ActiveAction):
+    atomic_repository_path: str = "/etc/yum.repos.d/tortix-common.repo"
+
+    def __init__(self):
+        self.name = "adopting atomic repositories"
+
+    def is_required(self):
+        return os.path.exists(self.atomic_repository_path)
+
+    def _prepare_action(self):
+        leapp_configs.add_repositories_mapping([self.atomic_repository_path])
+
+    def _post_action(self):
+        # We don't need to adopt repositories here because repositories uses $releasever-$basearch
+        pass
+
+    def _revert_action(self):
+        pass

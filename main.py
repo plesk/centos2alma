@@ -196,6 +196,7 @@ def construct_actions(options: typing.Any, stage_flag: Stages) -> typing.Dict[in
             actions.LeapReposConfiguration(),
             actions.LeapChoicesConfiguration(),
             actions.AdoptKolabRepositories(),
+            actions.AdoptAtomicRepositories(),
             actions.FixupImunify(),
             actions.PatchLeappErrorOutput(),
             actions.PatchLeappDebugNonAsciiPackager(),
