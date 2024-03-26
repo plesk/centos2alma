@@ -114,8 +114,8 @@ class ReinstallConflictPackages(action.ActiveAction):
 
         rpm.remove_packages(packages_to_remove)
 
-        with open(self.removed_packages_file, "w") as f:
-            f.write("\n".join(packages_to_remove))
+        with open(self.removed_packages_file, "a") as f:
+            f.write("\n".join(packages_to_remove) + "\n")
 
     def _post_action(self):
         if not os.path.exists(self.removed_packages_file):
@@ -123,7 +123,7 @@ class ReinstallConflictPackages(action.ActiveAction):
             return
 
         with open(self.removed_packages_file, "r") as f:
-            packages_to_install = [self.conflict_pkgs_map[pkg] for pkg in f.read().splitlines()]
+            packages_to_install = [self.conflict_pkgs_map[pkg] for pkg in set(f.read().splitlines())]
             rpm.install_packages(packages_to_install)
 
         os.unlink(self.removed_packages_file)
@@ -134,7 +134,7 @@ class ReinstallConflictPackages(action.ActiveAction):
             return
 
         with open(self.removed_packages_file, "r") as f:
-            packages_to_install = f.read().splitlines()
+            packages_to_install = list(set(f.read().splitlines()))
             rpm.install_packages(packages_to_install)
 
         os.unlink(self.removed_packages_file)
