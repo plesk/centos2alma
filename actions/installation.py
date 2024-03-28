@@ -30,7 +30,11 @@ class LeapInstallation(action.ActiveAction):
         util.logged_check_call(["/usr/bin/yum-config-manager", "--disable", "elevate"])
 
     def _post_action(self) -> None:
-        rpm.remove_packages(rpm.filter_installed_packages(self.pkgs_to_install + ["elevate-release"]))
+        rpm.remove_packages(
+            rpm.filter_installed_packages(
+                self.pkgs_to_install + ["elevate-release", "leapp-upgrade-el7toel8"]
+            )
+        )
 
         leapp_related_files = [
             "/root/tmp_leapp_py3/leapp",
