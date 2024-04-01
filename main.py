@@ -323,7 +323,7 @@ See the /var/log/plesk/centos2alma.log file for more information.
     motd.publish_finish_ssh_login_message()
 
 
-def handle_error(error: str) -> None:
+def handle_error(options: typing.Any, error: str) -> None:
     sys.stdout.write("\n{}\n".format(error))
     sys.stdout.write(messages.FAIL_MESSAGE_HEAD.format(DEFAULT_LOG_FILE))
 
@@ -332,7 +332,14 @@ def handle_error(error: str) -> None:
         sys.stdout.write(line)
         error_message += line
 
-    sys.stdout.write(messages.FAIL_MESSAGE_TAIL.format(DEFAULT_LOG_FILE))
+    additional_message = ""
+    if Stages.convert in options.stage:
+        additional_message = "To revert the server to its original state, call 'centos2alma --revert'."
+
+    sys.stdout.write(messages.FAIL_MESSAGE_TAIL.format(
+        path_to_log=DEFAULT_LOG_FILE,
+        additional_message=additional_message
+    ))
 
     plesk.send_error_report(error_message)
     plesk.send_conversion_status(False)
@@ -352,7 +359,7 @@ def do_convert(options: typing.Any) -> None:
         flow.validate_actions()
         start_flow(flow)
         if flow.is_failed():
-            handle_error(flow.get_error())
+            handle_error(options, flow.get_error())
             return 1
 
     if not options.no_reboot and (Stages.convert in options.stage or Stages.finish in options.stage):

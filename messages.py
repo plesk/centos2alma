@@ -32,9 +32,10 @@ The conversion process has failed. Here are the last 100 lines of the {} file:
 
 FAIL_MESSAGE_TAIL = """
 \033[91m**************************************************************************************
-The conversion process has failed. See the {} file for more information.
+The conversion process has failed. See the {path_to_log} file for more information.
 The last 100 lines of the file are shown above.
 For assistance, call 'centos2alma --prepare-feedback' and follow the instructions.
+{additional_message}
 **************************************************************************************\033[0m
 """
 
