@@ -1,8 +1,8 @@
-# Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
+# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import os
 import subprocess
 
-from common import action, files, leapp_configs, util
+from pleskdistup.common import action, files, leapp_configs, util
 
 _PATH_TO_PGSQL = '/var/lib/pgsql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
@@ -35,7 +35,7 @@ def _is_modern_database():
             return True
 
 
-class CheckOutdatedPostgresInstalled(action.CheckAction):
+class AssertOutdatedPostgresNotInstalled(action.CheckAction):
     def __init__(self):
         self.name = "checking postgres version 10 or later is installed"
         self.description = '''Postgres version less then 10. This means the database should be upgraded.
@@ -55,9 +55,10 @@ class PostgresDatabasesUpdate(action.ActiveAction):
     def _is_required(self):
         return _is_postgres_installed() and _is_database_initialized() and not _is_modern_database()
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         util.logged_check_call(['systemctl', 'stop', self.service_name])
         util.logged_check_call(['systemctl', 'disable', self.service_name])
+        return action.ActionResult()
 
     def _upgrade_database(self):
         util.logged_check_call(['dnf', 'install', '-y', 'postgresql-upgrade'])
@@ -79,12 +80,14 @@ class PostgresDatabasesUpdate(action.ActiveAction):
         util.logged_check_call(['systemctl', 'enable', self.service_name])
         util.logged_check_call(['systemctl', 'start', self.service_name])
 
-    def _post_action(self):
+    def _post_action(self) -> action.ActionResult:
         self._upgrade_database()
         self._enable_postgresql()
+        return action.ActionResult()
 
-    def _revert_action(self):
+    def _revert_action(self) -> action.ActionResult:
         self._enable_postgresql()
+        return action.ActionResult()
 
     def estimate_post_time(self):
         return 3 * 60
@@ -107,7 +110,7 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         res = subprocess.run(['/usr/bin/systemctl', 'is-active', service])
         return res.returncode == 0
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         leapp_configs.add_repositories_mapping(["/etc/yum.repos.d/pgdg-redhat-all.repo"])
 
         for major_version in self._get_versions():
@@ -118,7 +121,9 @@ class PostgresReinstallModernPackage(action.ActiveAction):
                 util.logged_check_call(['/usr/bin/systemctl', 'stop', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'disable', service_name])
 
-    def _post_action(self):
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
         for major_version in self._get_versions():
             if major_version > _MODERN_POSTGRES:
                 util.logged_check_call(['/usr/bin/dnf', '-q', '-y', 'module', 'disable', 'postgresql'])
@@ -135,13 +140,17 @@ class PostgresReinstallModernPackage(action.ActiveAction):
                 util.logged_check_call(['/usr/bin/systemctl', 'start', service_name])
                 os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
 
-    def _revert_action(self):
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
         for major_version in self._get_versions():
             if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
                 util.logged_check_call(['/usr/bin/systemctl', 'stop', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'disable', service_name])
                 os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
+
+        return action.ActionResult()
 
     def estimate_post_time(self):
         return 3 * 60

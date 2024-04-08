@@ -1,8 +1,8 @@
-# Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
+# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import os
 import shutil
 
-from common import action, rpm, util
+from pleskdistup.common import action, rpm, util
 
 
 class LeapInstallation(action.ActiveAction):
@@ -15,7 +15,7 @@ class LeapInstallation(action.ActiveAction):
             "leapp-data-almalinux-0.1-6.el7",
         ]
 
-    def _prepare_action(self) -> None:
+    def _prepare_action(self) -> action.ActionResult:
         if not rpm.is_package_installed("elevate-release"):
             util.logged_check_call(["/usr/bin/yum", "install", "-y", "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
 
@@ -28,8 +28,9 @@ class LeapInstallation(action.ActiveAction):
         # the pre-checker from detecting leapp as outdated and prevent re-evaluation
         # on the next restart.
         util.logged_check_call(["/usr/bin/yum-config-manager", "--disable", "elevate"])
+        return action.ActionResult()
 
-    def _post_action(self) -> None:
+    def _post_action(self) -> action.ActionResult:
         rpm.remove_packages(
             rpm.filter_installed_packages(
                 self.pkgs_to_install + ["elevate-release", "leapp-upgrade-el7toel8"]
@@ -53,8 +54,10 @@ class LeapInstallation(action.ActiveAction):
             if os.path.exists(directory):
                 shutil.rmtree(directory)
 
-    def _revert_action(self) -> None:
-        pass
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
     def estimate_prepare_time(self) -> int:
         return 40

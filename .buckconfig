@@ -1,6 +1,11 @@
 # Documentation: https://buckbuild.com/concept/buckconfig.html
 
+[parser]
+    python_interpreter = /usr/bin/python2
 [python]
     interpreter = python2.7
 [python#py3]
     interpreter = /usr/bin/python3.6
+[repositories]
+    centos2alma = .
+    dist-upgrader = ./dist-upgrader

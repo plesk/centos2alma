@@ -1,14 +1,14 @@
-# Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
+# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import subprocess
 import os
 
-from common import action, leapp_configs, files, log, mariadb, rpm, util
+from pleskdistup.common import action, leapp_configs, files, log, mariadb, rpm, util
 
 
 MARIADB_VERSION_ON_ALMA = mariadb.MariaDBVersion("10.3.39")
 
 
-class CheckMariadbRepoAvailable(action.CheckAction):
+class AssertMariadbRepoAvailable(action.CheckAction):
     def __init__(self):
         self.name = "check mariadb repo available"
         self.description = """
@@ -49,7 +49,7 @@ class UpdateModernMariadb(action.ActiveAction):
     def _is_required(self) -> bool:
         return mariadb.is_mariadb_installed() and mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA
 
-    def _prepare_action(self) -> None:
+    def _prepare_action(self) -> action.ActionResult:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
         if len(repofiles) == 0:
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format("/etc/yum.repos.d/mariadb.repo"))
@@ -59,11 +59,12 @@ class UpdateModernMariadb(action.ActiveAction):
 
         log.debug("Set repository mapping in the leapp configuration file")
         leapp_configs.set_package_repository("mariadb", "alma-mariadb")
+        return action.ActionResult()
 
-    def _post_action(self) -> None:
+    def _post_action(self) -> action.ActionResult:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["mariadb.repo"])
         if len(repofiles) == 0:
-            return 0
+            return action.ActionResult()
 
         for repofile in repofiles:
             leapp_configs.adopt_repositories(repofile)
@@ -78,9 +79,10 @@ class UpdateModernMariadb(action.ActiveAction):
                                                            "MariaDB-server-compat",
                                                            "MariaDB-shared"]))
         rpm.install_packages(["MariaDB-client", "MariaDB-server"], repository=mariadb_repo_id)
+        return action.ActionResult()
 
-    def _revert_action(self) -> None:
-        pass
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
     def estimate_prepare_time(self) -> int:
         return 30
@@ -96,10 +98,17 @@ class UpdateMariadbDatabase(action.ActiveAction):
     def _is_required(self) -> bool:
         return mariadb.is_mariadb_installed() and not mariadb.get_installed_mariadb_version() > MARIADB_VERSION_ON_ALMA
 
-    def _prepare_action(self) -> None:
-        pass
+    def _prepare_action(self) -> action.ActionResult:
+        rpm.remove_packages(rpm.filter_installed_packages(["MariaDB-client",
+                                                           "MariaDB-client-compat",
+                                                           "MariaDB-compat",
+                                                           "MariaDB-common",
+                                                           "MariaDB-server",
+                                                           "MariaDB-server-compat",
+                                                           "MariaDB-shared"]))
+        return action.ActionResult()
 
-    def _post_action(self) -> None:
+    def _post_action(self) -> action.ActionResult:
         # Leapp is not remove non-standard MariaDB-client package. But since we have updated
         # mariadb to 10.3.35 old client is not relevant anymore. So we have to switch to new client.
         # On the other hand we want to be sure AlmaLinux mariadb-server installed as well
@@ -125,9 +134,10 @@ class UpdateMariadbDatabase(action.ActiveAction):
         # Also find a way to drop cookies, because it will ruin your day
         # We have to delete it once again, because leapp going to install it in scope of conversion process,
         # but without right configs
+        return action.ActionResult()
 
-    def _revert_action(self) -> None:
-        pass
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
     def estimate_post_time(self):
         return 2 * 60
@@ -140,11 +150,12 @@ class AddMysqlConnector(action.ActiveAction):
     def _is_required(self) -> bool:
         return mariadb.is_mysql_installed
 
-    def _prepare_action(self) -> None:
-        pass
+    def _prepare_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
-    def _post_action(self) -> None:
+    def _post_action(self) -> action.ActionResult:
         subprocess.check_call(["/usr/bin/dnf", "install", "-y", "mariadb-connector-c"])
+        return action.ActionResult()
 
-    def _revert_action(self) -> None:
-        pass
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()

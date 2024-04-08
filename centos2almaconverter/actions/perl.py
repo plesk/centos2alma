@@ -1,8 +1,8 @@
-# Copyright 1999-2024. WebPros International GmbH. All rights reserved.
+# Copyright 1999-2023. Plesk International GmbH. All rights reserved.
 import os
 import shutil
 
-from common import action, files, log, motd, plesk, rpm
+from pleskdistup.common import action, files, log, motd, plesk, rpm
 
 CPAN_MODULES_DIRECTORY = "/usr/local/lib64/perl5"
 CPAN_MODULES_RPM_MAPPING = {
@@ -34,7 +34,7 @@ CPAN_MODULES_RPM_MAPPING = {
 }
 
 
-class CheckUnknownPerlCpanModules(action.CheckAction):
+class AssertThereIsNoUnknownPerlCpanModules(action.CheckAction):
     def __init__(self):
         self.name = "checking if there are no unknown perl cpan modules"
         self.description = """There are Perl modules installed by CPAN without known RPM package analogues are found.
@@ -66,14 +66,14 @@ class CheckUnknownPerlCpanModules(action.CheckAction):
 
 
 class ReinstallPerlCpanModules(action.ActiveAction):
-    def __init__(self):
+    def __init__(self, store_dir: str):
         self.name = "reinstalling perl cpan modules"
-        self.removed_modules_file = plesk.CONVERTER_TEMP_DIRECTORY + "/centos2alma_removed_perl_modules.txt"
+        self.removed_modules_file = os.path.join(store_dir, "centos2alma_removed_perl_modules.txt")
 
     def _is_required(self):
         return not files.is_directory_empty(CPAN_MODULES_DIRECTORY)
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         with open(self.removed_modules_file, "w") as f:
             for module in files.find_files_case_insensitive(CPAN_MODULES_DIRECTORY, ["*.pm"], recursive=True):
                 if module in CPAN_MODULES_RPM_MAPPING.keys():
@@ -84,13 +84,14 @@ class ReinstallPerlCpanModules(action.ActiveAction):
         # Since we can't be sure cpan-minimal is installed, we have to
         # remove all in barbaric way.
         shutil.move(CPAN_MODULES_DIRECTORY, CPAN_MODULES_DIRECTORY + ".backup")
+        return action.ActionResult()
 
-    def _post_action(self):
+    def _post_action(self) -> action.ActionResult:
         if not os.path.exists(self.removed_modules_file):
-            no_file_warning = "The file containing the list of removed Perl modules does not exist. However, the action itself was not skipped. You can find the previously installed modules at the following path: {}.".format(CPAN_MODULES_DIRECTORY + ".backup")
+            no_file_warning = "The file containing the list of removed Perl modules does not exist. However, the action itself was not skipped. You can find the previously installed modules at the following path: {}.\n".format(CPAN_MODULES_DIRECTORY + ".backup")
             log.warn(no_file_warning)
             motd.add_finish_ssh_login_message(no_file_warning)
-            return
+            return action.ActionResult()
 
         with open(self.removed_modules_file, "r") as f:
             packages_to_install = f.read().splitlines()
@@ -98,10 +99,12 @@ class ReinstallPerlCpanModules(action.ActiveAction):
 
         os.unlink(self.removed_modules_file)
         shutil.rmtree(CPAN_MODULES_DIRECTORY + ".backup")
+        return action.ActionResult()
 
-    def _revert_action(self):
+    def _revert_action(self) -> action.ActionResult:
         shutil.move(CPAN_MODULES_DIRECTORY + ".backup", CPAN_MODULES_DIRECTORY)
         os.unlink(self.removed_modules_file)
+        return action.ActionResult()
 
     def estimate_post_time(self):
         return 60
