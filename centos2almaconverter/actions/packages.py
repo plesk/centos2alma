@@ -1,8 +1,9 @@
-# Copyright 1999 - 2024. WebPros International GmbH. All rights reserved.
-from common import action, files, leapp_configs, log, motd, plesk, rpm, util
-
+# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
 import os
+import typing
 import shutil
+
+from pleskdistup.common import action, files, leapp_configs, log, motd, packages, plesk, rpm, util
 
 
 class RemovingPleskConflictPackages(action.ActiveAction):
@@ -16,14 +17,16 @@ class RemovingPleskConflictPackages(action.ActiveAction):
             "psa-mod_proxy",
         ]
 
-    def _prepare_action(self):
-        rpm.remove_packages(rpm.filter_installed_packages(self.conflict_pkgs))
+    def _prepare_action(self) -> action.ActionResult:
+        packages.remove_packages(rpm.filter_installed_packages(self.conflict_pkgs))
+        return action.ActionResult()
 
-    def _post_action(self):
-        pass
+    def _post_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
-    def _revert_action(self):
-        rpm.install_packages(self.conflict_pkgs)
+    def _revert_action(self) -> action.ActionResult:
+        packages.install_packages(self.conflict_pkgs)
+        return action.ActionResult()
 
     def estimate_prepare_time(self):
         return 2
@@ -36,27 +39,30 @@ class ReinstallPleskComponents(action.ActiveAction):
     def __init__(self):
         self.name = "re-installing plesk components"
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         components_pkgs = [
             "plesk-roundcube",
             "psa-phpmyadmin",
         ]
 
-        rpm.remove_packages(rpm.filter_installed_packages(components_pkgs))
+        packages.remove_packages(rpm.filter_installed_packages(components_pkgs))
+        return action.ActionResult()
 
-    def _post_action(self):
+    def _post_action(self) -> action.ActionResult:
         # We should reinstall psa-phpmyadmin over plesk installer to make sure every trigger
         # will be called. It's because triggers that creates phpmyadmin configuration files
         # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
-        rpm.remove_packages(["psa-phpmyadmin"])
+        packages.remove_packages(["psa-phpmyadmin"])
         util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
 
         util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "roundcube"])
+        return action.ActionResult()
 
-    def _revert_action(self):
+    def _revert_action(self) -> action.ActionResult:
         util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
         util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "roundcube"])
+        return action.ActionResult()
 
     def estimate_prepare_time(self):
         return 10
@@ -69,9 +75,12 @@ class ReinstallPleskComponents(action.ActiveAction):
 
 
 class ReinstallConflictPackages(action.ActiveAction):
-    def __init__(self):
+    removed_packages_file: str
+    conflict_pkgs_map: typing.Dict[str, str]
+
+    def __init__(self, temp_directory: str):
         self.name = "re-installing common conflict packages"
-        self.removed_packages_file = plesk.CONVERTER_TEMP_DIRECTORY + "/centos2alma_removed_packages.txt"
+        self.removed_packages_file = temp_directory + "/centos2alma_removed_packages.txt"
         self.conflict_pkgs_map = {
             "galera": "galera",
             "python36-argcomplete": "python3-argcomplete",
@@ -109,7 +118,7 @@ class ReinstallConflictPackages(action.ActiveAction):
     def _is_required(self):
         return len(rpm.filter_installed_packages(self.conflict_pkgs_map.keys())) > 0
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         packages_to_remove = rpm.filter_installed_packages(self.conflict_pkgs_map.keys())
 
         rpm.remove_packages(packages_to_remove)
@@ -117,27 +126,31 @@ class ReinstallConflictPackages(action.ActiveAction):
         with open(self.removed_packages_file, "a") as f:
             f.write("\n".join(packages_to_remove) + "\n")
 
-    def _post_action(self):
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
         if not os.path.exists(self.removed_packages_file):
             log.warn("File with removed packages list is not exists. While the action itself was not skipped. Skip reinstalling packages.")
-            return
+            return action.ActionResult()
 
         with open(self.removed_packages_file, "r") as f:
             packages_to_install = [self.conflict_pkgs_map[pkg] for pkg in set(f.read().splitlines())]
             rpm.install_packages(packages_to_install)
 
         os.unlink(self.removed_packages_file)
+        return action.ActionResult()
 
-    def _revert_action(self):
+    def _revert_action(self) -> action.ActionResult:
         if not os.path.exists(self.removed_packages_file):
             log.warn("File with removed packages list is not exists. While the action itself was not skipped. Skip reinstalling packages.")
-            return
+            return action.ActionResult()
 
         with open(self.removed_packages_file, "r") as f:
             packages_to_install = list(set(f.read().splitlines()))
             rpm.install_packages(packages_to_install)
 
         os.unlink(self.removed_packages_file)
+        return action.ActionResult()
 
     def estimate_prepare_time(self):
         return 10
@@ -157,30 +170,6 @@ class ReinstallConflictPackages(action.ActiveAction):
         return 60 + 10 * pkgs_number
 
 
-class UpdatePlesk(action.ActiveAction):
-    def __init__(self):
-        self.name = "updating plesk"
-
-    def _prepare_action(self):
-        # The conversion process removes the python36-lxml package since it conflicts with python3-lxml from AlmaLinux.
-        # If the conversion fails for any reason and there is no rollback, we need to reinstall the package.
-        # Otherwise, the Plesk installer will encounter issues. The problem with conversion only occurs when
-        # new Plesk packages have been published, such as hotfixes, so the impact of the problem is low.
-        # However, because we don't do a rollback for every conversion failure, this scenario is possible
-        # and could be confusing for users. Therefore, we've decided to handle it proactively.
-        if not rpm.is_package_installed("python36-lxml"):
-            rpm.install_packages(["python36-lxml"])
-
-        util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
-
-    def _post_action(self):
-        pass
-
-    def _revert_action(self):
-        pass
-
-    def estimate_prepare_time(self):
-        return 3 * 60
 
 
 CHANGED_REPOS_MSG_FMT = """During the conversion, some of customized .repo files were updated. You can find the old
@@ -193,14 +182,21 @@ class AdoptRepositories(action.ActiveAction):
     def __init__(self):
         self.name = "adopting repositories"
 
-    def _prepare_action(self):
-        pass
+    def _prepare_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
     def _use_rpmnew_repositories(self):
         # The problem is about changed repofiles, that leapp tring to install form packages.
-        # For example, when epel.repo file was changed, dnf will save the new one as epel.repo.rpmnew. 
+        # For example, when epel.repo file was changed, dnf will save the new one as epel.repo.rpmnew.
         # I beleive there could be other files with the same problem, so lets iterate every .rpmnew file in /etc/yum.repos.d
-        fixed_list = rpm.handle_all_rpmnew_files("/etc/yum.repos.d")
+        fixed_list = []
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.rpmnew"]):
+            original_file = file[:-len(".rpmnew")]
+            if os.path.exists(original_file):
+                shutil.move(original_file, original_file + ".rpmsave")
+                fixed_list.append(original_file)
+
+            shutil.move(file, original_file)
 
         if len(fixed_list) > 0:
             motd.add_finish_ssh_login_message(CHANGED_REPOS_MSG_FMT.format(changed_files="\n\t".join(fixed_list)))
@@ -214,13 +210,14 @@ class AdoptRepositories(action.ActiveAction):
             ])
             leapp_configs.adopt_repositories(file)
 
-    def _post_action(self):
+    def _post_action(self) -> action.ActionResult:
         self._use_rpmnew_repositories()
         self._adopt_plesk_repositories()
         util.logged_check_call(["/usr/bin/dnf", "-y", "update"])
+        return action.ActionResult()
 
-    def _revert_action(self):
-        pass
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
     def estimate_post_time(self):
         return 2 * 60
@@ -230,7 +227,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
     def __init__(self):
         self.name = "removing old migrator thirdparty packages"
 
-    def _is_required(self):
+    def _is_required(self) -> bool:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             for _1, _2, url, _3, _4, _5 in rpm.extract_repodata(file):
                 if "PMM_0.1.10/thirdparty-rpm" in url:
@@ -238,41 +235,45 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
 
         return False
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             files.backup_file(file)
 
             rpm.remove_repositories(file, [
-                lambda _1, _2, baseurl, _3, _4: "PMM_0.1.10/thirdparty-rpm" in baseurl,
+                lambda _1, _2, baseurl, _3: "PMM_0.1.10/thirdparty-rpm" in baseurl,
             ])
+        return action.ActionResult()
 
-    def _post_action(self):
+    def _post_action(self) -> action.ActionResult:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             files.remove_backup(file)
+        return action.ActionResult()
 
-    def _revert_action(self):
+    def _revert_action(self) -> action.ActionResult:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             files.restore_file_from_backup(file)
+        return action.ActionResult()
 
 
 class RestoreMissingNginx(action.ActiveAction):
     def __init__(self):
         self.name = "restore nginx if it was removed during the conversion"
 
-    def _is_required(self):
+    def _is_required(self) -> bool:
         # nginx related to plesk could be removed by user. So we need to make sure
         # it is installed before we start the conversion
-        return rpm.is_package_installed("sw-nginx")
+        return packages.is_package_installed("sw-nginx")
 
-    def _prepare_action(self):
-        pass
+    def _prepare_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
-    def _post_action(self):
-        if not rpm.is_package_installed("sw-nginx"):
+    def _post_action(self) -> action.ActionResult:
+        if not packages.is_package_installed("sw-nginx"):
             util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "nginx"])
+        return action.ActionResult()
 
-    def _revert_action(self):
-        pass
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
     def estimate_post_time(self):
         return 3 * 60
@@ -290,7 +291,7 @@ class CheckOutdatedLetsencryptExtensionRepository(action.CheckAction):
 \t3. rm {repo_paths}
 """
 
-    def _do_check(self):
+    def _do_check(self) -> bool:
         for path in self.OUTDATED_LETSENCRYPT_REPO_PATHS:
             if os.path.exists(path):
                 self.description = self.description.format(repo_paths=path)
@@ -304,15 +305,16 @@ class AdoptAtomicRepositories(action.ActiveAction):
     def __init__(self):
         self.name = "adopting atomic repositories"
 
-    def is_required(self):
+    def is_required(self) -> bool:
         return os.path.exists(self.atomic_repository_path)
 
-    def _prepare_action(self):
+    def _prepare_action(self) -> action.ActionResult:
         leapp_configs.add_repositories_mapping([self.atomic_repository_path])
+        return action.ActionResult()
 
-    def _post_action(self):
+    def _post_action(self) -> action.ActionResult:
         # We don't need to adopt repositories here because repositories uses $releasever-$basearch
-        pass
+        return action.ActionResult()
 
-    def _revert_action(self):
-        pass
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()

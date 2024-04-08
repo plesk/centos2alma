@@ -1,0 +1,21 @@
+# Copyright 1999-2023. Plesk International GmbH. All rights reserved.
+# vim:ft=python:
+
+PRODUCT_VERSION = '1.3.0'
+
+genrule(
+    name = 'version',
+    out = 'version.json',
+    bash = r"""echo "{\"version\": \"%s\", \"revision\": \"`git rev-parse HEAD`\"}" > $OUT""" % (PRODUCT_VERSION),
+)
+
+python_library(
+    name = 'lib',
+    srcs = glob(
+        ['**/*.py'],
+    ),
+    resources = [
+        ':version',
+    ],
+    visibility = ['PUBLIC'],
+)
