@@ -119,7 +119,7 @@ class ReinstallConflictPackages(action.ActiveAction):
         return len(rpm.filter_installed_packages(self.conflict_pkgs_map.keys())) > 0
 
     def _prepare_action(self) -> action.ActionResult:
-        packages_to_remove = rpm.filter_installed_packages(self.conflict_pkgs_map.keys())
+        packages_to_remove = rpm.filter_installed_packages(list(self.conflict_pkgs_map.keys()))
 
         rpm.remove_packages(packages_to_remove)
 
@@ -230,7 +230,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
     def _is_required(self) -> bool:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
             for _1, _2, url, _3, _4, _5 in rpm.extract_repodata(file):
-                if "PMM_0.1.10/thirdparty-rpm" in url:
+                if url and "PMM_0.1.10/thirdparty-rpm" in url:
                     return True
 
         return False
@@ -240,7 +240,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
             files.backup_file(file)
 
             rpm.remove_repositories(file, [
-                lambda _1, _2, baseurl, _3: "PMM_0.1.10/thirdparty-rpm" in baseurl,
+                lambda _1, _2, baseurl, _3, _4: (baseurl is not None and "PMM_0.1.10/thirdparty-rpm" in baseurl),
             ])
         return action.ActionResult()
 

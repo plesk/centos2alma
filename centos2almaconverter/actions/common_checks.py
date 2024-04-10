@@ -9,6 +9,9 @@ import subprocess
 from pleskdistup.common import action, dist, files, log, version
 
 
+# Todo. Action is not relevant now, because we checking the same thing of framework side
+# Additionaly platrofm module has no linux_distribution method in modern version of python
+# so we should migrate to our common.distro
 class AssertDistroIsCentos79(action.CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
@@ -30,7 +33,7 @@ class AssertDistroIsAlmalinux8(action.CheckAction):
         self.description = "You are running a distributive other than AlmaLinux 8. The finalization stage can only be started on AlmaLinux 8."
 
     def _do_check(self) -> bool:
-        return dist.get_distro() == dist.Distro.ALMALINUX8
+        return dist.get_distro() == dist.AlmaLinux("8")
 
 
 class AssertNoMoreThenOneKernelNamedNIC(action.CheckAction):
@@ -71,13 +74,13 @@ class AssertLastInstalledKernelInUse(action.CheckAction):
         return version.KernelVersion(curr_kernel)
 
     def _get_last_installed_kernel_version(self) -> version.KernelVersion:
-        versions = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
+        rpm_output = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
         # There is 'kernel-' prefix, that doesn't matter for us now, so just skip it
-        versions = [ver.split("-", 1)[-1] for ver in versions]
+        rpm_output = [ver.split("-", 1)[-1] for ver in rpm_output]
 
-        log.debug("Installed kernel versions: {}".format(', '.join(versions)))
+        log.debug("Installed kernel versions: {}".format(', '.join(rpm_output)))
 
-        versions = [version.KernelVersion(ver) for ver in versions]
+        versions = [version.KernelVersion(ver) for ver in rpm_output]
         return max(versions)
 
     def _is_realtime_installed(self) -> bool:
