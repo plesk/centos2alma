@@ -6,10 +6,10 @@ import platform
 import shutil
 import subprocess
 
-from pleskdistup.common import action, dist, files, log, plesk, rpm, version
+from pleskdistup.common import action, dist, files, log, version
 
 
-class DistroIsCentos79(action.CheckAction):
+class AssertDistroIsCentos79(action.CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
         self.description = """You are running a distributive other than CentOS 7.9. At the moment, only CentOS 7.9 is supported.
@@ -174,7 +174,7 @@ class AssertAvailableSpace(action.CheckAction):
 \tFree up enough disk space and try again.
 """
 
-    def _huminize_size(self, size):
+    def _huminize_size(self, size) -> str:
         original = size
         for unit in ("B", "KB", "MB", "GB", "TB"):
             if size < 1024:

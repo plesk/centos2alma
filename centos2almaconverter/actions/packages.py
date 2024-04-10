@@ -3,7 +3,7 @@ import os
 import typing
 import shutil
 
-from pleskdistup.common import action, files, leapp_configs, log, motd, packages, plesk, rpm, util
+from pleskdistup.common import action, files, leapp_configs, log, motd, packages, rpm, util
 
 
 class RemovingPleskConflictPackages(action.ActiveAction):
