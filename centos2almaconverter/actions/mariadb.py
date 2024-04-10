@@ -1,4 +1,4 @@
-# Copyright 1999 - 2023. Plesk International GmbH. All rights reserved.
+# Copyright 1999 - 2024. Plesk International GmbH. All rights reserved.
 import subprocess
 import os
 
@@ -29,7 +29,7 @@ The MariaDB repository with id '{}' from the file '{}' is not accessible.
         for repofile in repofiles:
             for repo in rpm.extract_repodata(repofile):
                 repo_id, _, repo_baseurl, _, _, _ = repo
-                if ".mariadb.org" not in repo_baseurl:
+                if not repo_baseurl or ".mariadb.org" not in repo_baseurl:
                     continue
 
                 # Since repository will be deprecated for any distro at once it looks fine to check only for 7 on x86_64
@@ -148,7 +148,7 @@ class AddMysqlConnector(action.ActiveAction):
         self.name = "install mysql connector"
 
     def _is_required(self) -> bool:
-        return mariadb.is_mysql_installed
+        return mariadb.is_mysql_installed()
 
     def _prepare_action(self) -> action.ActionResult:
         return action.ActionResult()
