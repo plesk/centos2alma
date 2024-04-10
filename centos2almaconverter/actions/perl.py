@@ -102,8 +102,12 @@ class ReinstallPerlCpanModules(action.ActiveAction):
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
-        shutil.move(CPAN_MODULES_DIRECTORY + ".backup", CPAN_MODULES_DIRECTORY)
-        os.unlink(self.removed_modules_file)
+        if os.path.exists(CPAN_MODULES_DIRECTORY + ".backup"):
+            shutil.move(CPAN_MODULES_DIRECTORY + ".backup", CPAN_MODULES_DIRECTORY)
+
+        if os.path.exists(self.removed_modules_file):
+            os.unlink(self.removed_modules_file)
+
         return action.ActionResult()
 
     def estimate_post_time(self):
