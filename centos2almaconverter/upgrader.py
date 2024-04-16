@@ -195,7 +195,7 @@ class Centos2AlmaConverter(DistUpgrader):
 
         FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION = "7.1"
         checks = [
-            common_actions.AssertMinPleskVersion("18.0.43"),
+            common_actions.AssertPleskVersionIsAvailable(),
             common_actions.AssertPleskInstallerNotInProgress(),
             centos2alma_actions.AssertAvailableSpace(),
             common_actions.AssertMinPhpVersionInstalled(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
