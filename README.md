@@ -28,8 +28,8 @@ Do not use the script if any of the following is true:
 - **More than one kernel named interfaces (like ethX) are not supported**. Stability of such names are not guaranteed, so leapp prevent the conversion in such cases.
 
 ## Requirements
-- Plesk 18.0.43 or later.
-- CentOS 7.9 or later. 
+- Plesk version is more than five releases behind the latest version.
+- CentOS 7.9 or later.
 - grub is installed
 - At least 5 GB of free disk space.
 - At least 1 GB of RAM.
@@ -39,8 +39,8 @@ To retrieve the latest available version of the tool, please navigate to the "Re
 
 To prepare the latest version of the tool for use from a command line, please run the following commands:
 ```shell
-> wget https://github.com/plesk/centos2alma/releases/download/v1.2.4/centos2alma-1.2.4.zip
-> unzip centos2alma-1.2.4.zip
+> wget https://github.com/plesk/centos2alma/releases/download/v1.3.0/centos2alma-1.3.0.zip
+> unzip centos2alma-1.3.0.zip
 > chmod 755 centos2alma
 ```
 
