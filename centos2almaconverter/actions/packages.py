@@ -3,7 +3,7 @@ import os
 import typing
 import shutil
 
-from pleskdistup.common import action, files, leapp_configs, log, motd, packages, rpm, util
+from pleskdistup.common import action, files, leapp_configs, log, motd, packages, rpm, systemd, util
 
 
 class RemovingPleskConflictPackages(action.ActiveAction):
@@ -62,6 +62,7 @@ class ReinstallPleskComponents(action.ActiveAction):
     def _revert_action(self) -> action.ActionResult:
         util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
         util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "roundcube"])
+        systemd.restart_services(["sw-cp-server"])
         return action.ActionResult()
 
     def estimate_prepare_time(self):
