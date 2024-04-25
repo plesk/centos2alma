@@ -2,38 +2,9 @@
 import os
 import subprocess
 
-from pleskdistup.common import action, files, leapp_configs, util
+from pleskdistup.common import action, files, leapp_configs, postgres, util
 
-_PATH_TO_PGSQL = '/var/lib/pgsql'
-_PATH_TO_PSQL_UTIL = '/usr/bin/psql'
-_PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
-_PATH_TO_OLD_DATA = os.path.join(_PATH_TO_PGSQL, 'data-old')
-_MODERN_POSTGRES = 10
-
-
-def _is_postgres_installed():
-    return os.path.exists(_PATH_TO_PGSQL) and os.path.exists(_PATH_TO_PSQL_UTIL)
-
-
-def _get_postgres_major_version():
-    version_out = subprocess.check_output([_PATH_TO_PSQL_UTIL, '--version'], universal_newlines=True)
-    return int(version_out.split(' ')[2].split('.')[0])
-
-
-def _is_database_initialized():
-    return os.path.exists(os.path.join(_PATH_TO_DATA, "PG_VERSION"))
-
-
-def _is_modern_database():
-    version_file_path = os.path.join(_PATH_TO_DATA, "PG_VERSION")
-
-    if not os.path.exists(version_file_path):
-        raise Exception('There is no "' + version_file_path + '" file')
-
-    with open(version_file_path, 'r') as version_file:
-        version = int(version_file.readline().split('.')[0])
-        if version >= _MODERN_POSTGRES:
-            return True
+_ALMA8_POSTGRES_VERSION = 10
 
 
 class AssertOutdatedPostgresNotInstalled(action.CheckAction):
@@ -44,7 +15,7 @@ class AssertOutdatedPostgresNotInstalled(action.CheckAction):
 \tOr update postgres to version 10 and upgrade your databases.'''
 
     def _do_check(self):
-        return not _is_postgres_installed() or not _is_database_initialized() or _get_postgres_major_version() >= _MODERN_POSTGRES
+        return not postgres.is_postgres_installed() or not postgres.is_database_initialized() or not postgres.is_database_major_version_lower(_ALMA8_POSTGRES_VERSION)
 
 
 class PostgresDatabasesUpdate(action.ActiveAction):
@@ -54,7 +25,7 @@ class PostgresDatabasesUpdate(action.ActiveAction):
         self.service_name = 'postgresql'
 
     def _is_required(self):
-        return _is_postgres_installed() and _is_database_initialized() and not _is_modern_database()
+        return postgres.is_postgres_installed() and postgres.is_database_initialized() and postgres.is_database_major_version_lower(_ALMA8_POSTGRES_VERSION)
 
     def _prepare_action(self) -> action.ActionResult:
         util.logged_check_call(['systemctl', 'stop', self.service_name])
@@ -66,8 +37,8 @@ class PostgresDatabasesUpdate(action.ActiveAction):
 
         util.logged_check_call(['postgresql-setup', '--upgrade'])
 
-        old_config_path = os.path.join(_PATH_TO_OLD_DATA, 'pg_hba.conf')
-        new_config_path = os.path.join(_PATH_TO_DATA, 'pg_hba.conf')
+        old_config_path = os.path.join(postgres.get_saved_data_path(), 'pg_hba.conf')
+        new_config_path = os.path.join(postgres.get_data_path(), 'pg_hba.conf')
 
         plesk_customizations = []
         with open(old_config_path, 'r') as old_config:
@@ -102,10 +73,10 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         self.name = "reinstall modern postgresql"
 
     def _get_versions(self):
-        return [int(dataset) for dataset in os.listdir(_PATH_TO_PGSQL) if dataset.isnumeric()]
+        return [int(dataset) for dataset in os.listdir(postgres.get_phsql_root_path()) if dataset.isnumeric()]
 
     def _is_required(self):
-        return _is_postgres_installed() and any([major_version >= _MODERN_POSTGRES for major_version in self._get_versions()])
+        return postgres.is_postgres_installed() and any([major_version >= _ALMA8_POSTGRES_VERSION for major_version in self._get_versions()])
 
     def _is_service_active(self, service):
         res = subprocess.run(['/usr/bin/systemctl', 'is-active', service])
@@ -117,7 +88,7 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         for major_version in self._get_versions():
             service_name = 'postgresql-' + str(major_version)
             if self._is_service_active(service_name):
-                with open(os.path.join(_PATH_TO_PGSQL, str(major_version)) + '.enabled', 'w') as fp:
+                with open(os.path.join(postgres.get_phsql_root_path(), str(major_version)) + '.enabled', 'w') as fp:
                     pass
                 util.logged_check_call(['/usr/bin/systemctl', 'stop', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'disable', service_name])
@@ -126,7 +97,7 @@ class PostgresReinstallModernPackage(action.ActiveAction):
 
     def _post_action(self) -> action.ActionResult:
         for major_version in self._get_versions():
-            if major_version > _MODERN_POSTGRES:
+            if major_version > _ALMA8_POSTGRES_VERSION:
                 util.logged_check_call(['/usr/bin/dnf', '-q', '-y', 'module', 'disable', 'postgresql'])
                 util.logged_check_call(['/usr/bin/dnf', 'update'])
                 util.logged_check_call(['/usr/bin/dnf', 'install', "-y", 'postgresql' + str(major_version), 'postgresql' + str(major_version) + '-server'])
@@ -135,21 +106,21 @@ class PostgresReinstallModernPackage(action.ActiveAction):
                 util.logged_check_call(['/usr/bin/dnf', 'update'])
                 util.logged_check_call(['/usr/bin/dnf', 'install', "-y", 'postgresql', 'postgresql' + '-server'])
 
-            if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
+            if os.path.exists(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
                 util.logged_check_call(['/usr/bin/systemctl', 'enable', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'start', service_name])
-                os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
+                os.remove(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled'))
 
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
         for major_version in self._get_versions():
-            if os.path.exists(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled')):
+            if os.path.exists(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
                 util.logged_check_call(['/usr/bin/systemctl', 'stop', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'disable', service_name])
-                os.remove(os.path.join(_PATH_TO_PGSQL, str(major_version) + '.enabled'))
+                os.remove(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled'))
 
         return action.ActionResult()
 
