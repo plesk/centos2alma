@@ -5,17 +5,18 @@ import subprocess
 from pleskdistup.common import action, files, leapp_configs, util
 
 _PATH_TO_PGSQL = '/var/lib/pgsql'
+_PATH_TO_PSQL_UTIL = '/usr/bin/psql'
 _PATH_TO_DATA = os.path.join(_PATH_TO_PGSQL, 'data')
 _PATH_TO_OLD_DATA = os.path.join(_PATH_TO_PGSQL, 'data-old')
 _MODERN_POSTGRES = 10
 
 
 def _is_postgres_installed():
-    return os.path.exists(_PATH_TO_PGSQL)
+    return os.path.exists(_PATH_TO_PGSQL) and os.path.exists(_PATH_TO_PSQL_UTIL)
 
 
 def _get_postgres_major_version():
-    version_out = subprocess.check_output(['/usr/bin/psql', '--version'], universal_newlines=True)
+    version_out = subprocess.check_output([_PATH_TO_PSQL_UTIL, '--version'], universal_newlines=True)
     return int(version_out.split(' ')[2].split('.')[0])
 
 
