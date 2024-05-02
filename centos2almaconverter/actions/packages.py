@@ -224,6 +224,27 @@ class AdoptRepositories(action.ActiveAction):
         return 2 * 60
 
 
+class AssertPleskRepositoriesNotNoneLink(action.CheckAction):
+    def __init__(self):
+        self.name = "checking if plesk repositories are adoptable"
+        self.description = """There are plesk repositories has none link. To proceed the conversion, remove following repositories:
+\t- {}
+"""
+
+    def _do_check(self) -> bool:
+        none_link_repos = []
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
+            for id, _2, url, metalink, mirrorlist, _5 in rpm.extract_repodata(file):
+                if rpm.repository_has_none_link(id, None, url, metalink, mirrorlist):
+                    none_link_repos.append(f"'{id}' from repofile '{file}'")
+
+        if len(none_link_repos) == 0:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(none_link_repos))
+        return False
+
+
 class RemoveOldMigratorThirparty(action.ActiveAction):
     def __init__(self):
         self.name = "removing old migrator thirdparty packages"
