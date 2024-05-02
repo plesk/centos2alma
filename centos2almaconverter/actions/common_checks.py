@@ -74,24 +74,17 @@ class AssertLastInstalledKernelInUse(action.CheckAction):
         return version.KernelVersion(curr_kernel)
 
     def _get_last_installed_kernel_version(self) -> version.KernelVersion:
-        rpm_output = subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel"], universal_newlines=True).splitlines()
-        # There is 'kernel-' prefix, that doesn't matter for us now, so just skip it
-        rpm_output = [ver.split("-", 1)[-1] for ver in rpm_output]
+        versions = subprocess.check_output(
+            [
+                "/usr/bin/rpm", "-q", "-a", "kernel", "kernel-plus", "kernel-rt-core"
+            ], universal_newlines=True
+        ).splitlines()
 
-        log.debug("Installed kernel versions: {}".format(', '.join(rpm_output)))
-
-        versions = [version.KernelVersion(ver) for ver in rpm_output]
+        log.debug("Installed kernel versions: {}".format(', '.join(versions)))
+        versions = [version.KernelVersion(ver) for ver in versions]
         return max(versions)
 
-    def _is_realtime_installed(self) -> bool:
-        return len(subprocess.check_output(["/usr/bin/rpm", "-q", "-a", "kernel-rt"], universal_newlines=True).splitlines()) > 0
-
     def _do_check(self) -> bool:
-        # For now skip checking realtime kernels. leapp will check it on it's side
-        # I believe we have no much installation with realtime kernel
-        if self._is_realtime_installed():
-            return True
-
         last_installed_kernel_version = self._get_last_installed_kernel_version()
         used_kernel_version = self._get_kernel_version_in_use()
 
