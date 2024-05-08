@@ -207,6 +207,7 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertOsVendorPhpUsedByWebsites(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
             common_actions.AssertGrubInstalled(),
             centos2alma_actions.AssertNoMoreThenOneKernelNamedNIC(),
+            centos2alma_actions.AssertRedHatKernelInstalled(),
             centos2alma_actions.AssertLastInstalledKernelInUse(),
             centos2alma_actions.AssertLocalRepositoryNotPresent(),
             centos2alma_actions.AssertThereIsNoRepositoryDuplicates(),

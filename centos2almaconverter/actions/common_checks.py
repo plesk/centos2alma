@@ -95,6 +95,26 @@ class AssertLastInstalledKernelInUse(action.CheckAction):
         return True
 
 
+class AssertRedHatKernelInstalled(action.CheckAction):
+    def __init__(self):
+        self.name = "checking if the Red Hat kernel is installed"
+        self.description = """No Red Hat signed kernel is installed.
+\tTo proceed with the conversion, install a kernel by running 'yum install kernel'.
+\tAfter installing the kernel fix the grub configuration by calling:
+\t- `grub2-set-default 'CentOS Linux (newly_installed_kernel_version) 7 (Core)'`
+\t- `grub2-mkconfig -o /boot/grub2/grub.cfg`
+\t- `reboot`
+"""
+
+    def _do_check(self) -> bool:
+        redhat_kernel_packages = subprocess.check_output(
+            [
+                "/usr/bin/rpm", "-q", "-a", "kernel", "kernel-rt"
+            ], universal_newlines=True
+        ).splitlines()
+        return len(redhat_kernel_packages) > 0
+
+
 class AssertLocalRepositoryNotPresent(action.CheckAction):
     def __init__(self):
         self.name = "checking if the local repository is present"
