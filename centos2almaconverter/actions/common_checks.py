@@ -99,7 +99,8 @@ class AssertRedHatKernelInstalled(action.CheckAction):
     def __init__(self):
         self.name = "checking if the Red Hat kernel is installed"
         self.description = """No Red Hat signed kernel is installed.
-\tTo proceed with the conversion, install a kernel by running 'yum install kernel'.
+\tTo proceed with the conversion, install a kernel by running:
+\t- 'yum install kernel kernel-tools kernel-tools-libs'
 \tAfter installing the kernel fix the grub configuration by calling:
 \t- `grub2-set-default 'CentOS Linux (newly_installed_kernel_version) 7 (Core)'`
 \t- `grub2-mkconfig -o /boot/grub2/grub.cfg`
