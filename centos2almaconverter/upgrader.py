@@ -215,6 +215,7 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertNotInContainer(),
             centos2alma_actions.AssertPackagesUpToDate(),
             centos2alma_actions.CheckOutdatedLetsencryptExtensionRepository(),
+            centos2alma_actions.AssertPleskRepositoriesNotNoneLink(),
         ]
 
         if not self.upgrade_postgres_allowed:
