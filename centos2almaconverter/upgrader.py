@@ -125,6 +125,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.FixupImunify(),
                 centos2alma_actions.PatchLeappErrorOutput(),
                 centos2alma_actions.PatchLeappDebugNonAsciiPackager(),
+                centos2alma_actions.PatchLeappHandleDnfpluginErrorAscii(),
                 common_actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
                 common_actions.UpdatePlesk(),
                 centos2alma_actions.PostgresReinstallModernPackage(),

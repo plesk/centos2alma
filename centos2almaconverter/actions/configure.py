@@ -119,3 +119,24 @@ class PatchLeappDebugNonAsciiPackager(action.ActiveAction):
 
     def _revert_action(self) -> action.ActionResult:
         return action.ActionResult()
+
+
+class PatchLeappHandleDnfpluginErrorAscii(action.ActiveAction):
+    path_to_src: str
+
+    def __init__(self):
+        self.name = "patch leapp to handle dnf plugin error for ascii packager"
+        self.path_to_src = "/usr/share/leapp-repository/repositories/system_upgrade/common/libraries/dnfplugin.py"
+
+    def is_required(self) -> bool:
+        return os.path.exists(self.path_to_src)
+
+    def _prepare_action(self) -> action.ActionResult:
+        files.replace_string(self.path_to_src, "if False", "if True")
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
