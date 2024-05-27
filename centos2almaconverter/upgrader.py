@@ -135,6 +135,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.SetMinDovecotDhParamSize(dhparam_size=2048),
                 common_actions.RestoreDovecotConfiguration(options.state_dir),
                 centos2alma_actions.RecreateAwstatConfigurationFiles(),
+                common_actions.UninstallTuxcareEls(),
             ],
             "Handle plesk related services": [
                 common_actions.DisablePleskRelatedServicesDuringUpgrade(),
