@@ -111,7 +111,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.AddFinishSshLoginMessage(new_os),  # Executed at the finish phase only
                 common_actions.AddInProgressSshLoginMessage(new_os),
             ],
-            "Leapp instllation": [
+            "Leapp installation": [
                 centos2alma_actions.LeapInstallation(),
             ],
             "Prepare configurations": [
@@ -135,6 +135,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.SetMinDovecotDhParamSize(dhparam_size=2048),
                 common_actions.RestoreDovecotConfiguration(options.state_dir),
                 centos2alma_actions.RecreateAwstatConfigurationFiles(),
+                common_actions.UninstallTuxcareEls(),
             ],
             "Handle plesk related services": [
                 common_actions.DisablePleskRelatedServicesDuringUpgrade(),

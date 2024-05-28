@@ -7,14 +7,14 @@ class FixupImunify(action.ActiveAction):
         self.name = "fixing up imunify360"
 
     def _is_required(self) -> bool:
-        return len(files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify360.repo"])) > 0
+        return len(files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify*.repo"])) > 0
 
     def _prepare_action(self) -> action.ActionResult:
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify*.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles)
 
-        # For some reason leapp replace the libssh2 packageon installation. It's fine in most cases,
+        # For some reason leapp replaces the libssh2 package on installation. It's fine in most cases,
         # but imunify packages require libssh2. So we should use PRESENT action to keep it.
         leapp_configs.set_package_action("libssh2", leapp_configs.LeappActionType.PRESENT)
         return action.ActionResult()
