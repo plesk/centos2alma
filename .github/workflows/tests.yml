@@ -1,0 +1,14 @@
+name: test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04 # Not latest, because python3.6 is not available on latest
+                          # https://github.com/actions/setup-python/issues/544
+    # Unit tests was moved to the dist-upgrade submodule. I'm looking for a way to make this
+    # workflow not required, but for now it's just a placeholder.
+    steps:
+    - name: Do nothing
+      id: test
+      run: echo "Do nothing"
