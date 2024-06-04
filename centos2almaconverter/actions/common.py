@@ -135,6 +135,9 @@ class RecreateAwstatConfigurationFiles(action.ActiveAction):
     def __init__(self):
         self.name = "recreate awstat configuration files for domains"
 
+    def _is_required(self) -> bool:
+        return os.path.exists("/etc/awstats/awstats.model.conf")
+
     def get_awstat_domains(self) -> typing.Set[str]:
         domains_awstats_directory = "/usr/local/psa/etc/awstats/"
         domains = set()
