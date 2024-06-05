@@ -28,7 +28,7 @@ Do not use the script if any of the following is true:
 - **More than one kernel named interfaces (like ethX) are not supported**. Stability of such names are not guaranteed, so leapp prevent the conversion in such cases.
 
 ## Requirements
-- Plesk version is more than five releases behind the latest version.
+- Plesk version is less than five releases behind the latest version.
 - CentOS 7.9 or later.
 - grub is installed
 - At least 5 GB of free disk space.
