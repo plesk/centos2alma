@@ -9,7 +9,7 @@ import sys
 
 from centos2almaconverter import actions as centos2alma_actions
 from pleskdistup import actions as common_actions
-from pleskdistup.common import action, dist, feedback, files, util
+from pleskdistup.common import action, dist, feedback, files, php, util, version
 from pleskdistup.phase import Phase
 from pleskdistup.messages import REBOOT_WARN_MESSAGE
 from pleskdistup.upgrader import DistUpgrader, DistUpgraderFactory, PathType
