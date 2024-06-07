@@ -219,6 +219,8 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.AssertPackagesUpToDate(),
             centos2alma_actions.CheckOutdatedLetsencryptExtensionRepository(),
             centos2alma_actions.AssertPleskRepositoriesNotNoneLink(),
+            # LiteSpeed is not supported yet
+            common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
 
         if not self.upgrade_postgres_allowed:
