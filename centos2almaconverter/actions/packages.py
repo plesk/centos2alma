@@ -53,7 +53,10 @@ class ReinstallPleskComponents(action.ActiveAction):
         # will be called. It's because triggers that creates phpmyadmin configuration files
         # expect plesk on board. Hence when we install the package in scope of temporary OS
         # the file can't be created.
-        packages.remove_packages(["psa-phpmyadmin"])
+        phpmyadmin_package_name: str = "psa-phpmyadmin"
+        if packages.is_package_installed(phpmyadmin_package_name):
+            packages.remove_packages([phpmyadmin_package_name])
+
         util.logged_check_call(["/usr/sbin/plesk", "installer", "update"])
 
         util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "roundcube"])
