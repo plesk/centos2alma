@@ -61,6 +61,10 @@ class AssertNoMoreThenOneKernelNamedNIC(action.CheckAction):
 
 # ToDo. Implement for deb-based and move to common part. Might be useful for distupgrade/other converters
 class AssertLastInstalledKernelInUse(action.CheckAction):
+    no_kernel_installed_message: str = """There is no appropriate kernel package installed.
+\tTo proceed with the conversion, install a kernel by running: 'yum install kernel kernel-tools kernel-tools-libs'
+"""
+
     def __init__(self):
         self.name = "checking if the last installed kernel is in use"
         self.description = """The last installed kernel is not in use.
@@ -80,12 +84,19 @@ class AssertLastInstalledKernelInUse(action.CheckAction):
             ], universal_newlines=True
         ).splitlines()
 
+        if not versions:
+            return None
+
         log.debug("Installed kernel versions: {}".format(', '.join(versions)))
         versions = [version.KernelVersion(ver) for ver in versions]
         return max(versions)
 
     def _do_check(self) -> bool:
         last_installed_kernel_version = self._get_last_installed_kernel_version()
+        if not last_installed_kernel_version:
+            self.description = self.no_kernel_installed_message
+            return False
+
         used_kernel_version = self._get_kernel_version_in_use()
 
         if used_kernel_version != last_installed_kernel_version:
