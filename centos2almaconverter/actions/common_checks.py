@@ -15,7 +15,7 @@ from pleskdistup.common import action, dist, files, log, version
 class AssertDistroIsCentos79(action.CheckAction):
     def __init__(self):
         self.name = "checking if distro is CentOS7"
-        self.description = """You are running a distributive other than CentOS 7.9. At the moment, only CentOS 7.9 is supported.
+        self.description = """You are running a distribution other than CentOS 7.9. At the moment, only CentOS 7.9 is supported.
 \tIf you are running an earlier Centos 7 release, update to Centos 7.9 and try again.
 """
 
@@ -30,7 +30,7 @@ class AssertDistroIsCentos79(action.CheckAction):
 class AssertDistroIsAlmalinux8(action.CheckAction):
     def __init__(self):
         self.name = "checking if distro is AlmaLinux8"
-        self.description = "You are running a distributive other than AlmaLinux 8. The finalization stage can only be started on AlmaLinux 8."
+        self.description = "You are running a distribution other than AlmaLinux 8. The finalization stage can only be started on AlmaLinux 8."
 
     def _do_check(self) -> bool:
         return dist.get_distro() == dist.AlmaLinux("8")
@@ -38,7 +38,7 @@ class AssertDistroIsAlmalinux8(action.CheckAction):
 
 class AssertNoMoreThenOneKernelNamedNIC(action.CheckAction):
     def __init__(self):
-        self.name = "checking if there is more than one NIC interface using ketnel-name"
+        self.name = "checking if there is more than one NIC interface using kernel-name"
         self.description = """The system has one or more network interface cards (NICs) using kernel-names (ethX).
 \tLeapp cannot guarantee the interface names' stability during the conversion.
 \tGive those NICs persistent names (enpXsY) to proceed with the conversion.
@@ -130,7 +130,7 @@ class AssertRedHatKernelInstalled(action.CheckAction):
 class AssertLocalRepositoryNotPresent(action.CheckAction):
     def __init__(self):
         self.name = "checking if the local repository is present"
-        self.description = """There are rpm repository with local storage present. Leapp is not support such kind of repositories.
+        self.description = """There are rpm repository with local storage present. Leapp does support such kind of repositories.
 \tPlease remove the local repositories to proceed the conversion. Files where locally stored repositories are defined:
 \t- {}
 """
