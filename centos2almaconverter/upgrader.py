@@ -199,14 +199,13 @@ class Centos2AlmaConverter(DistUpgrader):
             return [centos2alma_actions.AssertDistroIsAlmalinux8()]
 
         FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION = "5.6"
-        PHP_VERSIONS_SUPPORTED_BY_ALMA_8 = ["5.6"] + [str(php) for php in php.get_known_php_versions() if php >= version.PHPVersion("7.1")]
         checks = [
             common_actions.AssertPleskVersionIsAvailable(),
             common_actions.AssertPleskInstallerNotInProgress(),
             centos2alma_actions.AssertAvailableSpace(),
-            common_actions.AssertInstalledPhpVersionsInList(PHP_VERSIONS_SUPPORTED_BY_ALMA_8),
-            common_actions.AssertPhpVersionsUsedByWebsitesInList(PHP_VERSIONS_SUPPORTED_BY_ALMA_8),
-            common_actions.AssertPhpVersionsUsedByCronInList(PHP_VERSIONS_SUPPORTED_BY_ALMA_8),
+            common_actions.AssertMinPhpVersionInstalled(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
+            common_actions.AssertMinPhpVersionUsedByWebsites(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
+            common_actions.AssertMinPhpVersionUsedByCron(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
             common_actions.AssertOsVendorPhpUsedByWebsites(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
             common_actions.AssertGrubInstalled(),
             centos2alma_actions.AssertNoMoreThenOneKernelNamedNIC(),
