@@ -26,6 +26,7 @@ Do not use the script if any of the following is true:
 - **PHP 7.0 and earlier are not supported** in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. So we force to remove this versions before the conversion.
 - **Conversion inside containers (like Virtuozzo containers, Docker Containers, etc) are not supported**. 
 - **More than one kernel named interfaces (like ethX) are not supported**. Stability of such names are not guaranteed, so leapp prevent the conversion in such cases.
+- **No ELS repositories on the server**. The script won't be able to install the necessary packages at the final stage due to conflicts between AlmaLinux 8 repositories and ELS repositories. **However, the script can handle ELS provided by the Plesk TuxCare ELS extension**.
 
 ## Requirements
 - Plesk version is less than five releases behind the latest version.
