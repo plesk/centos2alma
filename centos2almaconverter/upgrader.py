@@ -212,6 +212,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.AssertRedHatKernelInstalled(),
             centos2alma_actions.AssertLastInstalledKernelInUse(),
             centos2alma_actions.AssertLocalRepositoryNotPresent(),
+            centos2alma_actions.AssertIPRepositoryNotPresent(),
             centos2alma_actions.AssertThereIsNoRepositoryDuplicates(),
             centos2alma_actions.AssertMariadbRepoAvailable(),
             common_actions.AssertNotInContainer(),
