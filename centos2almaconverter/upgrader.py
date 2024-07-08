@@ -220,6 +220,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.AssertPackagesUpToDate(),
             centos2alma_actions.CheckOutdatedLetsencryptExtensionRepository(),
             centos2alma_actions.AssertPleskRepositoriesNotNoneLink(),
+            centos2alma_actions.AssertNoAbsoluteLinksInRoot(),
             # LiteSpeed is not supported yet
             common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
