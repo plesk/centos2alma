@@ -248,6 +248,32 @@ class AssertPleskRepositoriesNotNoneLink(action.CheckAction):
         return False
 
 
+class AssertIPRepositoryNotPresent(action.CheckAction):
+    def __init__(self):
+        self.name = "verify the presence of a repository sourced from an IP address"
+        self.description = """There is an RPM repository from a source host with an IP address.
+\tWe cannot confirm if this repository's packages conflict with AlmaLinux's official repositories.
+\tTo proceed with the conversion, please remove the repositories listed in the following .repo files:
+\t- {}
+"""
+
+    def _is_repo_source_ip_address(self, repo_file) -> bool:
+        for _1, _2, url, metalink, mirrorlist, _5 in rpm.extract_repodata(repo_file):
+            if rpm.repository_source_is_ip(url, metalink, mirrorlist):
+                return True
+        return False
+
+    def _do_check(self) -> bool:
+        ip_source_repositories_files = [file for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
+                                        if self._is_repo_source_ip_address(file)]
+
+        if len(ip_source_repositories_files) == 0:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(ip_source_repositories_files))
+        return False
+
+
 class RemoveOldMigratorThirparty(action.ActiveAction):
     def __init__(self):
         self.name = "removing old migrator thirdparty packages"
