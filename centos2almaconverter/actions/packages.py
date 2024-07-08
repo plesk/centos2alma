@@ -274,6 +274,46 @@ class AssertIPRepositoryNotPresent(action.CheckAction):
         return False
 
 
+class AssertCentosEOLedRepositoriesNotPresent(action.CheckAction):
+    def __init__(self):
+        self.name = "verify there is no EOL-ed CentOS 7 repository"
+        self.description = """A deprecated CentOS 7 repository was found.
+\tTo continue with the conversion, please replace the repositories listed in the following .repo files with vault repositories, such as vault.centos.org:
+\t- {}
+"""
+
+    def _is_repository_enabled(self, repository_additional_info: typing.List[str]) -> bool:
+        for line in repository_additional_info:
+            if line.startswith("enabled="):
+                return line.split("=")[1].strip() == "1"
+        return True
+
+    def _is_repo_source_ip_address(self, repo_file) -> bool:
+        for id, _2, baseurl, _, mirrorlist, additional in rpm.extract_repodata(repo_file):
+            if not self._is_repository_enabled(additional):
+                log.debug("Skip disabled repository '{}'".format(id))
+                continue
+
+            if mirrorlist and mirrorlist.startswith("http://mirrorlist.centos.org/"):
+                log.debug("Found depricated repository '{}' with mirrorlist '{}'".format(id, mirrorlist))
+                return True
+
+            if baseurl and baseurl.startswith("http://mirror.centos.org/centos"):
+                log.debug("Found depricated repository '{}' with baseurl '{}'".format(id, baseurl))
+                return True
+        return False
+
+    def _do_check(self) -> bool:
+        ip_source_repositories_files = [file for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
+                                        if self._is_repo_source_ip_address(file)]
+
+        if len(ip_source_repositories_files) == 0:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(ip_source_repositories_files))
+        return False
+
+
 class RemoveOldMigratorThirparty(action.ActiveAction):
     def __init__(self):
         self.name = "removing old migrator thirdparty packages"
