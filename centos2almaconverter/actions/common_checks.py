@@ -219,3 +219,28 @@ class AssertAvailableSpace(action.CheckAction):
 
         self.description = self.description.format(self._huminize_size(self.required_space), self._huminize_size(available_space))
         return False
+
+
+class AssertNoAbsoluteLinksInRoot(action.CheckAction):
+    def __init__(self):
+        self.name = "checking there are no absolute links in the root directory"
+        self.description = """Absolute links are present in the root directory. Leapp does not support absolute links in '/'.
+\tFrom leapp source: "After rebooting, parts of the upgrade process can fail if symbolic links in point to absolute paths."
+\tTo proceed with the conversion, change the links to relative ones for following files:
+\t- {}
+"""
+
+    def _do_check(self) -> bool:
+        absolute_links = []
+        for directory in os.listdir('/'):
+            dirpath = os.path.join('/', directory)
+            if os.path.islink(dirpath):
+                target = os.readlink(dirpath)
+                if os.path.isabs(target):
+                    absolute_links.append(dirpath)
+
+        if len(absolute_links) == 0:
+            return True
+
+        self.description = self.description.format("\n\t- ".join(absolute_links))
+        return False
