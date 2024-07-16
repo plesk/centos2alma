@@ -23,7 +23,7 @@ The conversion process should run between 30 and 60 minutes. **Plesk services, h
 Do not use the script if any of the following is true:
 - **You are running an OS other than CentOS 7.9**. The script was not tested on other Red Hat Enterprise Linux 7-based distributions. The conversion process may have unexpected results if started on a server not running CentOS 7.9. So we add checks to avoid any actions on such kinds of servers.
 - **Plesk version is more than five releases behind the latest version**. The script is only compatible with the most recent versions of Plesk. It will prevent conversion if Plesk version is outdated.
-- **PHP 7.0 and earlier are not supported** in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. So we force to remove this versions before the conversion.
+- **PHP 5.5 and earlier are not supported** in AlmaLinux 8, and will not receive any updates after the conversion. These PHP versions are deprecated and may have security vulnerabilities. So we force to remove this versions before the conversion.
 - **Conversion inside containers (like Virtuozzo containers, Docker Containers, etc) are not supported**. 
 - **More than one kernel named interfaces (like ethX) are not supported**. Stability of such names are not guaranteed, so leapp prevent the conversion in such cases.
 - **No ELS repositories on the server**. The script won't be able to install the necessary packages at the final stage due to conflicts between AlmaLinux 8 repositories and ELS repositories. **However, the script can handle ELS provided by the Plesk TuxCare ELS extension**.
