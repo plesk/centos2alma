@@ -73,7 +73,7 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         self.name = "reinstall modern postgresql"
 
     def _get_versions(self):
-        return [int(dataset) for dataset in os.listdir(postgres.get_phsql_root_path()) if dataset.isnumeric()]
+        return [int(dataset) for dataset in os.listdir(postgres.get_pgsql_root_path()) if dataset.isnumeric()]
 
     def _is_required(self):
         return postgres.is_postgres_installed() and any([major_version >= _ALMA8_POSTGRES_VERSION for major_version in self._get_versions()])
@@ -88,7 +88,7 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         for major_version in self._get_versions():
             service_name = 'postgresql-' + str(major_version)
             if self._is_service_active(service_name):
-                with open(os.path.join(postgres.get_phsql_root_path(), str(major_version)) + '.enabled', 'w') as fp:
+                with open(os.path.join(postgres.get_pgsql_root_path(), str(major_version)) + '.enabled', 'w') as fp:
                     pass
                 util.logged_check_call(['/usr/bin/systemctl', 'stop', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'disable', service_name])
@@ -106,21 +106,21 @@ class PostgresReinstallModernPackage(action.ActiveAction):
                 util.logged_check_call(['/usr/bin/dnf', 'update'])
                 util.logged_check_call(['/usr/bin/dnf', 'install', "-y", 'postgresql', 'postgresql' + '-server'])
 
-            if os.path.exists(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled')):
+            if os.path.exists(os.path.join(postgres.get_pgsql_root_path(), str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
                 util.logged_check_call(['/usr/bin/systemctl', 'enable', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'start', service_name])
-                os.remove(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled'))
+                os.remove(os.path.join(postgres.get_pgsql_root_path(), str(major_version) + '.enabled'))
 
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
         for major_version in self._get_versions():
-            if os.path.exists(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled')):
+            if os.path.exists(os.path.join(postgres.get_pgsql_root_path(), str(major_version) + '.enabled')):
                 service_name = 'postgresql-' + str(major_version)
                 util.logged_check_call(['/usr/bin/systemctl', 'stop', service_name])
                 util.logged_check_call(['/usr/bin/systemctl', 'disable', service_name])
-                os.remove(os.path.join(postgres.get_phsql_root_path(), str(major_version) + '.enabled'))
+                os.remove(os.path.join(postgres.get_pgsql_root_path(), str(major_version) + '.enabled'))
 
         return action.ActionResult()
 
