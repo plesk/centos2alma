@@ -164,6 +164,12 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.AdoptRepositories(),
                 centos2alma_actions.DoCentos2AlmaConvert(),
             ],
+            # This stage includes actions that need to be completed before the adopt repositories
+            # on the final stage. This is necessary because AdoptRepositories performs a `dnf update`,
+            #  which will fail if there are any unmanaged repositories.
+            "Specific repositories adoption": [
+                centos2alma_actions.AdoptRackspaceEpelRepository(),
+            ],
             "Pause before reboot": [
             ],
             "Reboot": {
