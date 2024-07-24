@@ -4,6 +4,7 @@ import typing
 import shutil
 
 from pleskdistup.common import action, files, leapp_configs, log, motd, packages, rpm, systemd, util
+from pleskdistup.upgrader import PathType
 
 
 class RemovingPleskConflictPackages(action.ActiveAction):
@@ -227,6 +228,30 @@ class AdoptRepositories(action.ActiveAction):
 
     def estimate_post_time(self):
         return 2 * 60
+
+
+class AdoptRackspaceEpelRepository(action.ActiveAction):
+    def __init__(self):
+        self.name = "adopting rackspace epel repository"
+
+    def _is_rackspace_epel_repo(self, repo_file: PathType) -> bool:
+        for _1, _2, url, _4, _5, _6 in rpm.extract_repodata(repo_file):
+            if url and "iad.mirror.rackspace.com" in url:
+                return True
+        return False
+
+    def is_required(self) -> bool:
+        return self._is_rackspace_epel_repo("/etc/yum.repos.d/epel.repo")
+
+    def _prepare_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        leapp_configs.adopt_repositories("/etc/yum.repos.d/epel.repo", keep_id=True)
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
 
 
 class AssertPleskRepositoriesNotNoneLink(action.CheckAction):

@@ -81,9 +81,11 @@ You can remove this message from the /etc/motd file.
 ```
 
 ### Conversion stage options
-The conversion process consists of three stage options: "start", and "finish". To run stages individually, use the "--start", and "--finish" flags, or the "-s" flag with name of the stage you want to run.
+The conversion process consists of two stage options: "start", and "finish". To run stages individually, use the "--start", and "--finish" flags, or the "-s" flag with name of the stage you want to run.
 1. The "start" stage installs and configures ELevate, disables Plesk services and runs ELevate. It then stops Plesk services and reboots the server.
 2. The "finish" stage must be called on the first boot of AlmaLinux 8. You can rerun this stage if something goes wrong during the first boot to ensure that the problem is fixed and Plesk is ready to use.
+
+During each phase a conversion plan consisting of stages, which in turn consist of actions, is executed. You can see the general stages in the `--help` output and the detailed plan in the `--show-plan` output.
 
 ### Other arguments
 
@@ -102,7 +104,7 @@ Note:
 To check the status of the conversion process, use the '--status' flag. You can see the current stage of the conversion process, the elapsed time, and the estimated time until finish.
 ```shell
 > ./centos2alma --status
-``` 
+```
 
 To monitor the progress of the conversion process in real time, The conversion process can be monitored in real time using the '--monitor' flag.
 ```shell
@@ -132,6 +134,9 @@ If you are confident that you no longer require the modules installed via CPAN, 
 ## Issue handling
 ### Leapp unable to handle packages
 Leapp may not be able to handle certain installed packages, especially those installed from custom repositories. In this case, the centos2alma will fail while running leapp preupgrade or leapp upgrade. The easiest way to fix this issue is to remove the package(s), and then reinstall them once the conversion is complete.
+
+### Leapp cannot choose which package to install
+This issue may occur if unsupported repositories are used. For instance, if an unexpected EPEL repository is enabled on the server, the cloudlinux7to8 process will fail when running `leapp preupgrade` or `leapp upgrade`. This is due to conflicting packages between the el8 and el7 repositories. The simplest way to resolve this issue is to switch to the standard repositories.
 
 ### Temporary OS distribution hangs
 This issue may occur, for example, if there is a custom python installation on the server. The conversion process will fail while upgrading the temporary OS distribution, and the temporary OS will hang with no notification. To identify the issue, connect to the server using a serial port console and check the status of the conversion process. To fix the issue, reboot the server. Note that an unfinished installation process may result in missing packages and other issues.
