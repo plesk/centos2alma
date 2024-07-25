@@ -29,11 +29,11 @@ Do not use the script if any of the following is true:
 - **No ELS repositories on the server**. The script won't be able to install the necessary packages at the final stage due to conflicts between AlmaLinux 8 repositories and ELS repositories. **However, the script can handle ELS provided by the Plesk TuxCare ELS extension**.
 
 ## Requirements
-- Plesk version is less than five releases behind the latest version.
-- CentOS 7.9 or later.
-- grub is installed
-- At least 5 GB of free disk space.
-- At least 1 GB of RAM.
+- Plesk version is no older than five releases back from the latest version
+- CentOS 7.9 or later
+- GRUB 2 is installed
+- Minimum of 5 GB of free disk space
+- Minimum of 1 GB of RAM
 
 ## Using the script
 To retrieve the latest available version of the tool, please navigate to the "Releases" section. Once there, locate the most recent version of the tool and download the zip archive. The zip archive will contain the centos2alma tool binary.
