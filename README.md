@@ -34,6 +34,7 @@ Do not use the script if any of the following is true:
 - GRUB 2 is installed
 - Minimum of 5 GB of free disk space
 - Minimum of 1 GB of RAM
+- The Linux kernel package must be signed by Red Hat. This is typically the case if you have installed the kernel from the official CentOS repositories
 
 ## Using the script
 To retrieve the latest available version of the tool, please navigate to the "Releases" section. Once there, locate the most recent version of the tool and download the zip archive. The zip archive will contain the centos2alma tool binary.
