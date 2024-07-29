@@ -162,7 +162,7 @@ class Centos2AlmaConverter(DistUpgrader):
             ],
             "Do convert": [
                 centos2alma_actions.AdoptRepositories(),
-                centos2alma_actions.DoCentos2AlmaConvert(),
+                centos2alma_actions.DoCentos2AlmaConvert(leapp_ovl_size=self.leapp_ovl_size),
             ],
             # This stage includes actions that need to be completed before the adopt repositories
             # on the final stage. This is necessary because AdoptRepositories performs a `dnf update`,
@@ -270,11 +270,14 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
                                  "by cpan will be removed. Note that it could lead to some issues with perl scripts")
         parser.add_argument("--disable-spamassasin-plugins", action="store_true", dest="disable_spamassasin_plugins", default=False,
                             help="Disable additional plugins in spamassasin configuration during the conversion.")
+        parser.add_argument("--leapp-ovl-size", type=int, dest="leapp_ovl_size", default=4096,
+                            help="Specify the overlay size for leapp in megabytes.")
         options = parser.parse_args(args)
 
         self.upgrade_postgres_allowed = options.upgrade_postgres_allowed
         self.remove_unknown_perl_modules = options.remove_unknown_perl_modules
         self.disable_spamassasin_plugins = options.disable_spamassasin_plugins
+        self.leapp_ovl_size = options.leapp_ovl_size
 
 
 class Centos2AlmaConverterFactory(DistUpgraderFactory):
