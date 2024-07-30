@@ -123,6 +123,13 @@ In such cases, you have two options:
 1. Upgrade PostgreSQL to version 10 manually before initiating the conversion.
 2. Create a complete backup of the database and force the conversion using the '--upgrade-postgres' flag.
 
+#### Adjusting Leapp Overlay Size
+The default Leapp overlay size is 2048 MB. In the centos2alma tool, this is increased to 4096 MB. However, this may still be insufficient for handling all the required upgrade packages, leading to a "Disk Requirements:" error from Leapp. To prevent this issue, you can increase the overlay size using the '--leapp-overlay-size' flag. For example, to set the overlay size to 8192 MB, execute the following command:
+
+```shell
+> ./centos2alma --leapp-overlay-size 8192
+```
+
 #### Perl modules installed by CPAN
 During the conversion process, if the tool detects Perl modules that were installed via CPAN and cannot determine their corresponding RPM packages, it will fail with a warning. This restriction is in place because such modules will not be available after the conversion. This issue often arises because CPAN-installed modules are specifically built for a particular version of Perl. Consequently, when Perl is updated during the conversion process, these module libraries may encounter errors related to undefined symbols.
 
