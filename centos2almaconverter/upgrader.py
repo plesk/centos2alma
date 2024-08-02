@@ -40,6 +40,7 @@ class Centos2AlmaConverter(DistUpgrader):
         self.upgrade_postgres_allowed = False
         self.remove_unknown_perl_modules = False
         self.disable_spamassasin_plugins = False
+        self.amavis_upgrade_allowed = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(From {self._distro_from}, To {self._distro_to})"
@@ -151,6 +152,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.HandleUpdatedSpamassassinConfig(),
                 common_actions.DisableSelinuxDuringUpgrade(),
                 centos2alma_actions.RestoreMissingNginx(),
+                common_actions.ReinstallAmavisAntivirus(),
             ],
             "First plesk start": [
                 common_actions.StartPleskBasicServices(),
@@ -205,6 +207,7 @@ class Centos2AlmaConverter(DistUpgrader):
             return [centos2alma_actions.AssertDistroIsAlmalinux8()]
 
         FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION = "5.6"
+        ALMALINUX8_AMAVIS_REQUIRED_RAM = 1.5 * 1024 * 1024 * 1024
         checks = [
             common_actions.AssertPleskVersionIsAvailable(),
             common_actions.AssertPleskInstallerNotInProgress(),
@@ -228,6 +231,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.AssertPleskRepositoriesNotNoneLink(),
             centos2alma_actions.AssertNoAbsoluteLinksInRoot(),
             common_actions.AssertNoMoreThenOneKernelDevelInstalled(),
+            common_actions.AssertEnoughRamForAmavis(ALMALINUX8_AMAVIS_REQUIRED_RAM, self.amavis_upgrade_allowed),
             # LiteSpeed is not supported yet
             common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
@@ -273,11 +277,14 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
                             help="Disable additional plugins in spamassasin configuration during the conversion.")
         parser.add_argument("--leapp-ovl-size", type=int, dest="leapp_ovl_size", default=4096,
                             help="Specify the overlay size for leapp in megabytes.")
+        parser.add_argument("--amavis-upgrade-allowed", action="store_true", dest="amavis_upgrade_allowed", default=False,
+                            help="Allow to upgrade amavis antivirus even if there is not enough RAM available.")
         options = parser.parse_args(args)
 
         self.upgrade_postgres_allowed = options.upgrade_postgres_allowed
         self.remove_unknown_perl_modules = options.remove_unknown_perl_modules
         self.disable_spamassasin_plugins = options.disable_spamassasin_plugins
+        self.amavis_upgrade_allowed = options.amavis_upgrade_allowed
         self.leapp_ovl_size = options.leapp_ovl_size
 
 
