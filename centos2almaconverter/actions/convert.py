@@ -26,4 +26,4 @@ class DoCentos2AlmaConvert(action.ActiveAction):
         return action.ActionResult()
 
     def estimate_prepare_time(self) -> int:
-        return 17 * 60
+        return 25 * 60
