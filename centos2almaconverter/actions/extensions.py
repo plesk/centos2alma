@@ -14,9 +14,17 @@ class FixupImunify(action.ActiveAction):
 
         leapp_configs.add_repositories_mapping(repofiles)
 
-        # For some reason leapp replaces the libssh2 package on installation. It's fine in most cases,
-        # but imunify packages require libssh2. So we should use PRESENT action to keep it.
-        leapp_configs.set_package_action("libssh2", leapp_configs.LeappActionType.PRESENT)
+        # libssh2 and libunwind are needed for imunify360, so we must configure actions for them.
+        # We need to map the packages to the ones available in the AlmaLinux 8 EPEL repository.
+        # Additionally, we must remove the actions for libssh2 from the sl repo and
+        # libunwind from the appstream repo. For some reason, leapp checks all actions
+        # and becomes confused by these actions.
+        leapp_configs.set_package_mapping("libssh2", "base", "libssh2", "el8-epel")
+        leapp_configs.remove_package_action("libssh2", "sl")
+
+        leapp_configs.set_package_action("libunwind", leapp_configs.LeappActionType.REPLACED)
+        leapp_configs.set_package_mapping("libunwind", "base", "libunwind", "el8-epel")
+        leapp_configs.remove_package_action("libunwind", "almalinux8-appstream")
         return action.ActionResult()
 
     def _post_action(self) -> action.ActionResult:

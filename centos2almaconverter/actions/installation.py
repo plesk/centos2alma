@@ -10,9 +10,9 @@ class LeapInstallation(action.ActiveAction):
     def __init__(self):
         self.name = "installing leapp"
         self.pkgs_to_install = [
-            "leapp-0.14.0-1.el7",
-            "python2-leapp-0.14.0-1.el7",
-            "leapp-data-almalinux-0.1-6.el7",
+            "leapp-0.16.0-2.el7",
+            "python2-leapp-0.16.0-2.el7",
+            "leapp-data-almalinux-0.2-15.el7.20230823",
         ]
 
     def _prepare_action(self) -> action.ActionResult:
