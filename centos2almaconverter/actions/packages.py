@@ -212,8 +212,7 @@ class AdoptRepositories(action.ActiveAction):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
             rpm.remove_repositories(file, [
                 lambda id, _1, _2, _3, _4: id in ["PLESK_17_PHP52", "PLESK_17_PHP53",
-                                                  "PLESK_17_PHP54", "PLESK_17_PHP55",
-                                                  "PLESK_17_PHP56", "PLESK_17_PHP70"],
+                                                  "PLESK_17_PHP54", "PLESK_17_PHP55"],
             ])
             leapp_configs.adopt_repositories(file)
 
