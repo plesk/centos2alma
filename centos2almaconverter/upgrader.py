@@ -229,6 +229,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.AssertNoAbsoluteLinksInRoot(),
             common_actions.AssertNoMoreThenOneKernelDevelInstalled(),
             common_actions.AssertEnoughRamForAmavis(ALMALINUX8_AMAVIS_REQUIRED_RAM, self.amavis_upgrade_allowed),
+            common_actions.AssertSshPermitRootLoginConfigured(),
             # LiteSpeed is not supported yet
             common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
