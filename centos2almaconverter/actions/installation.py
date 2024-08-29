@@ -15,9 +15,23 @@ class LeapInstallation(action.ActiveAction):
             "leapp-data-almalinux-0.2-15.el7.20230823",
         ]
 
+    def _remove_previous_installation(self) -> None:
+        # Remove previously installed leapp packages to make sure we will install the correct version
+        pkgs_to_remove = rpm.filter_installed_packages(["leapp", "python2-leapp", "leapp-data-almalinux"])
+        if pkgs_to_remove:
+            util.logged_check_call(["/usr/bin/yum", "remove", "-y"] + pkgs_to_remove)
+
+        # The directory contains leapp-data package configurations, which causes problems with
+        # the package installation. So we have to remove it, to reinstall package from scratch.
+        conflict_directory = "/etc/leapp/repos.d/system_upgrade"
+        if os.path.exists(conflict_directory):
+            shutil.rmtree(conflict_directory)
+
     def _prepare_action(self) -> action.ActionResult:
         if not rpm.is_package_installed("elevate-release"):
             util.logged_check_call(["/usr/bin/yum", "install", "-y", "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"])
+
+        self._remove_previous_installation()
 
         util.logged_check_call(["/usr/bin/yum-config-manager", "--enable", "elevate"])
 
