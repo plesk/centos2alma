@@ -137,6 +137,7 @@ class Centos2AlmaConverter(DistUpgrader):
             ],
             "Handle plesk related services": [
                 common_actions.DisablePleskRelatedServicesDuringUpgrade(),
+                common_actions.HandlePleskFirewallService(),
             ],
             "Handle packages and services": [
                 centos2alma_actions.FixOsVendorPhpFpmConfiguration(),
