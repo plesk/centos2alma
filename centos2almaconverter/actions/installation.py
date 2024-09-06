@@ -2,7 +2,7 @@
 import os
 import shutil
 
-from pleskdistup.common import action, rpm, util
+from pleskdistup.common import action, files, rpm, util
 
 
 class LeapInstallation(action.ActiveAction):
@@ -23,9 +23,8 @@ class LeapInstallation(action.ActiveAction):
 
         # The directory contains leapp-data package configurations, which causes problems with
         # the package installation. So we have to remove it, to reinstall package from scratch.
-        conflict_directory = "/etc/leapp/repos.d/system_upgrade"
-        if os.path.exists(conflict_directory):
-            shutil.rmtree(conflict_directory)
+        for system_upgrade_link in files.find_files_case_insensitive("/etc/leapp/repos.d", "system_upgrade*"):
+            os.unlink(system_upgrade_link)
 
     def _prepare_action(self) -> action.ActionResult:
         if not rpm.is_package_installed("elevate-release"):
