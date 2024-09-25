@@ -13,11 +13,21 @@ class LeapInstallation(action.ActiveAction):
             "leapp-0.16.0-2.el7",
             "python2-leapp-0.16.0-2.el7",
             "leapp-data-almalinux-0.2-15.el7.20230823",
+            "leapp-deps-0.16.0-2.el7",
+            "leapp-upgrade-el7toel8-0.19.0-7.1.el7",
+            "leapp-upgrade-el7toel8-deps-0.19.0-7.1.el7",
         ]
 
     def _remove_previous_installation(self) -> None:
         # Remove previously installed leapp packages to make sure we will install the correct version
-        pkgs_to_remove = rpm.filter_installed_packages(["leapp", "python2-leapp", "leapp-data-almalinux"])
+        pkgs_to_remove = rpm.filter_installed_packages([
+            "leapp",
+            "python2-leapp",
+            "leapp-data-almalinux",
+            "leapp-deps",
+            "leapp-upgrade-el7toel8",
+            "leapp-upgrade-el7toel8-deps",
+        ])
         if pkgs_to_remove:
             util.logged_check_call(["/usr/bin/yum", "remove", "-y"] + pkgs_to_remove)
 
