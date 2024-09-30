@@ -228,6 +228,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.CheckOutdatedLetsencryptExtensionRepository(),
             centos2alma_actions.AssertPleskRepositoriesNotNoneLink(),
             centos2alma_actions.AssertNoAbsoluteLinksInRoot(),
+            centos2alma_actions.CheckSourcePointsToArchiveURL(),
             common_actions.AssertNoMoreThenOneKernelDevelInstalled(),
             common_actions.AssertEnoughRamForAmavis(ALMALINUX8_AMAVIS_REQUIRED_RAM, self.amavis_upgrade_allowed),
             common_actions.AssertSshPermitRootLoginConfigured(),

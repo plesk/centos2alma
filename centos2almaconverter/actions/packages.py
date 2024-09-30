@@ -2,6 +2,7 @@
 import os
 import typing
 import shutil
+import re
 
 from pleskdistup.common import action, files, leapp_configs, log, motd, packages, rpm, systemd, util
 from pleskdistup.upgrader import PathType
@@ -435,3 +436,24 @@ class AdoptAtomicRepositories(action.ActiveAction):
 
     def _revert_action(self) -> action.ActionResult:
         return action.ActionResult()
+
+
+class CheckSourcePointsToArchiveURL(action.CheckAction):
+    AUTOINSTALLERRC_PATH = os.path.expanduser('~/.autoinstallerrc')
+
+    def __init__(self):
+        self.name = "checking if SOURCE points to old archive"
+        self.description = """Old archive doesn't serve up-to-date Plesk.
+\tEdit {self.AUTOINSTALLERRC_PATH} and change SOURCE - i.e. https://autoinstall.plesk.com
+"""
+
+    def _do_check(self) -> bool:
+        if not os.path.exists(self.AUTOINSTALLERRC_PATH):
+            return True
+        p = re.compile('^\s*SOURCE\s*=\s*https?://autoinstall-archives.plesk.com')
+        with open(self.AUTOINSTALLERRC_PATH) as f:
+            for line in f:
+                if p.search(line):
+                    return False
+        return True
+
