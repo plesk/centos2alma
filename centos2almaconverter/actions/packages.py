@@ -443,9 +443,9 @@ class CheckSourcePointsToArchiveURL(action.CheckAction):
 
     def __init__(self):
         self.name = "checking if SOURCE points to old archive"
-        self.description = """Old archive doesn't serve up-to-date Plesk.
+        self.description = f"""Old archive doesn't serve up-to-date Plesk.
 \tEdit {self.AUTOINSTALLERRC_PATH} and change SOURCE - i.e. https://autoinstall.plesk.com
-"""
+""".format(self)
 
     def _do_check(self) -> bool:
         if not os.path.exists(self.AUTOINSTALLERRC_PATH):
