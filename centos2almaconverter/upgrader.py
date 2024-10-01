@@ -96,6 +96,12 @@ class Centos2AlmaConverter(DistUpgrader):
         for repofile in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo*"]):
             feed.attached_files.append(repofile)
 
+        for gpgfile in files.find_files_case_insensitive("/etc/leapp/files/vendors.d/rpm-gpg", ["*"]):
+            feed.attached_files.append(gpgfile)
+
+        for gpgfile in files.find_files_case_insensitive("/etc/leapp/repos.d/system_upgrade/common/files/rpm-gpg", ["*"], recursive=True):
+            feed.attached_files.append(gpgfile)
+
         return feed
 
     def construct_actions(
