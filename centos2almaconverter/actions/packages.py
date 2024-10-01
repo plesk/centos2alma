@@ -119,7 +119,6 @@ class ReinstallConflictPackages(action.ActiveAction):
             "libwebp7": "libwebp",
             "libzip5": "libzip",
             "libytnef": "ytnef",
-            "libidn2": "libidn2",
             "lua-socket": "lua-socket",
         }
 
