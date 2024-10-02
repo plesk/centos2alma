@@ -10,12 +10,12 @@ class LeapInstallation(action.ActiveAction):
     def __init__(self):
         self.name = "installing leapp"
         self.pkgs_to_install = [
-            "leapp-0.16.0-2.el7",
-            "python2-leapp-0.16.0-2.el7",
-            "leapp-data-almalinux-0.2-15.el7.20230823",
-            "leapp-deps-0.16.0-2.el7",
-            "leapp-upgrade-el7toel8-0.19.0-7.1.el7",
-            "leapp-upgrade-el7toel8-deps-0.19.0-7.1.el7",
+            "leapp-0.18.0-1.el7",
+            "python2-leapp-0.18.0-1.el7",
+            "leapp-data-almalinux-0.4-5.el7.20240827",
+            "leapp-deps-0.18.0-1.el7",
+            "leapp-upgrade-el7toel8-0.21.0-2.el7",
+            "leapp-upgrade-el7toel8-deps-0.21.0-2.el7",
         ]
 
     def _remove_previous_installation(self) -> None:
