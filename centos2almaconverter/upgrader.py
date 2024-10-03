@@ -245,6 +245,8 @@ class Centos2AlmaConverter(DistUpgrader):
 
         if not self.upgrade_postgres_allowed:
             checks.append(centos2alma_actions.AssertOutdatedPostgresNotInstalled())
+        else:
+            checks.append(centos2alma_actions.AssertPostgresLocaleMatchesSystemOne())
         if not self.remove_unknown_perl_modules:
             checks.append(centos2alma_actions.AssertThereIsNoUnknownPerlCpanModules())
         if not self.disable_spamassasin_plugins:
