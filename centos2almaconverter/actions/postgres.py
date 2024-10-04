@@ -1,8 +1,9 @@
 # Copyright 1999 - 2024. Plesk International GmbH. All rights reserved.
+import locale
 import os
 import subprocess
 
-from pleskdistup.common import action, files, leapp_configs, postgres, util
+from pleskdistup.common import action, files, leapp_configs, log, postgres, util
 
 _ALMA8_POSTGRES_VERSION = 10
 
@@ -16,6 +17,42 @@ class AssertOutdatedPostgresNotInstalled(action.CheckAction):
 
     def _do_check(self):
         return not postgres.is_postgres_installed() or not postgres.is_database_initialized() or not postgres.is_database_major_version_lower(_ALMA8_POSTGRES_VERSION)
+
+
+class AssertPostgresLocaleMatchesSystemOne(action.CheckAction):
+    def __init__(self):
+        self.name = "checking if system locale is safe for Postgres databases upgrade"
+        self.description = """Postgres database upgrade expects system locale to match the one databases were created with.
+\tYou may need to change system locale (see /etc/locale.conf and the locale command) or
+\tdatcollate and datctype properties of Postgres databases to match each other."""
+        self.service_name = 'postgresql'
+
+    def _do_check(self):
+        config_path = os.path.join(postgres.get_data_path(), 'pg_hba.conf')
+
+        try:
+            files.backup_file(config_path)
+            files.push_front_strings(config_path, ["local template1 postgres trust #Added by Plesk\n"])
+            util.logged_check_call(['systemctl', 'reload-or-restart', self.service_name])
+
+            query = "SELECT datcollate, datctype FROM pg_database WHERE datname='postgres';"
+            cmd = ['/usr/bin/psql', '-U', 'postgres', '-d', 'template1', '-qt', '-v', 'ON_ERROR_STOP=1', '-P', 'border=0']
+            pg_locales = set(subprocess.check_output(cmd, input=query, universal_newlines=True).split())
+            if len(pg_locales) != 1:
+                log.debug(f"Got unexpected Postgres locales set: {pg_locales!r}")
+                return False
+
+            sys_locales = set(l.split('=')[1].strip() for l in files.find_file_substrings('/etc/locale.conf', 'LANG='))
+            sys_locales.add('.'.join(map(str, locale.getlocale())))
+            if len(sys_locales) != 1:
+                log.debug(f"Got unexpected system locales set: {sys_locales!r}")
+                return False
+
+            log.debug(f"Postgres locale is {pg_locales!r}, system locale is {sys_locales!r}")
+            return pg_locales == sys_locales
+        finally:
+            files.restore_file_from_backup(config_path)
+            util.logged_check_call(['systemctl', 'reload-or-try-restart', self.service_name])
 
 
 class PostgresDatabasesUpdate(action.ActiveAction):
