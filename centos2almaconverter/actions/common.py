@@ -18,6 +18,11 @@ class FixNamedConfig(action.ActiveAction):
 
     def _handle_included_file(self, chrooted_file: str):
         target_file = chrooted_file.replace(self.chrooted_configuration_path, "")
+
+        target_file_directory = os.path.dirname(target_file)
+        if not os.path.exists(target_file_directory):
+            os.makedirs(target_file_directory)
+
         if not os.path.exists(target_file):
             if os.path.exists(chrooted_file):
                 os.symlink(chrooted_file, target_file)
