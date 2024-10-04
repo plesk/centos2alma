@@ -4,43 +4,51 @@ import shutil
 import subprocess
 import typing
 
-from pleskdistup.common import action, files, log, motd, rpm, util
+from pleskdistup.common import action, dns, files, log, motd, rpm, util
 
 
 class FixNamedConfig(action.ActiveAction):
     def __init__(self):
         self.name = "fix named configuration"
-        self.user_options_path = "/etc/named-user-options.conf"
-        self.chrooted_file_path = "/var/named/chroot/etc/named-user-options.conf"
+        self.named_conf = "/etc/named.conf"
+        self.chrooted_configuration_path = "/var/named/chroot"
 
     def _is_required(self) -> bool:
-        return os.path.exists(self.chrooted_file_path)
+        return os.path.exists(self.named_conf) and os.path.exists(os.path.join(self.chrooted_configuration_path, self.named_conf))
+
+    def _handle_included_file(self, chrooted_file: str):
+        target_file = chrooted_file.replace(self.chrooted_configuration_path, "")
+        if not os.path.exists(target_file):
+            if os.path.exists(chrooted_file):
+                os.symlink(chrooted_file, target_file)
+            else:
+                with open(target_file, "w") as _:
+                    pass
+
+        if os.path.getsize(target_file) == 0:
+            with open(target_file, "w") as f:
+                f.write("# centos2alma workaround commentary")
 
     def _prepare_action(self) -> action.ActionResult:
-        if not os.path.exists(self.user_options_path):
-            os.symlink(self.chrooted_file_path, self.user_options_path)
-
-        if os.path.getsize(self.chrooted_file_path) == 0:
-            with open(self.chrooted_file_path, "w") as f:
-                f.write("# centos2alma workaround commentary")
+        for bind_configs in dns.get_all_includes_from_bind_config(self.named_conf, chroot_dir=self.chrooted_configuration_path):
+            self._handle_included_file(bind_configs)
 
         return action.ActionResult()
 
-    def _post_action(self) -> action.ActionResult:
-        if os.path.exists(self.user_options_path):
-            os.unlink(self.user_options_path)
+    def _remove_included_files(self, chrooted_file: str):
+        target_file = chrooted_file.replace(self.chrooted_configuration_path, "")
+        if os.path.islink(target_file):
+            os.unlink(target_file)
 
-        with open(self.chrooted_file_path, "r") as f:
-            if f.read() == "# centos2alma workaround commentary":
-                os.unlink(self.chrooted_file_path)
-                with open(self.chrooted_file_path, "w") as _:
-                    pass
+    def _post_action(self) -> action.ActionResult:
+        for bind_configs in dns.get_all_includes_from_bind_config(self.named_conf, chroot_dir=self.chrooted_configuration_path):
+            self._remove_included_files(bind_configs)
 
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
-        if os.path.exists(self.user_options_path):
-            os.unlink(self.user_options_path)
+        for bind_configs in dns.get_all_includes_from_bind_config(self.named_conf, chroot_dir=self.chrooted_configuration_path):
+            self._remove_included_files(bind_configs)
 
         return action.ActionResult()
 
