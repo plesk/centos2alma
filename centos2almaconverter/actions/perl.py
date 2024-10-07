@@ -6,6 +6,9 @@ from pleskdistup.common import action, files, log, motd, plesk, rpm
 
 CPAN_MODULES_DIRECTORY = "/usr/local/lib64/perl5"
 CPAN_MODULES_RPM_MAPPING = {
+    "B/Hooks/OP/Check.pm": "perl-B-Hooks-OP-Check",
+    "B/Hooks/OP/Check/Install/Files.pm": "perl-B-Hooks-OP-Check",
+    "indirect.pm": "perl-indirect",
     "IO/Pty.pm": "perl-IO-Tty",
     "IO/Tty.pm": "perl-IO-Tty",
     "IO/Tty/Constant.pm": "perl-IO-Tty",
@@ -31,6 +34,11 @@ CPAN_MODULES_RPM_MAPPING = {
     "File/Spec/Unix.pm": "perl-PathTools",
     "File/Spec/Win32.pm": "perl-PathTools",
     "File/Spec/AmigaOS.pm": "perl-PathTools",
+    "List/Util.pm": "perl-Scalar-List-Utils",
+    "List/Util/XS.pm": "perl-Scalar-List-Utils",
+    "Scalar/Util.pm": "perl-Scalar-List-Utils",
+    "Test/LeakTrace.pm": "perl-Test-LeakTrace",
+    "Test/LeakTrace/Script.pm": "perl-Test-LeakTrace",
 }
 
 
