@@ -456,3 +456,29 @@ class CheckSourcePointsToArchiveURL(action.CheckAction):
                     return False
         return True
 
+
+class HandleInternetxRepository(action.ActiveAction):
+    KNOWN_INTERNETX_REPO_FILES = ["internetx.repo"]
+
+    def __init__(self):
+        self.name = "handling InternetX repository"
+
+    def is_required(self) -> bool:
+        return len(files.find_files_case_insensitive("/etc/yum.repos.d", self.KNOWN_INTERNETX_REPO_FILES)) > 0
+
+    def _prepare_action(self) -> action.ActionResult:
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", self.KNOWN_INTERNETX_REPO_FILES):
+            files.backup_file(file)
+            leapp_configs.add_repositories_mapping([file])
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", self.KNOWN_INTERNETX_REPO_FILES):
+            files.remove_backup(file)
+            leapp_configs.adopt_repositories(file)
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        for file in files.find_files_case_insensitive("/etc/yum.repos.d", self.KNOWN_INTERNETX_REPO_FILES):
+            files.restore_file_from_backup(file)
+        return action.ActionResult()

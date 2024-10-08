@@ -158,6 +158,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.DisableSelinuxDuringUpgrade(),
                 centos2alma_actions.RestoreMissingNginx(),
                 common_actions.ReinstallAmavisAntivirus(),
+                centos2alma_actions.HandleInternetxRepository(),
             ],
             "First plesk start": [
                 common_actions.StartPleskBasicServices(),
