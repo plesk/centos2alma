@@ -159,7 +159,11 @@ See the /var/log/plesk/centos2alma.log file for more information.
 You can remove this message from the /etc/motd file.
 ===============================================================================
 ```
-You can read the centos2alma log to troubleshoot the issue. If the centos2alma finish stage fails for any reason, once you have resolved the root cause of the failure, you can retry by running 'centos2alma -s finish'.
+You can read the centos2alma log to troubleshoot the issue. If the centos2alma finish stage fails for any reason, once you have resolved the root cause of the failure, you can retry by running:
+
+```shell
+> ./centos2alma --resume
+```
 
 ### Send feedback
 If you got any error, please [create an issue on github](https://github.com/plesk/centos2alma/issues). To do generate feedback archive by calling the tool with '-f' or '--prepare-feedback' flags.
