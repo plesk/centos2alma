@@ -15,8 +15,8 @@ class DoCentos2AlmaConvert(action.ActiveAction):
         env_vars = os.environ.copy()
         env_vars["LEAPP_OVL_SIZE"] = str(self.leapp_ovl_size)
 
-        util.logged_check_call(["/usr/bin/leapp", "preupgrade"], env=env_vars)
-        util.logged_check_call(["/usr/bin/leapp", "upgrade"], env=env_vars)
+        util.log_outputs_check_call(["/usr/bin/leapp", "preupgrade"], collect_return_stdout=False, env=env_vars)
+        util.log_outputs_check_call(["/usr/bin/leapp", "upgrade"], collect_return_stdout=False, env=env_vars)
         return action.ActionResult()
 
     def _post_action(self) -> action.ActionResult:
