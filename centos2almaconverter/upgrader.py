@@ -178,6 +178,9 @@ class Centos2AlmaConverter(DistUpgrader):
             "Specific repositories adoption": [
                 centos2alma_actions.AdoptRackspaceEpelRepository(),
             ],
+            "Resume": [
+                common_actions.RestoreInProgressSshLoginMessage(new_os),
+            ],
             "Pause before reboot": [
             ],
             "Reboot": {
