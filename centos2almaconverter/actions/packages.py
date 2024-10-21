@@ -449,7 +449,7 @@ class CheckSourcePointsToArchiveURL(action.CheckAction):
     def _do_check(self) -> bool:
         if not os.path.exists(self.AUTOINSTALLERRC_PATH):
             return True
-        p = re.compile('^\s*SOURCE\s*=\s*https?://autoinstall-archives.plesk.com')
+        p = re.compile(r'^\s*SOURCE\s*=\s*https?://autoinstall-archives.plesk.com')
         with open(self.AUTOINSTALLERRC_PATH) as f:
             for line in f:
                 if p.search(line):
