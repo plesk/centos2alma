@@ -79,6 +79,7 @@ class Centos2AlmaConverter(DistUpgrader):
         feed.collect_actions += [
             feedback.collect_installed_packages_yum,
             feedback.collect_plesk_version,
+            feedback.collect_kernel_modules,
         ]
 
         feed.attached_files += [
