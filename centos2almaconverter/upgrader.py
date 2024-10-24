@@ -139,6 +139,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.FixSyslogLogrotateConfig(options.state_dir),
                 common_actions.SetMinDovecotDhParamSize(dhparam_size=2048),
                 common_actions.RestoreDovecotConfiguration(options.state_dir),
+                common_actions.RestoreRoundcubeConfiguration(options.state_dir),
                 centos2alma_actions.RecreateAwstatConfigurationFiles(),
                 common_actions.UninstallTuxcareEls(),
             ],
