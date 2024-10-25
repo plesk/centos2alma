@@ -5,7 +5,7 @@ import argparse
 from packaging import version
 from bs4 import BeautifulSoup
 
-# Current packages
+# Current packages list
 current_packages = [
     "leapp-0.18.0-1",
     "python2-leapp-0.18.0-1",
@@ -16,23 +16,36 @@ current_packages = [
 ]
 
 
+def split_name_version(pkg):
+    splitted_pkg = pkg.split("-")
+    iter = 0
+    for part in splitted_pkg:
+        if part[0].isdigit():
+            break
+        iter += 1
+
+    return "-".join(splitted_pkg[:iter]), "-".join(splitted_pkg[iter:])
+
+
 def retrieve_newer_packages():
     url = 'https://repo.almalinux.org/elevate/el7/aarch64/Packages/'
     response = requests.get(url)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    fetched_packages = [a.text for a in soup.find_all('a') if a.text.endswith('.rpm')]
+    fetched_packages = [a.text.rsplit('.noarch', 1)[0].rsplit('.el7', 1)[0] for a in soup.find_all('a') if a.text.endswith('.rpm')]
 
     newer_packages = []
     for current_pkg in current_packages:
-        current_name, current_ver = current_pkg.rsplit('-', 1)
+        current_name, current_ver = split_name_version(current_pkg)
+        # Replace '-' with '.' to make version.parse work. We will do the same thing for fetched versions as well
+        current_ver = version.parse(current_ver.replace('-', '.'))
         for fetched_pkg in fetched_packages:
-            if fetched_pkg.startswith(current_name):
-                fetched_ver = fetched_pkg[len(current_name)+1:].rsplit('.el7', 1)[0]
-                if version.parse(fetched_ver) > version.parse(current_ver):
-                    newer_packages.append(fetched_pkg)
-                    break
+            fetched_name, fetched_ver = split_name_version(fetched_pkg)
+            fetched_ver = version.parse(fetched_ver.replace('-', '.'))
+            if fetched_name == current_name and fetched_ver > current_ver:
+                newer_packages.append(fetched_pkg)
+                break
     return newer_packages
 
 
