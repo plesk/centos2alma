@@ -65,12 +65,46 @@ def notify_by_github(newer_packages, github_token, github_repository):
     repo.create_issue(title=GITHUB_ISSUE_TITLE, body=issue_body)
 
 
+def get_known_versions_package_list_from_github_issue(github_token, github_repository):
+    issue_packages_map = {}
+
+    from github import Github
+    g = Github(github_token)
+    repo = g.get_repo(github_repository)
+    existing_issues = repo.get_issues(state='open')
+
+    for issue in existing_issues:
+        if issue.title == GITHUB_ISSUE_TITLE:
+            issue_packages_list = issue.body.split("\n- ")[1:]
+            for pkg in issue_packages_list:
+                if pkg.startswith("- "):
+                    pkg = pkg[2:]
+                name, ver = split_name_version(pkg)
+                issue_packages_map[name] = ver
+
+            for comment in issue.get_comments():
+                issue_packages_list = comment.body.split("\n- ")[1:]
+                for pkg in issue_packages_list:
+                    if pkg.startswith("- "):
+                        pkg = pkg[2:]
+                    name, ver = split_name_version(pkg)
+                    issue_packages_map[name] = ver
+            break
+
+    return issue_packages_map
+
+
 parser = argparse.ArgumentParser(
     description="Small skript to check for newer elevate packages",
 )
 parser.add_argument("--github-token", default=None, help="GitHub token to create an issue")
 parser.add_argument("--github-repository", default=None, help="GitHub repository to create an issue")
 options, extra_args = parser.parse_known_args()
+
+if options.github_token and options.github_repository:
+    # If we already have the issue, we should check the known versions from the issue as well
+    known_versions = get_known_versions_package_list_from_github_issue(options.github_token, options.github_repository)
+    current_packages.update(known_versions)
 
 # Create GitHub issue if there are newer packages
 newer_packages = retrieve_newer_packages()
