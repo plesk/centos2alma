@@ -36,20 +36,22 @@ def retrieve_newer_packages():
     return newer_packages
 
 
+GITHUB_ISSUE_TITLE = "Newer elevate packages available"
+
+
 def notify_by_github(newer_packages, github_token, github_repository):
     from github import Github
     g = Github(github_token)
     repo = g.get_repo(github_repository)
-    issue_title = "Newer elevate packages available"
 
     existing_issues = repo.get_issues(state='open')
     for issue in existing_issues:
-        if issue.title == issue_title:
+        if issue.title == GITHUB_ISSUE_TITLE:
             issue.create_comment("The following packages have newer versions available:\n- " + "\n- ".join(newer_packages))
             return
 
     issue_body = "The following packages have newer versions available:\n- " + "\n- ".join(newer_packages)
-    repo.create_issue(title=issue_title, body=issue_body)
+    repo.create_issue(title=GITHUB_ISSUE_TITLE, body=issue_body)
 
 
 parser = argparse.ArgumentParser(
