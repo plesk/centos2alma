@@ -6,14 +6,14 @@ from packaging import version
 from bs4 import BeautifulSoup
 
 # Current packages list
-current_packages = [
-    "leapp-0.18.0-1",
-    "python2-leapp-0.18.0-1",
-    "leapp-data-almalinux-0.4-5",
-    "leapp-deps-0.18.0-1",
-    "leapp-upgrade-el7toel8-0.21.0-2",
-    "leapp-upgrade-el7toel8-deps-0.21.0-2",
-]
+current_packages = {
+    "leapp": "0.18.0-1",
+    "python2-leapp": "0.18.0-1",
+    "leapp-data-almalinux": "0.4-5",
+    "leapp-deps": "0.18.0-1",
+    "leapp-upgrade-el7toel8": "0.21.0-2",
+    "leapp-upgrade-el7toel8-deps": "0.21.0-2",
+}
 
 
 def split_name_version(pkg):
@@ -36,16 +36,14 @@ def retrieve_newer_packages():
     fetched_packages = [a.text.rsplit('.noarch', 1)[0].rsplit('.el7', 1)[0] for a in soup.find_all('a') if a.text.endswith('.rpm')]
 
     newer_packages = []
-    for current_pkg in current_packages:
-        current_name, current_ver = split_name_version(current_pkg)
-        # Replace '-' with '.' to make version.parse work. We will do the same thing for fetched versions as well
-        current_ver = version.parse(current_ver.replace('-', '.'))
-        for fetched_pkg in fetched_packages:
-            fetched_name, fetched_ver = split_name_version(fetched_pkg)
-            fetched_ver = version.parse(fetched_ver.replace('-', '.'))
-            if fetched_name == current_name and fetched_ver > current_ver:
-                newer_packages.append(fetched_pkg)
-                break
+    for fetched_pkg in fetched_packages:
+        fetched_name, fetched_ver = split_name_version(fetched_pkg)
+        # Replace '-' with '.' to make version.parse work. We should do it for both fetched and current versions
+        fetched_ver = version.parse(fetched_ver.replace('-', '.'))
+        # We need to check only packages that we install directly in the LeapInstallation action. So skip the rest
+        if fetched_name in current_packages and fetched_ver > version.parse(current_packages[fetched_name].replace('-', '.')):
+            newer_packages.append(fetched_pkg)
+
     return newer_packages
 
 
