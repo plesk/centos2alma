@@ -41,6 +41,7 @@ class Centos2AlmaConverter(DistUpgrader):
         self.remove_unknown_perl_modules = False
         self.disable_spamassasin_plugins = False
         self.amavis_upgrade_allowed = False
+        self.allow_raid_devices = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(From {self._distro_from}, To {self._distro_to})"
@@ -246,6 +247,7 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertEnoughRamForAmavis(ALMALINUX8_AMAVIS_REQUIRED_RAM, self.amavis_upgrade_allowed),
             common_actions.AssertSshPermitRootLoginConfigured(),
             common_actions.AssertFstabOrderingIsFine(),
+            common_actions.AssertFstabHasDirectRaidDevices(self.allow_raid_devices),
             # LiteSpeed is not supported yet
             common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
@@ -295,6 +297,8 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
                             help="Specify the overlay size for leapp in megabytes.")
         parser.add_argument("--amavis-upgrade-allowed", action="store_true", dest="amavis_upgrade_allowed", default=False,
                             help="Allow to upgrade amavis antivirus even if there is not enough RAM available.")
+        parser.add_argument("--allow-raid-devices", action="store_true", dest="allow_raid_devices", default=False,
+                            help="Allow to have direct RAID devices in /etc/fstab. This could lead to unbootable system after the conversion so use the option on your own risk.")
         options = parser.parse_args(args)
 
         self.upgrade_postgres_allowed = options.upgrade_postgres_allowed
@@ -302,6 +306,7 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
         self.disable_spamassasin_plugins = options.disable_spamassasin_plugins
         self.amavis_upgrade_allowed = options.amavis_upgrade_allowed
         self.leapp_ovl_size = options.leapp_ovl_size
+        self.allow_raid_devices = options.allow_raid_devices
 
 
 class Centos2AlmaConverterFactory(DistUpgraderFactory):
