@@ -230,6 +230,8 @@ class AdoptRepositories(action.ActiveAction):
 
 
 class AdoptRackspaceEpelRepository(action.ActiveAction):
+    epel_repository_file_path: str = "/etc/yum.repos.d/epel.repo"
+
     def __init__(self):
         self.name = "adopting rackspace epel repository"
 
@@ -240,13 +242,13 @@ class AdoptRackspaceEpelRepository(action.ActiveAction):
         return False
 
     def is_required(self) -> bool:
-        return self._is_rackspace_epel_repo("/etc/yum.repos.d/epel.repo")
+        return os.path.exists(self.epel_repository_file_path) and self._is_rackspace_epel_repo(self.epel_repository_file_path)
 
     def _prepare_action(self) -> action.ActionResult:
         return action.ActionResult()
 
     def _post_action(self) -> action.ActionResult:
-        leapp_configs.adopt_repositories("/etc/yum.repos.d/epel.repo", keep_id=True)
+        leapp_configs.adopt_repositories(self.epel_repository_file_path, keep_id=True)
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
