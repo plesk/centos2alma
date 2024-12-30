@@ -127,6 +127,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.RevertChangesInGrub(),
                 centos2alma_actions.PrepareLeappConfigurationBackup(),
                 centos2alma_actions.RemoveOldMigratorThirparty(),
+                centos2alma_actions.FetchKernelCareGPGKey(),
                 centos2alma_actions.LeapReposConfiguration(),
                 centos2alma_actions.LeapChoicesConfiguration(),
                 centos2alma_actions.AdoptKolabRepositories(),
