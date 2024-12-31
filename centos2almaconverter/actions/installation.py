@@ -7,7 +7,9 @@ from pleskdistup.common import action, files, rpm, util
 
 class LeapInstallation(action.ActiveAction):
 
-    def __init__(self):
+    keep_logs_on_finish: bool
+
+    def __init__(self, keep_logs_on_finish: bool = False):
         self.name = "installing leapp"
         self.pkgs_to_install = [
             "leapp-0.18.0-1.el7",
@@ -17,6 +19,7 @@ class LeapInstallation(action.ActiveAction):
             "leapp-upgrade-el7toel8-0.21.0-2.el7",
             "leapp-upgrade-el7toel8-deps-0.21.0-2.el7",
         ]
+        self.keep_logs_on_finish = keep_logs_on_finish
 
     def _remove_previous_installation(self) -> None:
         # Remove previously installed leapp packages to make sure we will install the correct version
@@ -70,9 +73,11 @@ class LeapInstallation(action.ActiveAction):
         leapp_related_directories = [
             "/etc/leapp",
             "/var/lib/leapp",
-            "/var/log/leapp",
             "/usr/lib/python2.7/site-packages/leapp",
         ]
+        if not self.keep_logs_on_finish:
+            leapp_related_directories.append("/var/log/leapp")
+
         for directory in leapp_related_directories:
             if os.path.exists(directory):
                 shutil.rmtree(directory)
