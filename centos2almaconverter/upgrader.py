@@ -42,7 +42,7 @@ class Centos2AlmaConverter(DistUpgrader):
         self.disable_spamassasin_plugins = False
         self.amavis_upgrade_allowed = False
         self.allow_raid_devices = False
-        self.keep_leapp_logs = False
+        self.remove_leapp_logs = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(From {self._distro_from}, To {self._distro_to})"
@@ -122,7 +122,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.AddInProgressSshLoginMessage(new_os),
             ],
             "Leapp installation": [
-                centos2alma_actions.LeapInstallation(keep_logs_on_finish=self.keep_leapp_logs),
+                centos2alma_actions.LeapInstallation(remove_logs_on_finish=self.remove_leapp_logs),
             ],
             "Prepare configurations": [
                 common_actions.RevertChangesInGrub(),
@@ -301,8 +301,8 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
                             help="Allow to upgrade amavis antivirus even if there is not enough RAM available.")
         parser.add_argument("--allow-raid-devices", action="store_true", dest="allow_raid_devices", default=False,
                             help="Allow to have direct RAID devices in /etc/fstab. This could lead to unbootable system after the conversion so use the option on your own risk.")
-        parser.add_argument("--keep-leapp-logs", action="store_true", dest="keep_leapp_logs", default=False,
-                            help="Keep leapp logs after the conversion. By default, the logs are removed after the conversion.")
+        parser.add_argument("--remove-leapp-logs", action="store_true", dest="remove_leapp_logs", default=False,
+                            help="Remove leapp logs after the conversion. By default, the logs are removed after the conversion.")
         options = parser.parse_args(args)
 
         self.upgrade_postgres_allowed = options.upgrade_postgres_allowed
@@ -311,7 +311,7 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
         self.amavis_upgrade_allowed = options.amavis_upgrade_allowed
         self.leapp_ovl_size = options.leapp_ovl_size
         self.allow_raid_devices = options.allow_raid_devices
-        self.keep_leapp_logs = options.keep_leapp_logs
+        self.remove_leapp_logs = options.remove_leapp_logs
 
 
 class Centos2AlmaConverterFactory(DistUpgraderFactory):
