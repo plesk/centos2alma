@@ -97,6 +97,9 @@ class FetchKernelCareGPGKey(action.ActiveAction):
         return self._is_kernelcare_extension_installed() and self._is_kernelcare_gpg_key_missing()
 
     def _get_kernelcare_gpg_keys_urls(self) -> typing.List[str]:
+        if not os.path.exists(self.kernelcare_repofile):
+            return []
+
         result = []
         for repo_id, _, _, _, _, additional in rpm.extract_repodata(self.kernelcare_repofile):
             if repo_id != "kernelcare":
