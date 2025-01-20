@@ -7,10 +7,10 @@ from bs4 import BeautifulSoup
 
 # Current packages list
 current_packages = {
-    "leapp": "0.18.0-1",
-    "python2-leapp": "0.18.0-1",
+    "leapp": "0.18.0-2",
+    "python2-leapp": "0.18.0-2",
     "leapp-data-almalinux": "0.4-5",
-    "leapp-deps": "0.18.0-1",
+    "leapp-deps": "0.18.0-2",
     "leapp-upgrade-el7toel8": "0.21.0-2",
     "leapp-upgrade-el7toel8-deps": "0.21.0-2",
 }
