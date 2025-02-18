@@ -20,7 +20,7 @@ jobs:
         command: build
         target: :centos2alma
     - name: Store result
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: centos2alma
         path: ./buck-out/gen/centos2alma
