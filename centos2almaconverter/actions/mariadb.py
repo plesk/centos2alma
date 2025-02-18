@@ -58,11 +58,13 @@ class UpdateModernMariadb(action.ActiveAction):
         if len(repofiles) == 0:
             raise Exception("Mariadb installed from unknown repository. Please check the '{}' file is present".format("/etc/yum.repos.d/mariadb.repo"))
 
-        log.debug("Add MariaDB repository files '{}' mapping".format(repofiles[0]))
-        leapp_configs.add_repositories_mapping(repofiles)
+        log.debug("Add MariaDB repository files '{}' mapping into leapp vendor directory".format(repofiles[0]))
+        for repofile in repofiles:
+            leapp_configs.create_leapp_vendor_repository_adoption(repofile)
 
         log.debug("Set repository mapping in the leapp configuration file")
         leapp_configs.set_package_repository("mariadb", "alma-mariadb")
+
         return action.ActionResult()
 
     def _post_action(self) -> action.ActionResult:
