@@ -43,6 +43,7 @@ class Centos2AlmaConverter(DistUpgrader):
         self.amavis_upgrade_allowed = False
         self.allow_raid_devices = False
         self.remove_leapp_logs = False
+        self.allow_old_script_version = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(From {self._distro_from}, To {self._distro_to})"
