@@ -267,6 +267,9 @@ class Centos2AlmaConverter(DistUpgrader):
         if not self.disable_spamassasin_plugins:
             checks.append(common_actions.AssertSpamassassinAdditionalPluginsDisabled())
 
+        if not self.allow_old_script_version:
+            checks.append(common_actions.AssertScriptVersionUpToDate("https://github.com/plesk/centos2alma", "centos2alma", version.DistupgradeToolVersion(get_version())))
+
         return checks
 
     def parse_args(self, args: typing.Sequence[str]) -> None:
@@ -307,6 +310,8 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
                             help="Allow to have direct RAID devices in /etc/fstab. This could lead to unbootable system after the conversion so use the option on your own risk.")
         parser.add_argument("--remove-leapp-logs", action="store_true", dest="remove_leapp_logs", default=False,
                             help="Remove leapp logs after the conversion. By default, the logs are removed after the conversion.")
+        parser.add_argument("--allow-old-script-version", action="store_true", dest="allow_old_script_version", default=False,
+                            help="Allow to run the script with an old version. By default, the script checks for a new version on GitHub and does not allow to run with an old one.")
         options = parser.parse_args(args)
 
         self.upgrade_postgres_allowed = options.upgrade_postgres_allowed
@@ -316,6 +321,7 @@ For assistance, submit an issue here {self.issues_url} and attach the feedback a
         self.leapp_ovl_size = options.leapp_ovl_size
         self.allow_raid_devices = options.allow_raid_devices
         self.remove_leapp_logs = options.remove_leapp_logs
+        self.allow_old_script_version = options.allow_old_script_version
 
 
 class Centos2AlmaConverterFactory(DistUpgraderFactory):
