@@ -36,6 +36,14 @@ Do not use the script if any of the following is true:
 - Minimum of 1 GB of RAM
 - The Linux kernel package must be signed by Red Hat. This is typically the case if you have installed the kernel from the official CentOS repositories
 
+## Conversion pre-requisites
+Before the conversion process can begin, certain requirements must be fulfilled. The script will automatically verify these conditions and will not start the conversion if any are unmet. Most of these checks match those performed by the leapp preupgrade, thereby avoiding a conversion that would be halted by leapp, which prevents unnecessary interruption of Plesk services.
+
+You can manually run all pre-checks using the command line options `-c` or `--precheck`:
+```shell
+> ./centos2alma --precheck
+```
+
 ## Using the script
 To retrieve the latest available version of the tool, please navigate to the "Releases" section. Once there, locate the most recent version of the tool and download the zip archive. The zip archive will contain the centos2alma tool binary.
 
