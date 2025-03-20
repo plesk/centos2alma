@@ -101,11 +101,11 @@ class FetchKernelCareGPGKey(action.ActiveAction):
             return []
 
         result = []
-        for repo_id, _, _, _, _, additional in rpm.extract_repodata(self.kernelcare_repofile):
-            if repo_id != "kernelcare":
+        for repo in rpm.extract_repodata(self.kernelcare_repofile):
+            if repo.id != "kernelcare":
                 continue
 
-            for line in additional:
+            for line in repo.additional:
                 if line.startswith("gpgkey="):
                     result.append(line[len("gpgkey="):].rstrip())
 

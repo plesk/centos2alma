@@ -211,8 +211,8 @@ class AdoptRepositories(action.ActiveAction):
     def _adopt_plesk_repositories(self):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
             rpm.remove_repositories(file, [
-                lambda id, _1, _2, _3, _4: id in ["PLESK_17_PHP52", "PLESK_17_PHP53",
-                                                  "PLESK_17_PHP54", "PLESK_17_PHP55"],
+                lambda repo: repo.id in ["PLESK_17_PHP52", "PLESK_17_PHP53",
+                                         "PLESK_17_PHP54", "PLESK_17_PHP55"],
             ])
             leapp_configs.adopt_repositories(file)
 
@@ -236,8 +236,8 @@ class AdoptRackspaceEpelRepository(action.ActiveAction):
         self.name = "adopting rackspace epel repository"
 
     def _is_rackspace_epel_repo(self, repo_file: PathType) -> bool:
-        for _1, _2, url, _4, _5, _6 in rpm.extract_repodata(repo_file):
-            if url and "iad.mirror.rackspace.com" in url:
+        for repo in rpm.extract_repodata(repo_file):
+            if repo.url and "iad.mirror.rackspace.com" in repo.url:
                 return True
         return False
 
@@ -265,9 +265,9 @@ class AssertPleskRepositoriesNotNoneLink(action.CheckAction):
     def _do_check(self) -> bool:
         none_link_repos = []
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*.repo"]):
-            for id, _2, url, metalink, mirrorlist, _5 in rpm.extract_repodata(file):
-                if rpm.repository_has_none_link(id, None, url, metalink, mirrorlist):
-                    none_link_repos.append(f"'{id}' from repofile '{file}'")
+            for repo in rpm.extract_repodata(file):
+                if rpm.repository_has_none_link(repo):
+                    none_link_repos.append(f"{repo.id!r} from repofile {file!r}")
 
         if len(none_link_repos) == 0:
             return True
@@ -286,8 +286,8 @@ class AssertIPRepositoryNotPresent(action.CheckAction):
 """
 
     def _is_repo_source_ip_address(self, repo_file) -> bool:
-        for _1, _2, url, metalink, mirrorlist, _5 in rpm.extract_repodata(repo_file):
-            if rpm.repository_source_is_ip(url, metalink, mirrorlist):
+        for repo in rpm.extract_repodata(repo_file):
+            if rpm.repository_source_is_ip(repo):
                 return True
         return False
 
@@ -316,24 +316,24 @@ class AssertCentosEOLedRepositoriesNotPresent(action.CheckAction):
                 return line.split("=")[1].strip() == "1"
         return True
 
-    def _is_repo_source_ip_address(self, repo_file) -> bool:
-        for id, _2, baseurl, _, mirrorlist, additional in rpm.extract_repodata(repo_file):
-            if not self._is_repository_enabled(additional):
-                log.debug("Skip disabled repository '{}'".format(id))
+    def _is_repo_source_eoled(self, repo_file) -> bool:
+        for repo in rpm.extract_repodata(repo_file):
+            if not self._is_repository_enabled(repo.additional):
+                log.debug("Skip disabled repository '{}'".format(repo.id))
                 continue
 
-            if mirrorlist and mirrorlist.startswith("http://mirrorlist.centos.org/"):
-                log.debug("Found depricated repository '{}' with mirrorlist '{}'".format(id, mirrorlist))
+            if repo.mirrorlist and repo.mirrorlist.startswith("http://mirrorlist.centos.org/"):
+                log.debug("Found depricated repository '{}' with mirrorlist '{}'".format(repo.id, repo.mirrorlist))
                 return True
 
-            if baseurl and baseurl.startswith("http://mirror.centos.org/centos"):
-                log.debug("Found depricated repository '{}' with baseurl '{}'".format(id, baseurl))
+            if repo.url and repo.url.startswith("http://mirror.centos.org/centos"):
+                log.debug("Found depricated repository '{}' with baseurl '{}'".format(repo.id, repo.url))
                 return True
         return False
 
     def _do_check(self) -> bool:
         ip_source_repositories_files = [file for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*.repo"])
-                                        if self._is_repo_source_ip_address(file)]
+                                        if self._is_repo_source_eoled(file)]
 
         if len(ip_source_repositories_files) == 0:
             return True
@@ -348,8 +348,8 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
 
     def _is_required(self) -> bool:
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", ["plesk*migrator*.repo"]):
-            for _1, _2, url, _3, _4, _5 in rpm.extract_repodata(file):
-                if url and "PMM_0.1.10/thirdparty-rpm" in url:
+            for repo in rpm.extract_repodata(file):
+                if repo.url and "PMM_0.1.10/thirdparty-rpm" in repo.url:
                     return True
 
         return False
@@ -359,7 +359,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
             files.backup_file(file)
 
             rpm.remove_repositories(file, [
-                lambda _1, _2, baseurl, _3, _4: (baseurl is not None and "PMM_0.1.10/thirdparty-rpm" in baseurl),
+                lambda repo: (repo.url is not None and "PMM_0.1.10/thirdparty-rpm" in repo.baseurl),
             ])
         return action.ActionResult()
 
