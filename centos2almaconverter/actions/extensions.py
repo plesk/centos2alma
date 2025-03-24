@@ -105,9 +105,7 @@ class FetchKernelCareGPGKey(action.ActiveAction):
             if repo.id != "kernelcare":
                 continue
 
-            for line in repo.additional:
-                if line.startswith("gpgkey="):
-                    result.append(line[len("gpgkey="):].rstrip())
+            result += repo.gpgkeys
 
         return result
 
