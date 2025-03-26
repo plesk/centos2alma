@@ -359,7 +359,7 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
             files.backup_file(file)
 
             rpm.remove_repositories(file, [
-                lambda repo: (repo.url is not None and "PMM_0.1.10/thirdparty-rpm" in repo.baseurl),
+                lambda repo: (repo.url is not None and "PMM_0.1.10/thirdparty-rpm" in repo.url),
             ])
         return action.ActionResult()
 
