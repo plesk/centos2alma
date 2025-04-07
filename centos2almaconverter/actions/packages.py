@@ -2,6 +2,7 @@
 import os
 import typing
 import shutil
+import subprocess
 import re
 
 from pleskdistup.common import action, files, leapp_configs, log, motd, packages, plesk, rpm, systemd, util
@@ -511,3 +512,62 @@ class HandleInternetxRepository(action.ActiveAction):
         for file in files.find_files_case_insensitive("/etc/yum.repos.d", self.KNOWN_INTERNETX_REPO_FILES):
             files.restore_file_from_backup(file)
         return action.ActionResult()
+
+
+class AssertCentosSignedKernelInstalled(action.CheckAction):
+    def __init__(self):
+        self.name = "checking if CentOS signed kernel is installed"
+        self.description = """There is no kernel packages signed by CentOS installed.
+\tTo proceed with the conversion, please install the kernel from official CentoOS repository.
+"""
+
+    def _get_pgp_key_id(self, file_path: str) -> typing.Optional[str]:
+        try:
+            output = subprocess.check_output(["/usr/bin/gpg", "--list-packets", file_path], universal_newlines=True)
+            for line in output.splitlines():
+                line = line.strip()
+                if line.startswith("keyid: "):
+                    return line.split(": ")[1].lower()
+        except Exception as e:
+            log.err(f"Failed to get PGP key ID from {file_path}: {e}")
+        return None
+
+    def _signed_by_one_of_keys(self, package_description: str, keys: typing.Set[str]) -> bool:
+        for key_id in keys:
+            if key_id in package_description:
+                return True
+        return False
+
+    def _do_check(self) -> bool:
+        # You could find the same list at centos/gpg-signatures.json in leapp-repository
+        # Unfortunately leapp is not installed at this moment so we have to create set of id's manually
+        known_pgp_keys_ids: typing.Set[str] = set([
+            "24c6a8a7f4a80eb5",
+            "05b555b38483c65d",
+            "4eb84e71f2ee9d55",
+            "429785e181b961a5",
+            "d07bf2a08d50eb66",
+            "6c7cb6ef305d49d6"
+        ])
+
+        default_key_path = "/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7"
+        if os.path.exists(default_key_path):
+            default_key_id = self._get_pgp_key_id(default_key_path)
+            if default_key_id is not None:
+                known_pgp_keys_ids.add(default_key_id)
+        try:
+            packages_with_pgpsig = subprocess.check_output(["/usr/bin/rpm", "-q", "--queryformat", "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH} %{SIGPGP:pgpsig}\n", "kernel"], universal_newlines=True)
+        except subprocess.CalledProcessError as e:
+            log.err(f"Failed to get kernel package information: {e}")
+            # The reason likely is not the same as described in the pre-checker description
+            # So if we will show the message to user, they will be confused. So we just skip the pre-check
+            return True
+
+        if packages_with_pgpsig.startswith("package kernel is not installed"):
+            # This means that kernel package is not installed. It is generally expected that a kernel package is present.
+            # However, I'm not sure if it causes a problem on the Leapp side
+            # So, we can bypass the pre-check and look for similar cases mentioned in feature requests on GitHub
+            log.warn(f"Kernel package is not installed. Skipping the {self.__class__.__name__} precheck.")
+            return True
+
+        return any(self._signed_by_one_of_keys(pkg, known_pgp_keys_ids) for pkg in packages_with_pgpsig.splitlines() if pkg)
