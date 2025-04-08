@@ -257,6 +257,7 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertSshPermitRootLoginConfigured(),
             common_actions.AssertFstabOrderingIsFine(),
             common_actions.AssertFstabHasDirectRaidDevices(self.allow_raid_devices),
+            centos2alma_actions.AssertCentosSignedKernelInstalled(),
             # LiteSpeed is not supported yet
             common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
