@@ -565,8 +565,8 @@ class AssertCentosSignedKernelInstalled(action.CheckAction):
 
         if packages_with_pgpsig.startswith("package kernel is not installed"):
             # This means that kernel package is not installed. It is generally expected that a kernel package is present.
-            # However, I'm not sure if it causes a problem on the Leapp side
-            # So, we can bypass the pre-check and look for similar cases mentioned in feature requests on GitHub
+            # And this action designed to check a little other problem, so description message can be misleading.
+            # So it's better to use another action to catch such kind of problem. Currently we use AssertRedHatKernelInstalled
             log.warn(f"Kernel package is not installed. Skipping the {self.__class__.__name__} precheck.")
             return True
 
