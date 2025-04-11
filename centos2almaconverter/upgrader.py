@@ -151,6 +151,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.RestoreRoundcubeConfiguration(options.state_dir),
                 centos2alma_actions.RecreateAwstatConfigurationFiles(),
                 common_actions.UninstallTuxcareEls(),
+                common_actions.PreserveMariadbConfig(),
             ],
             "Handle plesk related services": [
                 common_actions.DisablePleskRelatedServicesDuringUpgrade(),
