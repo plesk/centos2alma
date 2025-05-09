@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04 # Not latest, because python3.6 is not available on latest
+    runs-on: ubuntu-22.04 # Not latest, because python3.6 is not available on latest
                           # https://github.com/actions/setup-python/issues/544
     steps:
     - name: Checkout repository and submodules
