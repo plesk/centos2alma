@@ -1,6 +1,8 @@
 # Copyright 1999 - 2025. Plesk International GmbH. All rights reserved.
+import os
+
 from pleskdistup import actions as common_actions
-from pleskdistup.common import action, util, leapp_configs, files
+from pleskdistup.common import action, util, leapp_configs, files, rpm
 
 
 class FixupImunify(action.ActiveAction):
@@ -14,6 +16,17 @@ class FixupImunify(action.ActiveAction):
         repofiles = files.find_files_case_insensitive("/etc/yum.repos.d", ["imunify*.repo"])
 
         leapp_configs.add_repositories_mapping(repofiles)
+
+        if "/etc/yum.repos.d/imunify360-alt-php.repo" in repofiles:
+            # The alt-php repository uses gpg key protected by password authentication,
+            # so since we have no way to pass the credentials to Leapp,
+            # we need to extract gpg key from rpm database and use it instead.
+            rpm.extract_gpgkey_from_rpm_database(".*CloudLinux.*", "/etc/leapp/files/vendors.d/rpm-gpg/RPM-GPG-KEY-CloudLinux")
+            files.replace_string(
+                "/etc/leapp/files/leapp_upgrade_repositories.repo",
+                "gpgkey=http://repo.alt.cloudlinux.com/el/alt-php/install/centos/RPM-GPG-KEY-CloudLinux",
+                "gpgkey=file:///etc/leapp/files/vendors.d/rpm-gpg/RPM-GPG-KEY-CloudLinux"
+            )
 
         # libssh2 and libunwind are needed for imunify360, so we must configure actions for them.
         # We need to map the packages to the ones available in the AlmaLinux 8 EPEL repository.
