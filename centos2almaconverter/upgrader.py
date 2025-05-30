@@ -161,7 +161,6 @@ class Centos2AlmaConverter(DistUpgrader):
             "Handle packages and services": [
                 centos2alma_actions.FixOsVendorPhpFpmConfiguration(),
                 common_actions.RebundleRubyApplications(),
-                centos2alma_actions.RemovingPleskConflictPackages(),
                 centos2alma_actions.ReinstallPhpmyadminPleskComponents(),
                 centos2alma_actions.ReinstallRoundcubePleskComponents(),
                 centos2alma_actions.ReinstallConflictPackages(options.state_dir),
@@ -175,6 +174,9 @@ class Centos2AlmaConverter(DistUpgrader):
             ],
             "First plesk start": [
                 common_actions.StartPleskBasicServices(),
+            ],
+            "Remove conflicting packages": [
+                centos2alma_actions.RemovingPleskConflictPackages(),
             ],
             "Update databases": [
                 centos2alma_actions.UpdateMariadbDatabase(),
