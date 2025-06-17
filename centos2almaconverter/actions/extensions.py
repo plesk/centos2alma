@@ -92,3 +92,10 @@ class FetchPleskGPGKey(common_actions.FetchGPGKeyForLeapp):
         self.name = "fetching Plesk GPG key"
         self.target_repository_files_regex = ["plesk*.repo"]
         super().__init__()
+
+
+class FetchImunifyGPGKey(common_actions.FetchGPGKeyForLeapp):
+    def __init__(self):
+        self.name = "fetching Imunify360 GPG key"
+        self.target_repository_files_regex = ["imunify*.repo"]
+        super().__init__()
