@@ -262,6 +262,13 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertFstabOrderingIsFine(),
             common_actions.AssertFstabHasDirectRaidDevices(self.allow_raid_devices),
             centos2alma_actions.AssertCentosSignedKernelInstalled(),
+            common_actions.AssertPackageAvailable(
+                "dnf",
+                name="asserting dnf package available",
+                recommendation="""The dnf package is required for Leapp to function properly.
+\tHint: You can install it using the CentOS vault extras repository with the following base URL:
+\t\t'baseurl=http://vault.centos.org/centos/$releasever/extras/$basearch/'"""
+            ),
             # LiteSpeed is not supported yet
             common_actions.AssertPleskExtensions(not_installed=["litespeed"])
         ]
