@@ -153,6 +153,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.RecreateAwstatConfigurationFiles(),
                 common_actions.UninstallTuxcareEls(),
                 common_actions.PreserveMariadbConfig(),
+                common_actions.SubstituteSshPermitRootLoginConfigured(),
             ],
             "Handle plesk related services": [
                 common_actions.DisablePleskRelatedServicesDuringUpgrade(),
@@ -258,7 +259,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.CheckSourcePointsToArchiveURL(),
             common_actions.AssertNoMoreThenOneKernelDevelInstalled(),
             common_actions.AssertEnoughRamForAmavis(ALMALINUX8_AMAVIS_REQUIRED_RAM, self.amavis_upgrade_allowed),
-            common_actions.AssertSshPermitRootLoginConfigured(),
+            common_actions.AssertSshPermitRootLoginConfigured(skip_known_substitudes=True),
             common_actions.AssertFstabOrderingIsFine(),
             common_actions.AssertFstabHasDirectRaidDevices(self.allow_raid_devices),
             centos2alma_actions.AssertCentosSignedKernelInstalled(),
