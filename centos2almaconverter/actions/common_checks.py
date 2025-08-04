@@ -193,12 +193,13 @@ class AssertPackagesUpToDate(action.CheckAction):
         return checker.returncode == 0
 
 
-class AssertAvailableSpace(action.CheckAction):
-    def __init__(self):
-        self.name = "checking available space"
-        self.required_space = 5 * 1024 * 1024 * 1024  # 5GB
+class AssertAvailableSpaceForLocation(action.CheckAction):
+    def __init__(self, location: str, required_space: int):
+        self.name = f"checking available space for {location}"
+        self.location = location
+        self.required_space = required_space
         self.description = """There is insufficient disk space available. Leapp requires a minimum of {} of free space
-\ton the disk where the '/var/lib' directory is located. Available space: {}. 
+\ton the disk where the '{}' directory is located. Available space: {}.
 \tFree up enough disk space and try again.
 """
 
@@ -211,13 +212,15 @@ class AssertAvailableSpace(action.CheckAction):
         return f"{original} B"
 
     def _do_check(self) -> bool:
-        # Leapp stores rhel 8 filesystem in /var/lib/leapp
-        # That's why it takes so much disk space
-        available_space = shutil.disk_usage("/var/lib")[2]
+        if not os.path.exists(self.location):
+            self.description = f"The leapp required location '{self.location}' does not exist. To proceed with the conversion, create the directory."
+            return False
+
+        available_space = shutil.disk_usage(self.location)[2]
         if available_space >= self.required_space:
             return True
 
-        self.description = self.description.format(self._huminize_size(self.required_space), self._huminize_size(available_space))
+        self.description = self.description.format(self._huminize_size(self.required_space), self.location, self._huminize_size(available_space))
         return False
 
 
