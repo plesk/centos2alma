@@ -237,7 +237,8 @@ class Centos2AlmaConverter(DistUpgrader):
         checks = [
             common_actions.AssertPleskVersionIsAvailable(),
             common_actions.AssertPleskInstallerNotInProgress(),
-            centos2alma_actions.AssertAvailableSpace(),
+            centos2alma_actions.AssertAvailableSpaceForLocation("/var/lib", 5 * 1024 * 1024 * 1024),  # 5GB required minimum space to store packages
+            centos2alma_actions.AssertAvailableSpaceForLocation("/boot", 100 * 1024 * 1024),  # 100M required minimum space to store bootloader
             common_actions.AssertMinPhpVersionInstalled(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
             common_actions.AssertMinPhpVersionUsedByWebsites(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
             common_actions.AssertMinPhpVersionUsedByCron(FIRST_SUPPORTED_BY_ALMA_8_PHP_VERSION),
