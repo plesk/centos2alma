@@ -138,6 +138,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.FetchImunifyGPGKey(),
                 centos2alma_actions.LeapReposConfiguration(),
                 centos2alma_actions.LeapChoicesConfiguration(),
+                centos2alma_actions.FixEpelPythonPackageMappings(),
                 centos2alma_actions.AdoptKolabRepositories(),
                 centos2alma_actions.AdoptAtomicRepositories(),
                 centos2alma_actions.FixupImunify(),

@@ -205,6 +205,66 @@ class ReinstallConflictPackages(action.ActiveAction):
         return 60 + 10 * pkgs_number
 
 
+class FixEpelPythonPackageMappings(action.ActiveAction):
+    """Update EPEL package mappings for python-webtest and python-webob packages
+    This is required because default mapping force leapp to install python2 versions of these packages
+    which is broken on AlmaLinux 8:
+    - python2-webob does not provided by any repository
+    - python2-webtest depends on python2-webob
+    The action could be disabled, when problem will be fixed from AlmaLinux side.
+    """
+
+    def __init__(self, target_config=leapp_configs.LEAPP_EPEL_MAPPING_PATH):
+        self.name = "updating EPEL package mappings for leapp"
+        self.target_config = target_config
+
+    def _is_required(self) -> bool:
+        if not os.path.exists(self.target_config):
+            return False
+
+        installed_packages = rpm.filter_installed_packages(['python-webtest', 'python-webob'])
+        return len(installed_packages) > 0
+
+    def _prepare_action(self) -> action.ActionResult:
+        files.backup_file(self.target_config)
+
+        leapp_configs.set_package_mapping(
+            in_package="python-webtest",
+            source_repository="epel",
+            out_package="python3-webtest",
+            target_repository="el8-epel",
+            leapp_pkgs_conf_path=self.target_config
+        )
+
+        leapp_configs.set_package_mapping(
+            in_package="python-webob",
+            source_repository="base",
+            out_package="python3-webob",
+            target_repository="el8-epel",
+            leapp_pkgs_conf_path=self.target_config
+        )
+
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        if os.path.exists(self.target_config):
+            files.remove_backup(self.target_config)
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        if os.path.exists(self.target_config):
+            files.restore_file_from_backup(self.target_config)
+        return action.ActionResult()
+
+    def estimate_prepare_time(self):
+        return 5
+
+    def estimate_post_time(self):
+        return 2
+
+    def estimate_revert_time(self):
+        return 2
+
 
 
 CHANGED_REPOS_MSG_FMT = """During the conversion, some of customized .repo files were updated. You can find the old
