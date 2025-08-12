@@ -265,6 +265,7 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertSshPermitRootLoginConfigured(skip_known_substitudes=True),
             common_actions.AssertFstabOrderingIsFine(),
             common_actions.AssertFstabHasDirectRaidDevices(self.allow_raid_devices),
+            common_actions.AssertFstabHasNoDuplicates(),
             centos2alma_actions.AssertCentosSignedKernelInstalled(),
             common_actions.AssertPackageAvailable(
                 "dnf",
