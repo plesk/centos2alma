@@ -181,6 +181,7 @@ class Centos2AlmaConverter(DistUpgrader):
             ],
             "Remove conflicting packages": [
                 centos2alma_actions.RemovingPleskConflictPackages(),
+                centos2alma_actions.RemovePleskOutdatedPackages(),
             ],
             "Update databases": [
                 centos2alma_actions.UpdateMariadbDatabase(),
