@@ -38,6 +38,31 @@ class RemovingPleskConflictPackages(action.ActiveAction):
         return 10
 
 
+class RemovePleskOutdatedPackages(action.ActiveAction):
+    outdated_pkgs: typing.List[str]
+
+    def __init__(self) -> None:
+        self.name = "remove plesk outdated packages"
+        self.outdated_pkgs = [
+            "psa-fileserver",
+        ]
+
+    def _prepare_action(self) -> action.ActionResult:
+        packages.remove_packages(rpm.filter_installed_packages(self.outdated_pkgs))
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        # This packages are outdated so they not provided by modern Plesk repositories
+        # So we can't reinstall them on revert, and seems like there is no need to do that anyway
+        return action.ActionResult()
+
+    def estimate_prepare_time(self) -> int:
+        return 2
+
+
 class ReinstallPhpmyadminPleskComponents(action.ActiveAction):
     def __init__(self):
         self.name = "re-installing plesk components"
