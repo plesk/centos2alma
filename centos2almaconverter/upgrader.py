@@ -156,6 +156,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.UninstallTuxcareEls(),
                 common_actions.PreserveMariadbConfig(),
                 common_actions.SubstituteSshPermitRootLoginConfigured(),
+                centos2alma_actions.UseSystemResolveForLeappContainer(),
             ],
             "Handle plesk related services": [
                 common_actions.DisablePleskRelatedServicesDuringUpgrade(),
