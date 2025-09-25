@@ -1,5 +1,6 @@
 # Copyright 1999 - 2025. Plesk International GmbH. All rights reserved.
 import os
+import shutil
 
 from pleskdistup.common import action, leapp_configs, files
 
@@ -74,6 +75,28 @@ class LeapChoicesConfiguration(action.ActiveAction):
     def _post_action(self) -> action.ActionResult:
         if os.path.exists(self.answer_file_path):
             os.unlink(self.answer_file_path)
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+
+class UseSystemResolveForLeappContainer(action.ActiveAction):
+    path_to_src: str
+
+    def __init__(self) -> None:
+        self.name = "configure leapp container to use host's /etc/resolv.conf"
+        self.path_to_resolve = "/etc/resolv.conf"
+        self.path_to_src = "/etc/leapp/files/resolv.conf"
+
+    def is_required(self) -> bool:
+        return os.path.exists(self.path_to_resolve)
+
+    def _prepare_action(self) -> action.ActionResult:
+        shutil.copy(self.path_to_resolve, self.path_to_src)
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
