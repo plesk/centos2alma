@@ -23,6 +23,7 @@ class LeappPreupgradeRisksPreventedException(Exception):
 
 
 class DoCentos2AlmaConvert(action.ActiveAction):
+    LEAPP_RESUME_SERVICE = "leapp_resume.service"
     leapp_ovl_size: int
 
     def __init__(self, leapp_ovl_size: int = 4096):
