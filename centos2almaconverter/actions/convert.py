@@ -1,5 +1,5 @@
 # Copyright 1999 - 2025. Plesk International GmbH. All rights reserved.
-from pleskdistup.common import action, leapp_configs, util
+from pleskdistup.common import action, leapp_configs, systemd, util
 
 import os
 import subprocess
@@ -46,6 +46,14 @@ class DoCentos2AlmaConvert(action.ActiveAction):
         return action.ActionResult()
 
     def _post_action(self) -> action.ActionResult:
+        leapp_py3_utility = "/root/tmp_leapp_py3/leapp3"
+
+        # We don't want LEAPP_RESUME_SERVICE will be started in the middle of finishing stage because it
+        # could break our normal flow. So we need to prevent systemd from starting it and call directly
+        if systemd.is_service_exists(self.LEAPP_RESUME_SERVICE):
+            systemd.disable_services([self.LEAPP_RESUME_SERVICE])
+            if os.path.exists(leapp_py3_utility):
+                util.logged_check_call([leapp_py3_utility, "upgrade", "--resume"])
         return action.ActionResult()
 
     def _revert_action(self) -> action.ActionResult:
