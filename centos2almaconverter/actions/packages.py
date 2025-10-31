@@ -656,3 +656,48 @@ class AssertCentosSignedKernelInstalled(action.CheckAction):
             return True
 
         return any(self._signed_by_one_of_keys(pkg, known_pgp_keys_ids) for pkg in packages_with_pgpsig.splitlines() if pkg)
+
+
+class DisablePleskTechMirrorRepositories(action.ActiveAction):
+    """Disable base and update repositories from base.repo if they use mirror.pp.plesk.tech.
+        The repositories have packages that conflict with AlmaLinux packages so we have to disable them.
+    """
+    base_repo_path: str = "/etc/yum.repos.d/base.repo"
+    plesk_mirror_url_substring: str = "mirror.pp.plesk.tech"
+
+    def __init__(self):
+        self.name = "disabling plesk tech mirror repositories"
+
+    def is_required(self) -> bool:
+        if not os.path.exists(self.base_repo_path):
+            return False
+
+        for repo in rpm.extract_repodata(self.base_repo_path):
+            if repo.id in ["base", "updates"] and repo.url and self.plesk_mirror_url_substring in repo.url:
+                return True
+        return False
+
+    def _prepare_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        if not os.path.exists(self.base_repo_path):
+            log.warn(f"Repository file {self.base_repo_path} does not exist. Skipping.")
+            return action.ActionResult()
+
+        disabled_repos = rpm.disable_repo_if(
+            self.base_repo_path,
+            lambda repo: (repo.id in ["base", "updates"] and
+                          repo.url and self.plesk_mirror_url_substring in repo.url)
+        )
+
+        for repo_id in disabled_repos:
+            log.info(f"Disabled repository '{repo_id}' in {self.base_repo_path} because it uses {self.plesk_mirror_url_substring}.")
+
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def estimate_post_time(self):
+        return 5
