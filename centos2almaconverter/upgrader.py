@@ -198,6 +198,7 @@ class Centos2AlmaConverter(DistUpgrader):
             #  which will fail if there are any unmanaged repositories.
             "Specific repositories adoption": [
                 centos2alma_actions.DisablePleskTechMirrorRepositories(),
+                centos2alma_actions.HandleCentosExtrasRepositoriesFromExtensions(),
                 centos2alma_actions.AdoptRackspaceEpelRepository(),
             ],
             "Resume": [
