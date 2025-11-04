@@ -701,3 +701,55 @@ class DisablePleskTechMirrorRepositories(action.ActiveAction):
 
     def estimate_post_time(self):
         return 5
+
+
+class HandleCentosExtrasRepositoriesFromExtensions(action.ActiveAction):
+    def __init__(self):
+        self.name = "handling CentOS related extras repositories installed by plesk extensions"
+
+    def is_required(self) -> bool:
+        """Required only when there are any *-extras.repo files with [extras] repository"""
+        extras_files = files.find_files_case_insensitive("/etc/yum.repos.d", ["*-extras.repo"])
+
+        for repo_file in extras_files:
+            try:
+                for repo in rpm.extract_repodata(repo_file):
+                    if repo.id == "extras":
+                        return True
+            except (FileNotFoundError, ValueError):
+                continue
+
+        return False
+
+    def _prepare_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def _post_action(self) -> action.ActionResult:
+        for repo_file in files.find_files_case_insensitive("/etc/yum.repos.d", ["*-extras.repo"]):
+            try:
+                repos_in_file = list(rpm.extract_repodata(repo_file))
+
+                files.backup_file(repo_file)
+                if len(repos_in_file) == 1 and repos_in_file[0].id == "extras":
+                    os.remove(repo_file)
+                    log.info(f"Removed {repo_file} with outdated [extras] repository")
+                else:
+                    disabled_repo = rpm.disable_repo_if(
+                        repo_file,
+                        lambda repo: repo.id == "extras"
+                    )
+                    if disabled_repo:
+                        log.info(f"Disabled [extras] repository in {repo_file}")
+                    else:
+                        files.remove_backup(repo_file)
+            except (FileNotFoundError, ValueError) as e:
+                log.warn(f"Could not process repository file {repo_file}: {e}")
+                continue
+
+        return action.ActionResult()
+
+    def _revert_action(self) -> action.ActionResult:
+        return action.ActionResult()
+
+    def estimate_post_time(self):
+        return 10
