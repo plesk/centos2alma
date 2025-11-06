@@ -15,7 +15,7 @@ jobs:
       run: mkdir -p ./buck-out/gen
     - name: Build centos2alma
       id: build
-      uses: SandakovMM/build-with-buck@v3
+      uses: SandakovMM/build-with-buck@v5
       with:
         command: build
         target: :centos2alma
