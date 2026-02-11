@@ -141,6 +141,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.LeapChoicesConfiguration(),
                 centos2alma_actions.FixEpelPythonPackageMappings(),
                 centos2alma_actions.AdoptKolabRepositories(),
+                centos2alma_actions.AdoptSOGo(),
                 centos2alma_actions.AdoptAtomicRepositories(),
                 centos2alma_actions.FixupImunify(),
                 common_actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
