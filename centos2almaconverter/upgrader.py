@@ -130,6 +130,9 @@ class Centos2AlmaConverter(DistUpgrader):
             "Leapp installation": [
                 centos2alma_actions.LeapInstallation(remove_logs_on_finish=self.remove_leapp_logs),
             ],
+            "Prepare finihsing systemd service": [
+                common_actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
+            ],
             "Prepare configurations": [
                 common_actions.RevertChangesInGrub(),
                 centos2alma_actions.PrepareLeappConfigurationBackup(),
@@ -144,7 +147,6 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.AdoptSOGo(),
                 centos2alma_actions.AdoptAtomicRepositories(),
                 centos2alma_actions.FixupImunify(),
-                common_actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
                 common_actions.UpdatePlesk(),
                 centos2alma_actions.PostgresReinstallModernPackage(),
                 centos2alma_actions.FixNamedConfig(),
