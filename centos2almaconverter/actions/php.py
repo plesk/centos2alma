@@ -1,4 +1,4 @@
-# Copyright 2023-2025. WebPros International GmbH. All rights reserved.
+# Copyright 1999 - 2026. WebPros International GmbH. All rights reserved.
 
 import os
 import shutil

@@ -1,4 +1,4 @@
-# Copyright 1999 - 2025. Plesk International GmbH. All rights reserved.
+# Copyright 1999 - 2026. Plesk International GmbH. All rights reserved.
 
 from pleskdistup import actions as common_actions
 from pleskdistup.common import action, util, leapp_configs, files, rpm, packages, systemd
