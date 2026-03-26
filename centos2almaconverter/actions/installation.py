@@ -14,10 +14,10 @@ class LeapInstallation(action.ActiveAction):
         self.pkgs_to_install = [
             "leapp-0.18.0-2.el7",
             "python2-leapp-0.18.0-2.el7",
-            "leapp-data-almalinux-0.4-5.el7.20240827",
+            "leapp-data-almalinux-0.6-13.el7.20241127",
             "leapp-deps-0.18.0-2.el7",
-            "leapp-upgrade-el7toel8-0.21.0-2.el7",
-            "leapp-upgrade-el7toel8-deps-0.21.0-2.el7",
+            "leapp-upgrade-el7toel8-0.21.0-5.el7",
+            "leapp-upgrade-el7toel8-deps-0.21.0-5.el7",
         ]
         self.remove_logs_on_finish = remove_logs_on_finish
 

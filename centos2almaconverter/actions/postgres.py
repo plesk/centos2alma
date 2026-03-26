@@ -46,7 +46,10 @@ class AssertPostgresLocaleMatchesSystemOne(action.CheckAction):
                 log.debug(f"Got unexpected Postgres locales set: {pg_locales!r}")
                 return False
 
-            sys_locales = set(l.split('=')[1].strip() for l in files.find_file_substrings('/etc/locale.conf', 'LANG='))
+            sys_locales = set(
+                locale_str.split('=')[1].strip().strip('"') for locale_str
+                in files.find_file_substrings('/etc/locale.conf', 'LANG=')
+            )
             env_locale = locale.getlocale()
             if env_locale and env_locale[0]:
                 sys_locales.add('.'.join(map(str, env_locale)))

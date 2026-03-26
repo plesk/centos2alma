@@ -288,8 +288,7 @@ class FixEpelPythonPackageMappings(action.ActiveAction):
         return 2
 
     def estimate_revert_time(self):
-        return 2
-
+        return 
 
 
 CHANGED_REPOS_MSG_FMT = """During the conversion, some of customized .repo files were updated. You can find the old
@@ -659,11 +658,14 @@ class AssertCentosSignedKernelInstalled(action.CheckAction):
 
 
 class DisablePleskTechMirrorRepositories(action.ActiveAction):
-    """Disable base and update repositories from base.repo if they use mirror.pp.plesk.tech.
+    """Disable base, updates, and extras repositories from base.repo if they use mirror.pp.plesk.tech.
         The repositories have packages that conflict with AlmaLinux packages so we have to disable them.
     """
     base_repo_path: str = "/etc/yum.repos.d/base.repo"
-    plesk_mirror_url_substring: str = "mirror.pp.plesk.tech"
+    urls_should_be_disabled: typing.List[str] = [
+        "mirror.pp.plesk.tech",
+        "vault.centos.org",
+    ]
 
     def __init__(self):
         self.name = "disabling plesk tech mirror repositories"
@@ -673,8 +675,9 @@ class DisablePleskTechMirrorRepositories(action.ActiveAction):
             return False
 
         for repo in rpm.extract_repodata(self.base_repo_path):
-            if repo.id in ["base", "updates"] and repo.url and self.plesk_mirror_url_substring in repo.url:
-                return True
+            if repo.id in ["base", "updates", "extras"] and repo.url:
+                if any(url in repo.url for url in self.urls_should_be_disabled):
+                    return True
         return False
 
     def _prepare_action(self) -> action.ActionResult:
@@ -687,12 +690,13 @@ class DisablePleskTechMirrorRepositories(action.ActiveAction):
 
         disabled_repos = rpm.disable_repo_if(
             self.base_repo_path,
-            lambda repo: (repo.id in ["base", "updates"] and
-                          repo.url and self.plesk_mirror_url_substring in repo.url)
+            lambda repo: (repo.id in ["base", "updates", "extras"] and
+                          repo.url and any(url in repo.url for url in self.urls_should_be_disabled))
         )
 
         for repo_id in disabled_repos:
-            log.info(f"Disabled repository '{repo_id}' in {self.base_repo_path} because it uses {self.plesk_mirror_url_substring}.")
+            log.info(f"Disabled repository '{repo_id}' in {self.base_repo_path}"
+                     f" because it uses one of {self.urls_should_be_disabled}.")
 
         return action.ActionResult()
 
