@@ -288,7 +288,7 @@ class FixEpelPythonPackageMappings(action.ActiveAction):
         return 2
 
     def estimate_revert_time(self):
-        return 
+        return 2
 
 
 CHANGED_REPOS_MSG_FMT = """During the conversion, some of customized .repo files were updated. You can find the old
