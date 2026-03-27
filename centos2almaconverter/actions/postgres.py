@@ -130,7 +130,7 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         return res.returncode == 0
 
     def _prepare_action(self) -> action.ActionResult:
-        leapp_configs.add_repositories_mapping(["/etc/yum.repos.d/pgdg-redhat-all.repo"])
+        leapp_configs.add_repositories_mapping(["/etc/yum.repos.d/pgdg-redhat-all.repo"], skip_disabled=True)
 
         for major_version in self._get_versions():
             service_name = 'postgresql-' + str(major_version)
