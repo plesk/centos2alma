@@ -132,10 +132,10 @@ In such cases, you have two options:
 2. Create a complete backup of the database and force the conversion using the '--upgrade-postgres' flag.
 
 #### Adjusting Leapp Overlay Size
-The default Leapp overlay size is 2048 MB. In the centos2alma tool, this is increased to 4096 MB. However, this may still be insufficient for handling all the required upgrade packages, leading to a "Disk Requirements:" error from Leapp. To prevent this issue, you can increase the overlay size using the '--leapp-overlay-size' flag. For example, to set the overlay size to 8192 MB, execute the following command:
+The default Leapp overlay size is 2048 MB. In the centos2alma tool, this is increased to 4096 MB. However, this may still be insufficient for handling all the required upgrade packages, leading to a "Disk Requirements:" error from Leapp. To prevent this issue, you can increase the overlay size using the '--leapp-ovl-size' flag. For example, to set the overlay size to 8192 MB, execute the following command:
 
 ```shell
-> ./centos2alma --leapp-overlay-size 8192
+> ./centos2alma --leapp-ovl-size 8192
 ```
 
 #### Perl modules installed by CPAN
