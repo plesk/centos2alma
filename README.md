@@ -49,8 +49,8 @@ To retrieve the latest available version of the tool, please navigate to the "Re
 
 To prepare the latest version of the tool for use from a command line, please run the following commands:
 ```shell
-> wget https://github.com/plesk/centos2alma/releases/download/v1.4.14/centos2alma-1.4.14.zip
-> unzip centos2alma-1.4.14.zip
+> wget https://github.com/plesk/centos2alma/releases/download/v1.5.0/centos2alma-1.5.0.zip
+> unzip centos2alma-1.5.0.zip
 > chmod 755 centos2alma
 ```
 
