@@ -1,28 +1,42 @@
-# The Dockerfile was brought from the repository build-with-buck
-# https://github.com/SandakovMM/build-with-buck
-# But little changed. Because GitHub actions mount sourcecode inside
-# the action, but we should do the same inside the container manually.
-# So to build you shoud just call docker like this:
-# > docker run -v ./:/target [container-name] build :centos2alma
-FROM openjdk:8
-
-MAINTAINER mmsandakov@gmail.com
+# We use an image with pre-build buck since first version of buck is preatty antique already
+# so we don't want to build it from scratch each time.
+# This image is based on Ubuntu 22.04 with pre-installed OpenJDK 8 and buck
+FROM msandakov/buck-ubt22:1.0
 
 # Prepare environment
-RUN apt-get update && apt-get install -y git ant build-essential gcc python python-dev python3-distutils
-RUN useradd -m -s /bin/false buck
-RUN mkdir /buck && chown buck /buck
-USER buck
+RUN apt update && apt install -y git build-essential gcc clang \
+    python2 python3 python3-dev zlib1g-dev openssl libssl-dev curl \
+    libbz2-dev liblzma-dev libsqlite3-dev libreadline-dev
 
-# Build buck
-# We could just clone because I don't expect buck to be updated in this repository
-# ToDo: move to buck2
-RUN git clone https://github.com/facebook/buck.git /buck/
-RUN cd /buck && ant
+# Use runner user to make sure we work as files owner (default github action user)
+RUN adduser --disabled-password --gecos "" --uid 1001 runner \
+    && groupadd docker --gid 123 \
+    && usermod -aG sudo runner \
+    && usermod -aG docker runner \
+    && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers \
+    && echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >> /etc/sudoers
 
-# We shoul return to root because github actions expects it
+USER runner
+
+ENV HOME /home/runner
+ENV PYENV_ROOT $HOME/.pyenv
+ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+
+# Make sure we have exactly python 3.6.8 installed. Because I need this version of python for my projects.
+# You could freely change it to any other version. Or remove pyenv at all if you fine
+# with the default python version (3.9 for this container).
+# ToDo: find a way to configure python version from an action configuration
+RUN curl https://pyenv.run | bash
+# We want to use clang because modern gcc work bad with outrated python versions
+RUN CC=clang pyenv install 3.6.15
+RUN pyenv global 3.6.15
+
 USER root
-RUN ln -sf /buck/bin/buck /usr/bin/ ; mkdir /target
-WORKDIR /target
+# A little hack to avoid all tihs .pyenv pathes in .buckconfig files. Looks not so bad I suppose
+RUN ln -sf $HOME/.pyenv/shims/python3.6 /usr/bin/python3.6
+
+USER runner
+
+WORKDIR /home/runner/project
 
 ENTRYPOINT ["/usr/bin/buck"]
