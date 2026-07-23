@@ -261,6 +261,7 @@ class Centos2AlmaConverter(DistUpgrader):
             centos2alma_actions.AssertCentosEOLedRepositoriesNotPresent(),
             centos2alma_actions.AssertThereIsNoRepositoryDuplicates(),
             centos2alma_actions.AssertMariadbRepoAvailable(),
+            centos2alma_actions.AssertModernPostgresRepositoryFilePresent(),
             common_actions.AssertNotInContainer(),
             centos2alma_actions.AssertPackagesUpToDate(),
             centos2alma_actions.CheckOutdatedLetsencryptExtensionRepository(),
