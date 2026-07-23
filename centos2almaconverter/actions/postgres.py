@@ -6,6 +6,14 @@ import subprocess
 from pleskdistup.common import action, files, leapp_configs, log, postgres, systemd, util
 
 _ALMA8_POSTGRES_VERSION = 10
+_POSTGRES_REPO_FILE = "/etc/yum.repos.d/pgdg-redhat-all.repo"
+
+
+def _is_modern_postgres_installed() -> bool:
+    return (
+        postgres.is_postgres_installed()
+        and postgres.get_postgres_major_version() >= _ALMA8_POSTGRES_VERSION
+    )
 
 
 class AssertOutdatedPostgresNotInstalled(action.CheckAction):
@@ -112,6 +120,20 @@ class PostgresDatabasesUpdate(action.ActiveAction):
         return 3 * 60
 
 
+class AssertModernPostgresRepositoryFilePresent(action.CheckAction):
+    def __init__(self):
+        self.name = "checking the modern postgresql repository file is present"
+        self.description = f"""A modern PostgreSQL is installed, but its repository file {_POSTGRES_REPO_FILE!r} is missing.
+\tWithout it the conversion cannot reinstall PostgreSQL on AlmaLinux 8 and the packages would be removed silently.
+\tPlease either place the PostgreSQL repository file at {_POSTGRES_REPO_FILE}, or remove PostgreSQL before the conversion.
+"""
+
+    def _do_check(self) -> bool:
+        if not _is_modern_postgres_installed():
+            return True
+        return os.path.exists(_POSTGRES_REPO_FILE)
+
+
 class PostgresReinstallModernPackage(action.ActiveAction):
     # Leapp is going to remove postgresql package from the system during conversion process.
     # So during this action we shouldn't use any postgresql related commands. Luckily data will not be removed
@@ -123,14 +145,14 @@ class PostgresReinstallModernPackage(action.ActiveAction):
         return [int(dataset) for dataset in os.listdir(postgres.get_pgsql_root_path()) if dataset.isnumeric()]
 
     def _is_required(self):
-        return postgres.is_postgres_installed() and any([major_version >= _ALMA8_POSTGRES_VERSION for major_version in self._get_versions()])
+        return _is_modern_postgres_installed()
 
     def _is_service_active(self, service):
         res = subprocess.run(['/usr/bin/systemctl', 'is-active', service])
         return res.returncode == 0
 
     def _prepare_action(self) -> action.ActionResult:
-        leapp_configs.add_repositories_mapping(["/etc/yum.repos.d/pgdg-redhat-all.repo"], skip_disabled=True)
+        leapp_configs.add_repositories_mapping([_POSTGRES_REPO_FILE], skip_disabled=True)
 
         for major_version in self._get_versions():
             service_name = 'postgresql-' + str(major_version)
