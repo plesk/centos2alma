@@ -59,7 +59,7 @@ class UpdateModernMariadb(action.ActiveAction):
 
         log.debug("Add MariaDB repository files '{}' mapping into leapp vendor directory".format(repofiles[0]))
         for repofile in repofiles:
-            leapp_configs.create_leapp_vendor_repository_adoption(repofile)
+            leapp_configs.create_leapp_vendor_repository_adoption(repofile, leapp_conf_format_version="1.2.1")
 
         log.debug("Set repository mapping in the leapp configuration file")
         leapp_configs.set_package_repository("mariadb", "alma-mariadb")
