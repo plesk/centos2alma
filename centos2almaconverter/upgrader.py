@@ -245,7 +245,7 @@ class Centos2AlmaConverter(DistUpgrader):
         ALMALINUX8_AMAVIS_REQUIRED_RAM = 1.5 * 1024 * 1024 * 1024
         # From our experience it's better to have at least 5GB as the required minimum space to store packages,
         # however when more space is required we should check exactly what was requested.
-        # Leapp_ove_size in Mbs so we have to multiply
+        # Leapp_ovl_size in Mbs so we have to multiply
         REQUIRED_MINUMUM_SPACE_FOR_OVERLAY = max(5 * 1024 * 1024 * 1024, self.leapp_ovl_size * 1024 * 1024)
 
         checks = [
