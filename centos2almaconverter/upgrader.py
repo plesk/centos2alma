@@ -280,6 +280,7 @@ class Centos2AlmaConverter(DistUpgrader):
             common_actions.AssertNoMoreThenOneKernelDevelInstalled(),
             common_actions.AssertEnoughRamForAmavis(ALMALINUX8_AMAVIS_REQUIRED_RAM, self.amavis_upgrade_allowed),
             common_actions.AssertSshPermitRootLoginConfigured(skip_known_substitudes=True),
+            common_actions.AssertSelinuxHttpdCanNetworkConnect(),
             common_actions.AssertFstabOrderingIsFine(),
             common_actions.AssertFstabHasDirectRaidDevices(self.allow_raid_devices),
             common_actions.AssertFstabHasNoDuplicates(),
