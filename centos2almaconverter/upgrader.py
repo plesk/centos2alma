@@ -128,7 +128,18 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.AddInProgressSshLoginMessage(new_os),
             ],
             "Leapp installation": [
-                centos2alma_actions.LeapInstallation(remove_logs_on_finish=self.remove_leapp_logs),
+                common_actions.LeappInstallation(
+                    centos2alma_actions.LEAPP_ALMALINUX_RPM_URL,
+                    [
+                        "leapp-0.18.0-2.el7",
+                        "python2-leapp-0.18.0-2.el7",
+                        "leapp-data-almalinux-0.6-15.el7.20241127",
+                        "leapp-deps-0.18.0-2.el7",
+                        "leapp-upgrade-el7toel8-0.21.0-5.el7",
+                        "leapp-upgrade-el7toel8-deps-0.21.0-5.el7",
+                    ],
+                    remove_logs_on_finish=self.remove_leapp_logs
+                ),
             ],
             "Prepare finihsing systemd service": [
                 common_actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
