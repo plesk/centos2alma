@@ -33,6 +33,8 @@ class Centos2AlmaConverter(DistUpgrader):
     _distro_to = dist.AlmaLinux("8")
 
     _pre_reboot_delay = 45
+    
+    _leapp_almalinux_rpm_url: str = "https://repo.almalinux.org/elevate/elevate-release-latest-el7.noarch.rpm"
 
     def __init__(self):
         super().__init__()
@@ -129,7 +131,7 @@ class Centos2AlmaConverter(DistUpgrader):
             ],
             "Leapp installation": [
                 common_actions.LeappInstallation(
-                    centos2alma_actions.LEAPP_ALMALINUX_RPM_URL,
+                    self._leapp_almalinux_rpm_url,
                     [
                         "leapp-0.18.0-2.el7",
                         "python2-leapp-0.18.0-2.el7",
