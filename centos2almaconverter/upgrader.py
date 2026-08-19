@@ -147,6 +147,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 common_actions.AddUpgradeSystemdService(os.path.abspath(sys.argv[0]), options),
             ],
             "Prepare configurations": [
+                common_actions.RepairPleskInstallation(),  # Executed at the finish phase only
                 common_actions.RevertChangesInGrub(),
                 centos2alma_actions.PrepareLeappConfigurationBackup(),
                 centos2alma_actions.RemoveOldMigratorThirparty(),
