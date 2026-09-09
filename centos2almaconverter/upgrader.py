@@ -190,7 +190,7 @@ class Centos2AlmaConverter(DistUpgrader):
                 centos2alma_actions.DisableSuspiciousKernelModules(),
                 common_actions.HandleUpdatedSpamassassinConfig(),
                 common_actions.DisableSelinuxDuringUpgrade(),
-                centos2alma_actions.RestoreMissingNginx(),
+                common_actions.RestoreMissingNginx(),
                 common_actions.ReinstallAmavisAntivirus(),
                 centos2alma_actions.HandleInternetxRepository(),
             ],

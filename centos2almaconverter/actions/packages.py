@@ -486,30 +486,6 @@ class RemoveOldMigratorThirparty(action.ActiveAction):
         return action.ActionResult()
 
 
-class RestoreMissingNginx(action.ActiveAction):
-    def __init__(self):
-        self.name = "restore nginx if it was removed during the conversion"
-
-    def _is_required(self) -> bool:
-        # nginx related to plesk could be removed by user. So we need to make sure
-        # it is installed before we start the conversion
-        return packages.is_package_installed("sw-nginx")
-
-    def _prepare_action(self) -> action.ActionResult:
-        return action.ActionResult()
-
-    def _post_action(self) -> action.ActionResult:
-        if not packages.is_package_installed("sw-nginx"):
-            util.logged_check_call(["/usr/sbin/plesk", "installer", "add", "--components", "nginx"])
-        return action.ActionResult()
-
-    def _revert_action(self) -> action.ActionResult:
-        return action.ActionResult()
-
-    def estimate_post_time(self):
-        return 3 * 60
-
-
 class CheckOutdatedLetsencryptExtensionRepository(action.CheckAction):
     OUTDATED_LETSENCRYPT_REPO_PATHS = ["/etc/yum.repos.d/plesk-letsencrypt.repo", "/etc/yum.repos.d/plesk-ext-letsencrypt.repo"]
 
