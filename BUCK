@@ -1,7 +1,7 @@
 # Copyright 1999 - 2026. WebPros International GmbH. All rights reserved.
 # vim:ft=python:
 
-PRODUCT_VERSION = '1.6.0'
+PRODUCT_VERSION = '1.6.1'
 
 genrule(
     name = 'version',
