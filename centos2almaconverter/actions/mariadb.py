@@ -135,7 +135,7 @@ class UpdateMariadbDatabase(action.ActiveAction):
 
         with open('/etc/psa/.psa.shadow', 'r') as shadowfile:
             shadowdata = shadowfile.readline().rstrip()
-            util.logged_check_call(["/usr/bin/mysql_upgrade", "-uadmin", "-p" + shadowdata])
+            util.logged_check_call(["/usr/bin/mysql_upgrade", "-uadmin"], env={**os.environ, "MYSQL_PWD": shadowdata})
         # Also find a way to drop cookies, because it will ruin your day
         # We have to delete it once again, because leapp going to install it in scope of conversion process,
         # but without right configs
